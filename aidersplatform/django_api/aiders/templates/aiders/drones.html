@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% load static %}
+{% load guardian_tags %}
+
+{% block title %}
+Aiders - Drones
+{% endblock %}
+
+
+{% block head_block %}
+    <script src="{% static 'aiders/javascripts/Drone_Change_Operation.js' %}" type="text/javascript"></script>
+    <script src="{% static 'aiders/javascripts/Popups.js' %}" type="text/javascript"></script>
+    <script src="{% static 'aiders/javascripts/dutils.js' %}" type="text/javascript"></script>
+    <script src="{% static 'aiders/javascripts/dutils.conf.urls.example.js' %}" type="text/javascript"></script>
+
+    
+
+    <link href="{% static 'libs/jquery-ui/http_ajax.googleapis.com_ajax_libs_jqueryui_1.12.1_themes_smoothness_jquery-ui.css' %}" rel="stylesheet">
+
+    <script src="{% static 'libs/jquery-ui/http_ajax.googleapis.com_ajax_libs_jqueryui_1.12.1_jquery-ui.js' %}"></script>
+
+    <link href="{% static 'libs/jquery.mCustomScrollbar/__malihu.github.io_custom-scrollbar_jquery.mCustomScrollbar.min.css' %}" rel="stylesheet">
+
+    <link href="{% static 'libs/jquery-ui/__code.jquery.com_ui_1.12.1_themes_base_jquery-ui.css' %}" rel="stylesheet">
+    <script src="{% static 'libs/hls/http_cdn.jsdelivr.net_npm_hls.js@1.2.0.js' %}"></script>
+
+    
+
+    <link href="{% static 'libs/jquery.dataTables/http_cdn.datatables.net_1.10.2_css_jquery.dataTables.css' %}" rel="stylesheet">
+    <script src="{% static 'libs/jquery.dataTables/http_cdn.datatables.net_1.10.2_js_jquery.dataTables.js' %}"></script>
+
+{% endblock %}
+
+
+{% block body_block %}
+
+<div class="justify-content-center ms-5 me-5 footer-margin header-margin">
+    <div class="row pt-5">
+        <h3 class="col float-start">Drones</h3>
+        <div class="col">
+            <a class="btn btn-primary float-end mx-1 {% if not perms.aiders.edit_permissions %}disabled{% endif %}" href="{% url 'manage_permissions' %}">
+                <i class="far fa-plus-square "></i>
+                Edit Permissions
+            </a>
+        </div>
+    </div>
+    <div class="row mb-5">
+        <div class="col-sm" style="color: black">
+            <div><br/></div>
+
+                <table id="dronesTable" class="table table-striped">
+                <thead>
+                <tr>
+                    <th> ID</th>
+                    <th> Drone Name</th>
+                    <th> Model</th>
+                    <th> Camera Model</th>
+                    <th> Operation</th>
+                    <th> Connected</th>
+                    <th style="width: 10%"> Actions</th>
+
+                </tr>
+                </thead>
+                <tbody>
+                    {% if drones %}
+                        {% for drone in drones %}
+                            <tr>
+                                
+                                <td class='align-middle'> {{drone.id}}</td>
+                                <td class='align-middle'> {{drone.drone_name}}</td>
+                                <td class='align-middle'> {{drone.model}}</td>
+                                <td class='align-middle'> {{drone.camera_model}}</td>
+                                <td class='align-middle'> {{drone.operation}}</td>
+                                <td class='align-middle'> {{drone.is_connected_with_platform}}</td>
+                                <td>
+                                <div>
+                                    <form class='m-1' style='float: left;' method="post" action="{% url 'join_operation' operation_name=drone.operation %}">
+                                        {% csrf_token %}
+                                        {% get_obj_perms request.user for drone.operation as "permission_list" %}
+                                        <button type="submit" title="Open map for this drone's operation" class="btn btn-success"
+                                                {% if not "join_operation" in permission_list or not drone.operation.active or drone.operation == None %}
+                                                    disabled
+
+                                                {% endif %}>
+                                            <i class="fa-solid fa-right-to-bracket"></i></button>
+                                    </form>
+                                </div>
+                                <div>
+                                    <form class='m-1' style='float: left;'>
+                                        <button type="Button" title="Assign this drone to an operation"  onclick="Edit_drone_operation('{{drone.drone_name}}')" class="btn btn-warning"><i style="color:white;" class="fa-solid fa-rocket"></i></i></button>
+                                    </form>
+                                </div>
+{#                                <div>#}
+{#                                    <form class='m-1' style='float: left;' method="get" action="#">#}
+{#                                        <button type="submit" class="btn btn-danger" ><i class="fa-solid fa-trash"></i></i></button>#}
+{#                                    </form>#}
+{#                                </div>#}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<div id="csrf">
+    {% csrf_token %}
+</div>
+
+
+
+{% endblock %}
+
+{% block script_block %}
+
+    $(document).ready(function(){
+    $('#dronesTable').dataTable();
+    });
+
+{% endblock %}

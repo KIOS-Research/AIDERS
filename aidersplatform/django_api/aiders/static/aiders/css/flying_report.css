@@ -1,0 +1,143 @@
+body {
+    background-color: rgb(194, 232, 255);
+}
+.table_form {
+    background-color: white;
+    border-radius: 25px;
+    border: 2px solid rgb(64, 196, 248);
+    padding: 20px;
+}
+.submit {
+    display: inline-block;
+    background-color: rgb(64, 196, 248);
+    border-radius: 10px;
+    border: 4px double #d0f2ff;
+    color: #eeeeee;
+    text-align: center;
+    font-size: 16px;
+    padding: 5px;
+    width: 90px;
+    transition: all 0.5s;
+    cursor: pointer;
+    margin: 5px;
+}
+.submit:hover {
+    background-color: rgb(164, 225, 250);
+}
+
+.clear {
+    display: inline-block;
+    background-color: rgb(64, 196, 248);
+    border-radius: 10px;
+    border: 4px double #d0f2ff;
+    color: #eeeeee;
+    text-align: center;
+    font-size: 16px;
+    padding: 5px;
+    width: 90px;
+    transition: all 0.5s;
+    cursor: pointer;
+    margin: 5px;
+}
+.clear:hover {
+    background-color: rgb(164, 225, 250);
+}
+.default {
+    display: inline-block;
+    background-color: rgb(64, 196, 248);
+    border-radius: 10px;
+    border: 4px double #d0f2ff;
+    color: #eeeeee;
+    text-align: center;
+    font-size: 16px;
+    padding: 5px;
+    width: 90px;
+    transition: all 0.5s;
+    cursor: pointer;
+    margin: 5px;
+}
+.default:hover {
+    background-color: rgb(164, 225, 250);
+}
+.button:hover span {
+    padding-right: 25px;
+}
+.button:hover span:after {
+    opacity: 1;
+    right: 0;
+}
+
+table td.col3 {
+    /* border-left: 4px solid rgb(194, 232, 255); */
+    display: none;
+}
+
+.leftSidebarToggle {
+    top: 0px;
+    left: 0px;
+    display: inline-block;
+    background-color: rgb(64, 196, 248);
+    border-radius: 25px;
+    border: none;
+    color: #ffffff;
+    text-align: center;
+    padding: 5px;
+    width: 90px;
+    transition: all 0.5s;
+    position: absolute;
+    cursor: pointer;
+    margin: 5px;
+}
+
+.sidebarToggle {
+    top: 0px;
+    right: 0px;
+    display: inline-block;
+    background-color: rgb(64, 196, 248);
+    border-radius: 25px;
+    border: none;
+    color: #ffffff;
+    text-align: center;
+    padding: 5px;
+    width: 90px;
+    transition: all 0.5s;
+    position: absolute;
+    cursor: pointer;
+    margin: 5px;
+}
+.sidebarToggle span {
+    cursor: pointer;
+    display: inline-block;
+    position: relative;
+    transition: 0.5s;
+}
+
+.sidebarToggle span:after {
+    content: '\00bb';
+    position: absolute;
+    opacity: 0;
+    top: 0;
+    right: -20px;
+    transition: 0.5s;
+}
+
+.sidebarToggle:hover span {
+    padding-right: 25px;
+}
+
+.sidebarToggle:hover span:after {
+    opacity: 1;
+    right: 0;
+}
+.fade-item {
+    animation: fadeIn 3s;
+}
+
+@keyframes fadeIn {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}

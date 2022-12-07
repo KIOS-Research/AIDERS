@@ -1,0 +1,1 @@
+cmd='cd;/home/aanast01/catkin_kios/src/cmake-modules/../Onboard-SDK-3.8.1/../Onboard-SDK-3.8.1-build;&&;cmake;/home/aanast01/catkin_kios/src/cmake-modules/../Onboard-SDK-3.8.1;-DADVANCED_SENSING=ON;-GUnix Makefiles;/home/aanast01/catkin_kios/src/cmake-modules/../Onboard-SDK-3.8.1'

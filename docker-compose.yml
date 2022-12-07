@@ -1,0 +1,76 @@
+version: '3.7'
+services:
+    web:
+        container_name: web
+        image: alexpips/aiders-web:1.4.3
+        build: ./aidersplatform
+        command: python manage.py runserver ${NET_IP}:8000
+        init: true # To be able to kill docker from inside. Reference: https://stackoverflow.com/a/31539425
+        volumes:
+            - /dev/:/dev/ #So docker can access USB devices (i.e Weather station etc.) #Production
+            - ./aidersplatform/:/usr/src/aidersplatform/:rw #Development
+            - /usr/src/aidersplatform/django_api/logic/djiswarmcatkinws/ #This is to exclude this folder from being mapped into the docker. Reference https://stackoverflow.com/questions/29181032/add-a-volume-to-docker-but-exclude-a-sub-folder #Development
+            - ./aidersplatform/django_api/logic/algorithms/object_detection/src/models/cfg/config.json:/usr/src/aidersplatform/django_api/logic/algorithms/object_detection/src/models/cfg/config.json #Development
+            - /tmp/.X11-unix:/tmp/.X11-unix:rw #Production
+            - ./aidersplatform/django_api/aiders/media:/usr/src/aidersplatform/django_api/aiders/media:rw #Production
+        device_cgroup_rules:
+            - 'c 188:* rmw'
+        network_mode: 'host'
+        env_file:
+            - ./.env
+
+        logging:
+            driver: 'json-file'
+            options:
+                max-size: '15m'
+                max-file: '5'
+        deploy:
+            resources:
+                limits:
+                    memory: 2000M
+                reservations:
+                    memory: 20M
+        depends_on:
+            - db
+
+    db:
+        container_name: db
+        image: mysql:8.0
+        restart: unless-stopped
+        environment:
+            MYSQL_USER: test_user
+            MYSQL_PASSWORD: test_password
+            MYSQL_ROOT_PASSWORD: test_password
+            MYSQL_DATABASE: testdb
+        network_mode: 'host'
+        volumes:
+            - mysql-data:/var/lib/mysql
+            - ./init:/docker-entrypoint-initdb.d
+    odm:
+        container_name: odm
+        image: opendronemap/nodeodm
+        ports:
+            - '4000:3000'
+
+    nginx:
+        image: georgesofro/kios:nginx_25Aug
+        container_name: nginx
+        network_mode: 'host'
+
+    geoserver:
+        image: overv/openstreetmap-tile-server:2.2.0
+        container_name: geoserver
+        command:
+            - run
+        ports:
+            - '8081:80'
+        environment:
+            ALLOW_CORS: enabled
+        volumes:
+            - './osm-data:/data/database/'
+            - 'osm-tiles:/data/tiles/'
+
+volumes:
+    mysql-data:
+        driver: local
+    osm-tiles:

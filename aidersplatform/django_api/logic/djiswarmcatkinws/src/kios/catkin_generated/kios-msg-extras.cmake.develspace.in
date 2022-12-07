@@ -1,0 +1,2 @@
+set(kios_MESSAGE_FILES "/home/aanast01/catkin_ws/src/kios/msg/DroneState.msg;/home/aanast01/catkin_ws/src/kios/msg/DroneInput.msg;/home/aanast01/catkin_ws/src/kios/msg/BasicCommandDJI.msg;/home/aanast01/catkin_ws/src/kios/msg/FlightControlData.msg;/home/aanast01/catkin_ws/src/kios/msg/InputDJI.msg;/home/aanast01/catkin_ws/src/kios/msg/GpsInput.msg;/home/aanast01/catkin_ws/src/kios/msg/MissionDji.msg")
+set(kios_SERVICE_FILES "")

@@ -1,0 +1,44 @@
+node_modules/*
+logs/
+/medium_point_cloud_SMALL.obj
+/sample2.obj
+/test.html
+/medium_point_cloud_SMALL.gltf
+/medium_point_cloud.obj
+/point_cloud_medium_acc.laz
+/MESH OBJ.mtl
+/MESH OBJ.obj
+/MESH OBJ.tif
+/a.dae
+/a.jpg
+/all_photos.txt
+/b0.dae
+/b0.jpg
+/MESH_GLB.glb
+/Tile.xml
+/Tile/
+/python_LocUpdate_Script/test.py
+/python_Drone_API/test.py
+/photo_processing_script/input_images/all_bands/
+/photo_processing_script/input_images/all_input_images/
+/Starter_Script/buildmap/
+/dist/video-js-7.11.4/
+/venv/
+/venvm/
+/Starter_Script/mult_photo_files/spectral_photos.csv
+/Starter_Script/mult_photo_files/stacked.tif
+/Starter_Script/mult_photo_files/stacked.vrt
+/Starter_Script/mult_photo_files/input_images/
+/Starter_Script/mult_photo_files/output_images/
+/Starter_Script/mult_photo_files/input_images/
+/photo_processing_script/test.py
+/Starter_Script/mult_photo_files/test_images_old/
+/Starter_Script/mult_photo_files/test_images_new/
+/python_LocUpdate_Script/test.jpg
+/Starter_Script/multispectral_photo_files/test_images_old/
+/Starter_Script/multispectral_photo_files/output_images/
+/Starter_Script/ms_buildmap/
+/djiswarmcatkinws/
+/wheelhouse/
+models/ayia_napa
+models/ucy_campus

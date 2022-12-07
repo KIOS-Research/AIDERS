@@ -1,0 +1,23 @@
+body {
+    background-color: rgb(194, 232, 255);
+}
+.form_box {
+    background-color: white;
+    border-radius: 25px;
+    border: 2px solid rgb(64, 196, 248);
+    padding: 0px;
+    width: 1000px;
+}
+
+.fade-item {
+    animation: fadeIn 3s;
+}
+
+@keyframes fadeIn {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}

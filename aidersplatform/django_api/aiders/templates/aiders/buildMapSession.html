@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% load static %}
+{% load tags %}
+
+{% block title %}
+Aiders - Build Map Session
+{% endblock %}
+
+
+{% block head_block %}
+<link href="{% static 'libs/jquery.dataTables/http_cdn.datatables.net_1.10.2_css_jquery.dataTables.css' %}" rel="stylesheet">
+<script src="{% static 'libs/jquery.dataTables/http_cdn.datatables.net_1.10.2_js_jquery.dataTables.js' %}"></script>
+{% endblock %}
+
+{% block body_block %}
+<div class="justify-content-center ms-5 me-5 footer-margin header-margin">
+    <div class="row pt-5">
+        <h3 class="col float-start">{{operation_name}} Build Map Sessions</h3>
+        <div class="col">
+            <a class="btn btn-primary float-end mx-1 {% if not perms.aiders.edit_permissions %}disabled{% endif %}" href="{% url 'manage_permissions' %}">
+                <i class="far fa-plus-square "></i>
+                Edit Permissions
+            </a>
+        </div>
+    </div>
+    <div class="row mb-5">
+        <div class="col-sm" style="color: black">
+            <div><br/></div>
+            <table id="buildMapSessionTable" class="table table-striped">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Start Time</th>
+                    <th>End Time</th>
+                    <th>User</th>
+                    <th>Drone</th>
+                    <th>Images</th>
+                    <th style="width: 8%"> Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+
+                {% if MapSession_results %}
+
+                {% for algo in MapSession_results %}
+
+                <tr>
+
+                    <td class='align-middle'> {{algo.id}}</td>
+                    <td class='align-middle'> {{algo.start_time}}</td>
+                    <td class='align-middle'> {{algo.end_time}}</td>
+                    <td class='align-middle'> {{algo.user}}</td>
+                    <td class='align-middle'> {{algo.drone}}</td>
+                    <td class='align-middle'> {{algo.images}}</td>
+                    <td class='align-middle'>
+                        {% comment %} urls|lookup:forloop.counter0 {% endcomment %}
+                        <form class='m-1' style='float: left;'>
+                            <button onclick="copyToClipboard('{{urls|lookup:forloop.counter0}}')" title="Copy link to clipboard" type="submit" class="btn btn-primary" ><i style="color:white;" class="fa-solid fa-copy"></i></button>
+                        </form>
+                        <form class='m-1' style='float: left;'>
+                            <button onclick="parent.location='mailto:?subject={{operation_name}}%20Build%20Map%20Session%20&body={{urls|lookup:forloop.counter0}}'" title="Send email" type="submit" class="btn btn-primary" ><i style="color:white;" class="fa-solid fa-envelope"></i></button>
+                        </form>
+                    </td>
+                </tr>
+
+                {% endfor %}
+                {% endif %}
+            
+                </tbody>
+            </table>
+
+            <div style="text-align: center;  margin-top:0.5cm; margin-bottom:1cm;">
+
+            <!--			 <button type="button" class="btn btn-primary">Visualize</button>-->
+
+
+        </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+{% block script_block %}
+
+    $(document).ready(function(){
+        $('#buildMapSessionTable').dataTable();
+    });
+
+    function copyToClipboard(text) {
+        var input = document.body.appendChild(document.createElement("input"));
+        input.value = text;
+        input.focus();
+        input.select();
+        document.execCommand('copy');
+        input.parentNode.removeChild(input);
+      }
+{% endblock %}

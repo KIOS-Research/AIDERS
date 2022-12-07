@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% load static %}
+{% load guardian_tags %}
+
+{% block title %}
+Aiders - Flying Reports
+{% endblock %}
+
+
+{% block head_block %}
+
+    <link href="{% static 'libs/jquery.dataTables/http_cdn.datatables.net_1.10.2_css_jquery.dataTables.css' %}" rel="stylesheet">
+    <script src="{% static 'libs/jquery.dataTables/http_cdn.datatables.net_1.10.2_js_jquery.dataTables.js' %}"></script>
+    <script src="{% static 'aiders/javascripts/constants.js' %}"></script>
+    <script src="{% static 'aiders/javascripts/dutils.js' %}" type="text/javascript"></script>
+    <script src="{% static 'aiders/javascripts/dutils.conf.urls.example.js' %}" type="text/javascript"></script>
+{% endblock %}
+
+
+{% block body_block %}
+
+
+<div class="justify-content-center ms-5 me-5 footer-margin header-margin">
+    <div class="row pt-5">
+        <h3 class="col float-start">{{operation_name}} Flying Reports</h3>
+    </div>
+    <div class="row mb-5">
+        <div class="col-sm" style="color: black">
+            <div><br/></div>
+
+                <table id="flyingReportTable" class="table table-striped">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>User</th>
+                    <th>Latitude</th>
+                    <th>Longitude</th>
+                    <th>Altitude</th>
+                    <th>Radius</th>
+                    <th>Buffer Altitude</th>
+                    <th>Buffer Radius</th>
+                    <th>Start Date Time</th>
+                    <th>End Date Time</th>
+                    <th>PDF</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% if flying_reports %}
+                    {% for flying_report in flying_reports %}
+                        <tr>
+                            <td class='align-middle'> {{flying_report.id}}</td>
+                            <td class='align-middle'> {{flying_report.user}}</td>
+                            <td class='align-middle'> {{flying_report.latitude}}</td>
+                            <td class='align-middle'> {{flying_report.longitude}}</td>
+                            <td class='align-middle'> {{flying_report.altitude}}</td>
+                            <td class='align-middle'> {{flying_report.radius}}</td>
+                            <td class='align-middle'> {{flying_report.buffer_altitude}}</td>
+                            <td class='align-middle'> {{flying_report.buffer_radius}}</td>
+                            <td class='align-middle'> {{flying_report.start_date_time}}</td>
+                            <td class='align-middle'> {{flying_report.end_date_time}}</td>
+                            <td class='align-middle'>
+                                <button id="sidebarToggle" title="View Fligth Report" onclick="go_pdf(this)" class="btn btn-primary" value={{flying_report.file_path}}>
+                                        <i style="color:white;" class="fa-solid fa-highlighter"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<script src="{% static 'aiders/javascripts/flying_reports.js' %}"></script>
+
+{% endblock %}
+
+{% block script_block %}
+    $(document).ready(function(){
+        $('#flyingReportTable').dataTable();
+    });
+{% endblock %}
+

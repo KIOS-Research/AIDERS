@@ -1,0 +1,2 @@
+float32 windDirection
+float32 windSpeed

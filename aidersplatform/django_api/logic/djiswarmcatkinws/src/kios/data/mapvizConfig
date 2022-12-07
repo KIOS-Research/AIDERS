@@ -1,0 +1,52 @@
+capture_directory: ~
+fixed_frame: map
+target_frame: map
+fix_orientation: false
+rotate_90: false
+enable_antialiasing: true
+show_displays: true
+show_status_bar: true
+show_capture_tools: true
+window_width: 1301
+window_height: 744
+view_scale: 0.2761842
+offset_x: -197.339
+offset_y: 41.22094
+use_latest_transforms: true
+background: "#a0a0a4"
+displays:
+  - type: mapviz_plugins/tile_map
+    name: new display
+    config:
+      visible: true
+      collapsed: true
+      custom_sources:
+        - base_url: http://localhost:8080/wmts/gm_layer/gm_grid/{level}/{x}/{y}.png
+          max_zoom: 30
+          name: Google19
+          type: wmts
+      bing_api_key: ""
+      source: Google19
+  - type: mapviz_plugins/gps
+    name: new display
+    config:
+      visible: true
+      collapsed: true
+      topic: /drone_DJI_1/gps
+      color: "#ff0000"
+      draw_style: points
+      position_tolerance: 0
+      buffer_size: 7
+      show_laps: false
+      static_arrow_sizes: false
+      arrow_size: 25
+  - type: mapviz_plugins/navsat
+    name: new display
+    config:
+      visible: true
+      collapsed: true
+      topic: /drone_DJI_1/MissionPath
+      color: "#ffff00"
+      draw_style: points
+      position_tolerance: 0
+      buffer_size: 100

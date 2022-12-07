@@ -1,0 +1,181 @@
+m1
+{
+    line-height: 2;
+    padding: .15rem .55rem;
+    font-size: 13px;
+    color: white;
+}
+.bldmp
+{
+
+}
+.msn
+{
+
+}
+
+.join-operation
+{
+
+}
+.div-list-item
+{
+    line-height: 2;
+    padding: .15rem .55rem;
+    font-size: 13px;
+    color: white;
+    background: inherit;
+}
+m2
+{
+    float: right;
+    margin-right: 10px
+}
+
+m4
+{
+    line-height: 2;
+    padding: .15rem .55rem;
+    font-size: 14px;
+    color: white;
+    background-color: #6c757d;
+}
+.custom-control-label:before
+{
+    background-color: #6c757d;
+}
+
+.custom-checkbox .custom-control-input:checked ~ .custom-control-label::before
+{
+    background-color: #6c757d;
+}
+
+
+.panel-btn
+{
+    line-height: 1;
+    padding: .15rem .50rem;
+    font-size: 9px;
+}
+
+.btn .btn-success
+{
+    line-height: 1;
+    padding: .15rem .50rem;
+    font-size: 9px;
+}
+
+.btn .btn-primary
+{
+    line-height: 1;
+    padding: .15rem .50rem;
+    font-size: 9px;
+}
+
+
+.btn .btn-light
+{
+    line-height: 1;
+    padding: .15rem .50rem;
+    font-size: 9px;
+}
+.toggle.btn
+{
+    line-height: 1;
+    padding: .15rem .50rem;
+    font-size: 9px;
+}
+.btn2
+{
+    line-height: 1;
+    padding: .15rem .50rem;
+    font-size: 6px;
+}
+
+.toggle-off
+{
+    left: 40%;
+}
+
+.toggle.btn
+{
+    min-height: 1.3rem;
+    min-width: 2.5rem;
+    /*padding-right: 1.5rem;*/
+    /*margin-left: 30px;*/
+    /*margin-left: 30px;*/
+    margin-right: 30px;
+    /*display: inline-block;*/
+}
+
+input
+{
+    margin-right: 40px;
+    margin-top: 10px;
+}
+
+
+
+/*input[type=checkbox] {*/
+/*    vertical-align: middle;*/
+/*    float: right;*/
+/*}*/
+/*label {*/
+/*    display: block;*/
+/*    overflow: hidden;*/
+/*    width: 120px;*/
+/*}*/
+/*label {*/
+/*    display: list-item;*/
+/*    !*display: inline-block;*!*/
+/*    !*flex-direction: row;*!*/
+/*    !*justify-content: flex-end;*!*/
+/*    !*text-align: right;*!*/
+/*    !*width: 400px;*!*/
+/*    !*line-height: 26px;*!*/
+/*    !*margin-bottom: 10px;*!*/
+/*}*/
+
+/*input {*/
+/*    height: 20px;*/
+/*    flex: 0 0 200px;*/
+/*    margin-left: 10px;*/
+/*}*/
+/*input*/
+/*{*/
+/*    width: 20px;*/
+/*    background-color: blue;*/
+
+/*    position: relative;*/
+/*    left: 200px;*/
+
+/*    vertical;*/
+/*}*/
+
+
+
+.toggle-handle
+{
+    border-width: 0 0px;
+
+}
+
+.btn-primary {
+    color: #fff;
+    background-color: #28a745;
+    border-color: #28a745;
+}
+
+.btn-primary:hover {
+    color: #fff;
+    background-color: #28a745;
+    border-color: #28a745;
+
+}
+
+.btn-form-sbmt{
+    color: #fff;
+    background-color: #007bff;
+    border-color: #007bff;
+    margin-top: 10px;
+}
