@@ -8,9 +8,8 @@ services:
         init: true # To be able to kill docker from inside. Reference: https://stackoverflow.com/a/31539425
         volumes:
             - /dev/:/dev/ #So docker can access USB devices (i.e Weather station etc.) #Production
-            - ./aidersplatform/:/usr/src/aidersplatform/:rw #Development
-            - /usr/src/aidersplatform/django_api/logic/djiswarmcatkinws/ #This is to exclude this folder from being mapped into the docker. Reference https://stackoverflow.com/questions/29181032/add-a-volume-to-docker-but-exclude-a-sub-folder #Development
-            - ./aidersplatform/django_api/logic/algorithms/object_detection/src/models/cfg/config.json:/usr/src/aidersplatform/django_api/logic/algorithms/object_detection/src/models/cfg/config.json #Development
+            #- ./aidersplatform/:/usr/src/aidersplatform/:rw #Development
+            #- /usr/src/aidersplatform/django_api/logic/djiswarmcatkinws/ #This is to exclude this folder from being mapped into the docker. Reference https://stackoverflow.com/questions/29181032/add-a-volume-to-docker-but-exclude-a-sub-folder #Development
             - /tmp/.X11-unix:/tmp/.X11-unix:rw #Production
             - ./aidersplatform/django_api/aiders/media:/usr/src/aidersplatform/django_api/aiders/media:rw #Production
         device_cgroup_rules:
