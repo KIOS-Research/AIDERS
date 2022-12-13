@@ -39,7 +39,7 @@ Since AIDERS runs in a containerized Linux environment, you'd need to have Docke
 
 Instructions for installing and running the Docker image for AIDERS, can be found in [AIDERS official site](https://www.kios.ucy.ac.cy/aiders/aiders-ai-toolkit/).
 
-To develop and build your own version, go to `docker-compose.yml` file, and uncomment the volumes that specify “#development” at the end.
+To develop and build your own version, go to `docker-compose.yml` file, and uncomment the volumes that specify the `#development` at the end.
 
 &uparrow; [Back to top](#table-of-contents)
 
