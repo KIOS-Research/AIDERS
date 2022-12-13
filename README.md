@@ -1,5 +1,6 @@
 
 
+
 <a href="http://www.kios.ucy.ac.cy"><img src="https://www.kios.ucy.ac.cy/wp-content/uploads/2021/07/Logotype-KIOS.svg" width="200" height="100"/><a>
 
 
@@ -18,8 +19,8 @@ The AIDERS AI toolkit offers various tools for collecting and analyzing emergenc
 - [Contributors](#contributors)
 - [Contributing](#contributing)
 - [Data Flow](#data-flow)
-- [Disclaimer](#Disclaimer)
-- [Features](#Features)
+- [Disclaimer](#disclaimer)
+- [Demo Video](#demo-video)
   
 ## How to cite 
 
@@ -92,3 +93,4 @@ This is an open source software, and is provided to you "as is" without any warr
 
 Click [here]( https://www.kios.ucy.ac.cy/aiders/d6-9-video-clip-on-trials-of-the-ai-toolkit-in-rpas-operation-for-emergency-response/) to view a demonstration video that shows most of AIDERS functionalities
 
+&uparrow; [Back to top](#table-of-contents)
