@@ -7,7 +7,7 @@
 # AIDERS Toolkit
 
 
-The AIDERS AI toolkit offers various tools for collecting and analyzing emergency response data from UAV sensors. This enables incident commanders to extract knowledge about the field’s operational conditions and assist them in designing evidence-based response strategies. The AI toolkit is delivered in a containerized environment (Docker), along with an android application that is responsible for communicating with the UAV.
+The AIDERS toolkit offers various tools for collecting and analyzing emergency response data from UAV sensors. This enables incident commanders to extract knowledge about the field’s operational conditions and assist them in designing evidence-based response strategies. The toolkit is delivered in a containerized environment (Docker), along with an android application that is responsible for communicating with the UAV.
 
 ## Table of Contents
 
