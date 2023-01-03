@@ -66,7 +66,7 @@ AIDERS was developed by:
 
 and   with the help of the following contributors:
 * [Rafael Makrigiorgis](https://cy.linkedin.com/in/rafael-makrigiorgis) - Research and Developer Engineer at [KIOS](http://www.kios.ucy.ac.cy/)
-* [Andreas Anastasiou](https://cy.linkedin.com/in/rafael-makrigiorgis) - PhD Student at [KIOS](http://www.kios.ucy.ac.cy/)
+* [Andreas Anastasiou](https://cy.linkedin.com/in/andreas-anastasiou) - PhD Student at [KIOS](http://www.kios.ucy.ac.cy/)
 
 We would also like to thank the following external resources and libraries, which were used in the development of this software:
 * [MapLibre GL JS](https://github.com/maplibre/maplibre-gl-js)
