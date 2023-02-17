@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:showIn="navigation_view">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/stream_camera"
+            android:icon="@drawable/camera"
+            android:title="Zoom"
+            android:visible="true"/>
+
+        <item
+            android:id="@+id/toggleRtk"
+            android:icon="@drawable/m210rtk"
+            android:title="Enable RTK"
+            android:visible="false"/>
+
+        <item
+            android:id="@+id/calibrate"
+            android:icon="@drawable/calibration"
+            android:title="Start Calibration"/>
+
+        <item
+            android:id="@+id/nav_detect"
+            android:icon="@drawable/detect"
+            android:title="Start Detection"/>
+
+        <item
+            android:id="@+id/takeMapPic"
+            android:icon="@drawable/camera"
+            android:title="Save Map Photos" />
+
+        <item
+            android:id="@+id/mapPicServer"
+            android:icon="@drawable/server"
+            android:title="Mapping Server IP" />
+
+        <item
+            android:id="@+id/nav_stop"
+            android:icon="@drawable/stop"
+            android:title="Stop ROS"/>
+        <item
+            android:id="@+id/virtualSticks"
+            android:icon="@drawable/indoorpointing_canpass"
+            android:title="Enable Virtual Sticks"/>
+        <item
+            android:id="@+id/download"
+            android:icon="@drawable/speed_direction_down"
+            android:title="Download photos"/>
+
+        <item
+            android:id="@+id/nav_start_lidar"
+            android:icon="@drawable/record_btn_start"
+            android:title="Start Point Cloud"/>
+
+        <item
+            android:id="@+id/nav_start_range_finder"
+            android:icon="@drawable/record_btn_start"
+            android:title="Start Range Finder"/>
+
+        <item
+            android:id="@+id/nav_camera_source"
+            android:icon="@drawable/camera"
+            android:title="Change Camera Source"/>
+
+
+    </group>
+
+    <item android:title="Live Streaming">
+        <menu>
+            <item
+                android:id="@+id/nav_start_stream"
+                android:icon="@drawable/stream"
+                android:title="Stop Streaming" />
+
+            <item
+                android:id="@+id/nav_change_stream"
+                android:icon="@drawable/camera_flip"
+                android:title="Change Streaming Source"/>
+
+            <item
+                android:id="@+id/nav_mute_audio"
+                android:icon="@drawable/mic_mute"
+                android:title="Unmute Audio"/>
+        </menu>
+    </item>
+
+    <item android:title="Settings">
+        <menu>
+            <item
+                android:id="@+id/showMsgs"
+                android:icon="@drawable/cmd"
+                android:title="Hide Received Commands"/>
+            <item
+                android:id="@+id/showTelemetry"
+                android:icon="@drawable/telemetry"
+                android:title="Hide Telemetry"/>
+            <item
+                android:id="@+id/showDiagnostics"
+                android:icon="@drawable/diagnostics"
+                android:title="Show Diagnostics"/>
+            <item
+                android:id="@+id/tipsReset"
+                android:icon="@drawable/tips"
+                android:title="Reset Tips"/>
+            <item
+                android:id="@+id/btn_simulator"
+                android:icon="@drawable/sim"
+                android:title="Start Simulator"/>
+        </menu>
+
+    </item>
+
+    <item android:title="About">
+        <menu>
+            <!--<item-->
+            <!--android:id="@+id/aboutSwifters"-->
+            <!--android:icon="@drawable/ic_info_black_24dp"-->
+            <!--android:title="SWIFTERS" />-->
+            <item
+                android:id="@+id/about"
+                android:icon="@drawable/kios_logo_transparent"
+                android:title="KOIOS" />
+
+        </menu>
+    </item>
+
+</menu>

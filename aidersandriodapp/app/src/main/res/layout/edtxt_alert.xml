@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/dialog_rl"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="10dp"
+    tools:context="com.kios.rosDJI.ui.ConnectDroneActivity">
+
+
+    <LinearLayout
+        android:id="@+id/dialog_linear_layout1"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/dialog_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Drone's Current Name:"
+            android:padding="5dp"
+            android:textSize="15dp"
+            />
+
+        <TextView
+            android:id="@+id/dialog_drone_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="tesing"
+            android:textSize="15dp"
+            />
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:id="@+id/dialog_linear_layout"
+        android:orientation="horizontal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/dialog_linear_layout1">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Drone's New Name:"
+            android:padding="5dp"
+            android:textSize="15dp"
+            />
+
+        <EditText
+            android:id="@+id/et_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Input new name here"
+            android:textSize="15dp"
+            android:layout_below="@id/dialog_title"
+            android:digits="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_"
+            />
+
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/dialog_text_hint"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Drone's new name can only contain upper and lower case latin characters, numbers and underscore."
+        android:padding="5dp"
+        android:textSize="15dp"
+        android:textColor="#a30000"
+        android:layout_below="@id/dialog_linear_layout"
+        />
+
+    <Button
+        android:id="@+id/dialog_positive_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Save"
+        android:layout_alignParentRight="true"
+        android:layout_below="@id/dialog_text_hint"
+        />
+    <Button
+        android:id="@+id/dialog_negative_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Cancel"
+        android:layout_toLeftOf="@id/dialog_positive_btn"
+        android:layout_marginRight="3dp"
+        android:layout_alignBaseline="@id/dialog_positive_btn"
+        />
+</RelativeLayout>

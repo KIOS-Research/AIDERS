@@ -1,0 +1,451 @@
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/activity_connect_drone"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:weightSum="11"
+    tools:layout_editor_absoluteX="0dp"
+    tools:layout_editor_absoluteY="16dp"
+    android:background="@color/colorGrey"
+    tools:context="com.kios.rosDJI.ui.ConnectDroneActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="25dp"
+        android:orientation="horizontal"
+        android:gravity="left">
+
+        <dji.ux.widget.PreFlightStatusWidget
+            android:id="@+id/preFlightWidget"
+            android:layout_width="200dp"
+            android:layout_height="25dp"/>
+
+        <dji.ux.widget.FlightModeWidget
+            android:layout_width="110dp"
+            android:layout_height="23dp"
+            android:layout_marginTop="3dp"/>
+
+        <TextView
+            android:id="@+id/liveTxt"
+            android:layout_width="wrap_content"
+            android:layout_height="21dp"
+            android:textColor="@color/warningRed"
+            android:textSize="18dp"
+            android:textStyle="bold"
+            android:text="◉Live"
+            android:paddingEnd="10dp"
+            android:gravity="center"
+            android:layout_gravity="center_horizontal"
+            android:visibility="invisible"/>
+
+        <dji.ux.widget.GPSSignalWidget
+            android:layout_width="50dp"
+            android:layout_height="25dp"/>
+
+        <dji.ux.widget.VisionWidget
+            android:layout_width="30dp"
+            android:layout_height="25dp"/>
+
+        <dji.ux.widget.VideoSignalWidget
+            android:layout_width="50dp"
+            android:layout_height="25dp"/>
+
+        <dji.ux.widget.RemoteControlSignalWidget
+            android:layout_width="50dp"
+            android:layout_height="25dp"/>
+
+        <dji.ux.widget.WiFiSignalWidget
+            android:layout_width="30dp"
+            android:layout_height="25dp"/>
+
+        <dji.ux.widget.BatteryWidget
+            android:layout_width="90dp"
+            android:layout_height="25dp"
+            android:layout_marginTop="5dp"/>
+
+    </LinearLayout>
+
+    <dji.ux.widget.RemainingFlightTimeWidget
+        android:id="@+id/remainingFlightWidget"
+        android:layout_width="match_parent"
+        android:layout_height="20dp"
+        android:visibility="visible"
+        android:elevation="20dp"
+        android:layout_marginTop="-9dp"
+        />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="fill_parent"
+        android:layout_weight="9.6"
+        android:orientation="vertical"
+        android:layout_marginTop="-9dp"
+        android:weightSum="7">
+
+        <LinearLayout
+
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="horizontal">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="fill_parent"
+                android:layout_gravity="center"
+                android:layout_marginTop="2dp"
+                android:layout_weight="2.3"
+                android:paddingEnd="8dp">
+
+                <EditText
+                    android:id="@+id/msg_det"
+                    android:layout_width="150dp"
+                    android:layout_height="match_parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    android:background="@drawable/gradient_right"
+                    android:elevation="2dp"
+                    android:ems="10"
+                    android:enabled="false"
+                    android:inputType="text|textMultiLine"
+                    android:text="@string/recieved_nmessages_nshow_nhere"
+                    android:textColor="@color/telemetryText"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:visibility="visible" />
+
+                <com.tensorFlow.OverlayView
+                    android:id="@+id/tracking_overlay"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_alignParentStart="true"
+                    android:layout_alignParentTop="true"
+                    android:layout_gravity="center"
+                    android:layout_marginTop="16dp"
+                    android:visibility="gone"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"/>
+
+                <com.kios.rosDJI.Helpers.VideoFeedViewPrimary
+                    android:id="@+id/livestream_video_feed"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_centerInParent="true"
+                    android:layout_gravity="center"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="@+id/msg_det"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <dji.ux.widget.RadarWidget
+                    android:id="@+id/radarWidget"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:visibility="invisible"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"/>
+
+                <TextureView
+                    android:id="@+id/livestream_preview_tv"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_alignParentStart="true"
+                    android:layout_alignParentTop="true"
+                    android:layout_gravity="center"
+                    android:visibility="gone" />
+
+                <com.kios.rosDJI.Helpers.VideoFeedView
+                    android:id="@+id/livestream_fpv_feed"
+                    android:layout_width="150dp"
+                    android:layout_height="100dp"
+                    app:layout_constraintRight_toRightOf="parent"
+                    app:layout_constraintBottom_toBottomOf="@id/dashboardWidget"
+                    android:layout_marginBottom="40dp"
+                    android:visibility="gone" />
+
+                <dji.ux.widget.dashboard.DashboardWidget
+                    android:id="@+id/dashboardWidget"
+                    android:layout_width="wrap_content"
+                    android:layout_height="120dp"
+                    android:elevation="4dp"
+                    app:layout_constraintBottom_toBottomOf="@+id/livestream_video_feed"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent" />
+
+                <dji.ux.workflow.CompassCalibratingWorkFlow
+                    android:id="@+id/calibrationWorkflow"
+                    android:visibility="gone"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    app:layout_constraintRight_toRightOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"/>
+
+                <dji.ux.panel.CameraSettingAdvancedPanel
+                    android:id="@+id/cameraSettingAdvancedPanel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    android:elevation="15dp"
+                    android:visibility="invisible"/>
+
+                <dji.ux.panel.CameraSettingExposurePanel
+                    android:id="@+id/cameraSettingExposurePanel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    android:elevation="15dp"
+                    android:visibility="invisible" />
+
+                <ScrollView
+                    android:id="@+id/telemetryScrollView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/gradient_left"
+                    android:elevation="2dp"
+                    android:visibility="visible"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="@+id/livestream_video_feed">
+
+                    <TextView
+                        android:id="@+id/sub_info"
+                        android:layout_width="160dp"
+                        android:layout_height="wrap_content"
+                        android:ems="10"
+                        android:gravity="end"
+                        android:paddingEnd="5dp"
+                        android:text="Telemetry\nShows\nHere"
+                        android:textColor="@color/telemetryText"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+                </ScrollView>
+
+                <dji.ux.widget.SpotlightWidget
+                    android:elevation="3dp"
+                    android:layout_alignParentTop="true"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    app:layout_constraintLeft_toRightOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"/>
+
+                <dji.ux.panel.SpotlightPanel
+                    android:visibility="invisible"
+                    android:elevation="4dp"
+                    android:layout_marginStart="20dp"
+                    android:layout_marginEnd="20dp"
+                    android:layout_marginTop="20dp"
+                    android:layout_marginBottom="20dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintLeft_toRightOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"/>
+
+                <dji.ux.panel.PreFlightCheckListPanel
+                    android:id="@+id/preFlightPanel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:alpha="0.7"
+                    android:visibility="gone"
+                    android:elevation="15dp"
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    app:layout_constraintRight_toRightOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    android:layout_marginTop="3dp"
+                    android:layout_marginBottom="3dp"
+                    android:layout_marginEnd="10dp"/>
+
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <LinearLayout
+                android:id="@+id/zoomLayout"
+                android:layout_width="50dp"
+                android:layout_height="fill_parent"
+                android:orientation="vertical"
+                android:paddingEnd="3dp"
+                android:visibility="visible">
+
+
+                <Button
+                    android:id="@+id/zoomIn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="65dp"
+                    android:layout_gravity="center"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginBottom="3dp"
+                    android:background="@drawable/round_btn_disable"
+                    android:text="+"
+                    android:gravity="center"
+                    android:enabled="false"
+                    android:textSize="25sp" />
+
+
+                <dji.ux.widget.controls.CameraControlsWidget
+                    android:layout_width="match_parent"
+                    android:layout_height="fill_parent"
+                    android:layout_weight="1"/>
+                <!--                        <Switch-->
+                <!--                            android:id="@+id/cameraSwitch"-->
+                <!--                            android:layout_width="wrap_content"-->
+                <!--                            android:layout_height="fill_parent"-->
+                <!--                            android:visibility="visible"-->
+                <!--                            android:layout_gravity="center"-->
+                <!--                            android:layout_weight="2"-->
+                <!--                            android:checked="true" />-->
+
+                <!--                        <Button-->
+                <!--                            android:id="@+id/recordBtn"-->
+                <!--                            android:layout_width="45dp"-->
+                <!--                            android:layout_height="fill_parent"-->
+                <!--                            android:layout_gravity="center"-->
+                <!--                            android:visibility="visible"-->
+                <!--                            android:layout_weight="1.55"-->
+                <!--                            android:background="@drawable/camera"-->
+                <!--                            android:scaleType="fitCenter" />-->
+
+
+                <Button
+                    android:id="@+id/zoomOut"
+                    android:layout_width="wrap_content"
+                    android:layout_height="65dp"
+                    android:layout_gravity="center"
+                    android:gravity="center"
+                    android:layout_marginTop="3dp"
+                    android:layout_marginBottom="5dp"
+                    android:background="@drawable/round_btn_disable"
+                    android:text="-"
+                    android:enabled="false"
+                    android:textSize="28sp" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="fill_parent"
+                android:layout_weight="5.5"
+                android:orientation="vertical"
+                android:visibility="gone"
+                android:weightSum="4">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="fill_parent"
+                    android:layout_weight="1"
+                    android:orientation="horizontal"
+                    android:paddingBottom="3dp"
+                    android:weightSum="10">
+
+                    <Button
+                        android:id="@+id/activity_main_screen_surface"
+                        android:layout_width="fill_parent"
+                        android:layout_height="fill_parent"
+                        android:layout_weight="4"
+                        android:background="@drawable/round_btn_disable"
+                        android:gravity="center"
+                        android:onClick="onClick"
+                        android:text="Start Steam" />
+
+                    <LinearLayout
+                        android:layout_width="fill_parent"
+                        android:layout_height="fill_parent"
+                        android:layout_weight="2"
+                        android:orientation="vertical"
+                        android:paddingStart="5dp"
+                        android:paddingEnd="5dp">
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:id="@+id/textView"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:gravity="center"
+                                android:text="Drone Id: "
+                                android:textColor="@color/dark_gray"
+                                android:textSize="18sp" />
+
+                            <TextView
+                                android:id="@+id/drone_id"
+                                android:layout_width="fill_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="N/A"
+                                android:textColor="@color/dark_gray"
+                                android:textSize="18sp" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:id="@+id/phoneIP"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:gravity="center"
+                                android:text="Phone IP: "
+                                android:textColor="@color/dark_gray"
+                                android:textSize="18sp" />
+
+                            <TextView
+                                android:id="@+id/phone_ip"
+                                android:layout_width="fill_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="N/A"
+                                android:textColor="@color/dark_gray"
+                                android:textSize="18sp" />
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                    <Button
+                        android:id="@+id/btn_service"
+                        android:layout_width="fill_parent"
+                        android:layout_height="fill_parent"
+                        android:layout_weight="4"
+                        android:background="@drawable/round_btn"
+                        android:enabled="false"
+                        android:onClick="onClick"
+                        android:text="Connect ROS" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/errorTxt"
+                    android:layout_width="match_parent"
+                    android:layout_height="fill_parent"
+                    android:layout_weight="3"
+                    android:paddingTop="-2dp"
+                    android:textColor="#ff0000" />
+
+            </LinearLayout>
+
+
+        </LinearLayout>
+    </LinearLayout>
+
+</LinearLayout>
+
+

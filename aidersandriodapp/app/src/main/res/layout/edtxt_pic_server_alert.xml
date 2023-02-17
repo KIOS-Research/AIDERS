@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/dialog_rl"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="10dp"
+    tools:context="com.kios.rosDJI.ui.ConnectDroneActivity"
+    android:orientation="vertical">
+
+    <TextView
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:text="Set the Picture Server IP and Port"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Server IP:     "/>
+
+        <EditText
+            android:id="@+id/et_pic_ip"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="192.168.10.10"
+            android:textSize="15sp" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Server Port: "/>
+
+        <EditText
+            android:id="@+id/et_pic_port"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="5001"
+            android:textSize="15sp" />
+
+    </LinearLayout>
+
+
+
+
+    <Button
+        android:id="@+id/save_pic_btn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Save IP" />
+
+</LinearLayout>

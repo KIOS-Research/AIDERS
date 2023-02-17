@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#C0C0C0"
+    tools:context="com.kios.rosDJI.ui.MainActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:paddingLeft="@dimen/activity_horizontal_margin"
+        android:paddingTop="@dimen/activity_vertical_margin"
+        android:paddingRight="@dimen/activity_horizontal_margin"
+        android:paddingBottom="@dimen/activity_vertical_margin">
+    <ImageView
+        android:id="@+id/kiosLogo"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="1dp"
+        android:longClickable="true"
+        android:src="@drawable/aiders"
+        android:contentDescription="@string/kios_logo" />
+
+    <ImageView
+        android:id="@+id/tv_ros"
+        android:layout_width="100sp"
+        android:layout_height="22sp"
+        android:layout_gravity="center_horizontal"
+        android:fontFamily="@font/allerta_stencil"
+        android:src="@drawable/aiders_text"
+
+        android:onClick="onClick"/>
+
+
+    <Spinner
+        android:id="@+id/masterIPSpinner"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="5dp"
+        android:background="@android:drawable/btn_dropdown"
+        android:spinnerMode="dropdown" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:weightSum="3">
+        <EditText
+            android:layout_weight="1"
+            android:id="@+id/et_ip"
+            android:layout_width="fill_parent"
+            android:layout_height="55dp"
+            android:autofillHints="192.168.10.4"
+            android:hint="@string/ros_master_ip"
+            android:inputType="textEmailAddress"
+            android:text="@string/masterIPs"
+            android:textColor="#000000"
+            android:windowSoftInputMode="stateAlwaysHidden"
+            tools:targetApi="o" />
+
+        <EditText
+            android:id="@+id/et_port"
+            android:layout_width="fill_parent"
+            android:layout_height="55dp"
+            android:layout_weight="2"
+            android:hint="@string/port_default_9090"
+            android:imeOptions="actionDone"
+            android:inputType="number"
+            android:text="@string/_9090"
+            android:textColor="#000000" />
+    </LinearLayout>
+
+
+    <TextView
+        android:id="@+id/textwarning"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        android:text="@string/please_ensure_the_rosbridge_server_is_started"
+        android:textColor="#a30000"
+        android:textAlignment="center"
+        android:textSize="14sp" />
+
+
+
+    <Button
+        android:id="@+id/change_drones_name_btn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:background="@drawable/round_btn"
+        android:enabled="false"
+        android:text="@string/change_drone_s_name"
+        android:textColor="@color/colorWhite"
+        android:visibility="visible"
+        android:layout_marginEnd="2dp"
+        android:onClick="onClick"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal"
+        android:weightSum="2">
+        <Button
+            android:layout_weight="1"
+            android:id="@+id/ros_connect"
+            android:layout_width="fill_parent"
+            android:layout_height="75dp"
+            android:layout_marginTop="5dp"
+            android:background="@drawable/round_btn"
+            android:enabled="false"
+            android:text="@string/ros"
+            android:textColor="@color/colorWhite"
+            android:visibility="visible"
+            android:layout_marginEnd="2dp"
+            android:onClick="onClick"/>
+
+        <Button
+            android:layout_weight="1"
+            android:layout_marginStart="2dp"
+            android:id="@+id/btn_startActivity"
+            android:layout_width="fill_parent"
+            android:layout_height="75dp"
+            android:layout_marginTop="5dp"
+            android:background="@drawable/round_btn"
+            android:enabled="false"
+            android:text="@string/start"
+            android:textColor="@color/colorWhite"
+            android:visibility="visible"
+            android:onClick="onClick"/>
+
+
+    </LinearLayout>
+
+        <Button
+            android:layout_weight="1"
+            android:layout_marginStart="2dp"
+            android:id="@+id/getPhoto"
+            android:layout_width="fill_parent"
+            android:layout_height="75dp"
+            android:layout_marginTop="5dp"
+            android:background="@drawable/round_btn"
+            android:enabled="true"
+            android:text="Download photos"
+            android:textColor="@color/colorWhite"
+            android:visibility="visible"
+            android:onClick="onClick"/>
+    <!--<Space-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="15dp" />-->
+
+    <!--<Button-->
+    <!--android:id="@+id/btn_connect"-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="45dp"-->
+    <!--android:layout_marginTop="8dp"-->
+    <!--android:background="@drawable/round_btn"-->
+    <!--android:enabled="false"-->
+    <!--android:text="Check ROS"-->
+    <!--android:textColor="#ffffff"-->
+    <!--android:visibility="visible" />-->
+
+    </LinearLayout>
+
+</ScrollView>
