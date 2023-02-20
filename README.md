@@ -63,6 +63,7 @@ AIDERS was developed by:
 * [Panayiotis Kolios](https://www.kios.ucy.ac.cy/pkolios/) - Research Assistant Professor at [KIOS](http://www.kios.ucy.ac.cy/) and advisor of this project
 *  [Giorgos Sofroniou](https://cy.linkedin.com/in/george-sofroniou-b78b001a9) - Research and Developer Engineer at [KIOS](http://www.kios.ucy.ac.cy/)
 * [Alexis Piperides](https://cy.linkedin.com/in/alexis-piperides-aba303222) - Research and Developer Engineer at [KIOS](http://www.kios.ucy.ac.cy/)
+* [Amal Abed]() - Research and Developer Engineer at [KIOS](http://www.kios.ucy.ac.cy/)
 
 and   with the help of the following contributors:
 * [Rafael Makrigiorgis](https://cy.linkedin.com/in/rafael-makrigiorgis) - Research and Developer Engineer at [KIOS](http://www.kios.ucy.ac.cy/)
