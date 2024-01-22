@@ -1,0 +1,26 @@
+:root {
+    --footer-height: 60px;
+    --header-margin: 20px;
+}
+.header-margin {
+    margin-top: var(--header-margin);
+}
+.footer {
+    height: var(--footer-height);
+}
+
+.field-error {
+    font-size: 14px;
+    color: red;
+}
+
+
+/* .mavlink-form label {
+    width: 150px;
+    text-align: right;
+} */
+
+.helptext {
+    color: grey;
+    font-size: 13px;
+}

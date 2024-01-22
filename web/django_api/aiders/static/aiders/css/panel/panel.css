@@ -1,0 +1,201 @@
+#sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1040;
+    width: 300px;
+    height: 100%;
+    background-color: #ffffff;
+    opacity: 0.5;
+    display: none;
+
+}
+
+m1 {
+    line-height: 2;
+    padding-left: 10px;
+    font-size: 13px;
+    color: white;
+}
+.div-list-item {
+    line-height: 2;
+    padding: 0.15rem 0.55rem;
+    font-size: 13px;
+    color: white;
+    background: inherit;
+}
+m2 {
+    float: right;
+    margin-right: 10px;
+}
+
+.custom-control-label:before {
+    background-color: #6c757d;
+}
+
+.custom-checkbox .custom-control-input:checked ~ .custom-control-label::before {
+    background-color: #6c757d;
+}
+
+.panel-btn {
+    line-height: 1;
+    padding: 0.15rem 0.5rem;
+    font-size: 9px;
+}
+
+.panel-btn:focus {
+    font-size: 9px !important;
+}
+
+.btn .btn-success {
+    line-height: 1;
+    padding: 0.15rem 0.5rem;
+    font-size: 9px;
+}
+
+.btn .btn-primary {
+    line-height: 1;
+    padding: 0.15rem 0.5rem;
+    font-size: 10px;
+}
+
+.btn .btn-light {
+    line-height: 1;
+    padding: 0.15rem 0.5rem;
+    font-size: 10px;
+}
+.toggle.btn {
+    line-height: 1;
+    padding: 0.15rem 0.5rem;
+    font-size: 9px;
+}
+.btn2 {
+    line-height: 1;
+    padding: 0.15rem 0.5rem;
+    font-size: 6px;
+}
+
+.toggle-off {
+    /* left: 40%; */
+    padding-left: 0.5rem;
+}
+
+.toggle.btn {
+    min-height: 1.3rem;
+    min-width: 2.5rem;
+    /*padding-right: 1.5rem;*/
+    /*margin-left: 30px;*/
+    /*margin-left: 30px;*/
+    margin-right: 3px;
+    margin-left: 1px;
+    /*display: inline-block;*/
+}
+
+.object-detection-input {
+    margin-right: 40px;
+}
+
+
+/*input[type=checkbox] {*/
+/*    vertical-align: middle;*/
+/*    float: right;*/
+/*}*/
+/*label {*/
+/*    display: block;*/
+/*    overflow: hidden;*/
+/*    width: 120px;*/
+/*}*/
+/*label {*/
+/*    display: list-item;*/
+/*    !*display: inline-block;*!*/
+/*    !*flex-direction: row;*!*/
+/*    !*justify-content: flex-end;*!*/
+/*    !*text-align: right;*!*/
+/*    !*width: 400px;*!*/
+/*    !*line-height: 26px;*!*/
+/*    !*margin-bottom: 10px;*!*/
+/*}*/
+
+/*input {*/
+/*    height: 20px;*/
+/*    flex: 0 0 200px;*/
+/*    margin-left: 10px;*/
+/*}*/
+/*input*/
+/*{*/
+/*    width: 20px;*/
+/*    background-color: blue;*/
+
+/*    position: relative;*/
+/*    left: 200px;*/
+
+/*    vertical;*/
+/*}*/
+
+.tools-option-title {
+    width: 70%;
+}
+
+.toggle-handle {
+    border-width: 0 0px;
+}
+
+.btn-primary, .btn-primary:hover, .btn-success, .btn-success:hover, .btn-warning, .btn-warning:hover, .btn-danger, .btn-danger:hover, .btn:focus {
+    color: #fff;
+    text-transform: uppercase;
+    font-size: 10px;
+}
+
+.btn-primary:disabled, .btn-primary:disabled:hover {
+    background-color: #818181;
+    border-color: #5e5e5e;
+}
+
+.btn-primary, .btn-primary:focus, .btn-primary:checked {
+    background-color: #28a745;
+    border-color: #28a745;
+}
+
+.btn-warning {
+    background-color: #c36f02;
+    border-color: #c36f02;
+}
+
+.btn-primary:hover {
+    background-color: #23923d;
+    border-color: #23923d;
+}
+
+.btn-form-sbmt {
+    color: #fff;
+    background-color: #007bff;
+    border-color: #007bff;
+    margin-top: 10px;
+}
+
+.connected-clients {
+    font-size: 10px;
+    margin-left: 10px;
+    color: white;
+    background-color: #0a590a;
+    border-radius: 5px;
+    padding: 2px 5px 2px 5px;
+    font-weight: bold;
+    border: 1px solid;
+}
+
+.close-bar .connected-clients {
+    display: none;
+}
+
+
+.mavlink-wrapper {
+    /* margin: 0px -2px 4px -2px; */
+    text-align: left;
+}
+
+.mavlink-btn {
+    display: inline-block;
+    width: 32%;
+    margin: 2px;
+}

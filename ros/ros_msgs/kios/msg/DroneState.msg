@@ -1,0 +1,9 @@
+Header header
+geometry_msgs/Vector3 velocity
+float32 velocity_ts
+geometry_msgs/Quaternion quaternion
+float32 quaternion_ts
+float32 altitude
+float32 altitude_ts
+float32 battery
+string flying_state

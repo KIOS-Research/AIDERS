@@ -41,10 +41,14 @@ Since AIDERS runs in a containerized Linux environment, you'd need to have Docke
 &uparrow; [Back to top](#table-of-contents)
 
 ## How to install
+1. Open a terminal window and navigate to the root folder of the project 
+2. Make sure the installation script is executable using the command `sudo chmod +x ./install.sh`
+3. Execute the installation script using the command `./install.sh`
+4. Follow the on-screen instructions
 
-Instructions for installing and running the Docker image for AIDERS, can be found in [AIDERS official site](https://www.kios.ucy.ac.cy/aiders/aiders-ai-toolkit/).
 
-To develop and build your own version, go to `docker-compose.yml` file, and uncomment the volumes that specify the `#development` at the end.
+Further instructions can be found in [AIDERS official site](https://www.kios.ucy.ac.cy/aiders/aiders-ai-toolkit/).
+
 
 &uparrow; [Back to top](#table-of-contents)
 
@@ -63,6 +67,7 @@ AIDERS was developed by:
 * [Panayiotis Kolios](https://www.kios.ucy.ac.cy/pkolios/) - Research Assistant Professor at [KIOS](http://www.kios.ucy.ac.cy/) and advisor of this project
 *  [Giorgos Sofroniou](https://cy.linkedin.com/in/george-sofroniou-b78b001a9) - Research and Developer Engineer at [KIOS](http://www.kios.ucy.ac.cy/)
 * [Alexis Piperides](https://cy.linkedin.com/in/alexis-piperides-aba303222) - Research and Developer Engineer at [KIOS](http://www.kios.ucy.ac.cy/)
+* [Michalis Demetriou](https://github.com/mdemet) - Research and Developer Engineer at [KIOS](http://www.kios.ucy.ac.cy/)
 * [Amal Abed]() - Research and Developer Engineer at [KIOS](http://www.kios.ucy.ac.cy/)
 * [Christos Georgiades](https://github.com/kitos2) - Research and Developer Engineer at [KIOS](http://www.kios.ucy.ac.cy/)
 

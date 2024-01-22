@@ -1,0 +1,3 @@
+/home/aanast01/catkin_kios/src/cmake-modules/build/CMakeFiles/edit_cache.dir
+/home/aanast01/catkin_kios/src/cmake-modules/build/CMakeFiles/rebuild_cache.dir
+/home/aanast01/catkin_kios/src/cmake-modules/build/CMakeFiles/Onboard-SDK.dir

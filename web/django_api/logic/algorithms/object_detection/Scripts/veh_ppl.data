@@ -1,0 +1,5 @@
+classes = 5
+train   = /home/rmakri01/darknet04/ppl_vehs_512/train.txt
+valid   = /home/rmakri01/darknet04/ppl_vehs_512/test.txt
+names   = /home/rmakri01/darknet04/ppl_vehs_512/veh_ppl.names
+backup  = /home/rmakri01/darknet04/ppl_vehs_512/backup

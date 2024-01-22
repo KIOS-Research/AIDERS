@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Drone Video Player</title>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+        <style>
+            body {
+                background-color: green;
+            }
+            .footer {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                width: 100%;
+                padding-top: 10px;
+                padding-bottom: 10px;
+                background-color: rgba(245, 245, 245, 0.5); /* Set the background color with transparency */
+                backdrop-filter: blur(5px); /* Apply a blur effect to the background */
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .progress-bar-wrapper {
+                display: flex;
+                align-items: center;
+                flex-grow: 1;
+                width: 100%;
+            }
+
+            .progress-bar {
+                width: 100%;
+            }
+            .button-group {
+                display: flex;
+                justify-content: center;
+                margin-top: 10px;
+                margin-left: 25px;
+            }
+            .button-group button {
+                width: 25px;
+                margin: 0 5px;
+                background-color: transparent; /* Set the background color to transparent */
+                border: none;
+                cursor: pointer;
+                padding: 0;
+            }
+            .button-group button i {
+                color: #ccc; /* Set the icon color */
+            }
+            #rewind {
+                padding-left: 1px;
+            }
+            #fastForward {
+                padding-left: 1px;
+            }
+            #timer {
+                margin-top: 5px;
+                padding-right: 5px;
+                padding-left: 5px;
+            }
+            #max-timer {
+                margin-top: 5px;
+                padding-right: 5px;
+                padding-left: 5px;
+            }
+            .select-wrapper {
+                position: fixed;
+                bottom: 15px;
+                right: 10px;
+            }
+            .select-wrapper select {
+                background-color: transparent; /* Set the background color to transparent */
+                border: none;
+                cursor: pointer;
+                padding: 0;
+            }
+            .select-wrapper select option {
+                {% comment %} background-color: rgba(245, 245, 245, 0.5); /* Set the background color with transparency */ {% endcomment %}
+                color: #000; /* Set the text color */
+                padding: 5px;
+                background-color: rgba(245, 245, 245, 0.5); /* Set the background color with transparency */
+                backdrop-filter: blur(5px); /* Apply a blur effect to the background */
+                background-color: transparent;
+            }
+        </style>
+    </head>
+    <body>
+        <video id="drone-video" src="path/to/video.mp4"></video>
+        <footer class="footer">
+            <div class="progress-bar-wrapper">
+                <span id="timer">00:00</span>
+                <input id="progress-bar" class="progress-bar" type="range" min="0" max="100" value="0" step="0.01" />
+                <span id="max-timer">00:00</span>
+            </div>
+            <div class="button-group">
+                <button onclick="rewind()"><i class="fas fa-backward"></i></button>
+                <button id="main-controller" onclick="playPause()"><i class="fas fa-play"></i></button>
+                <button onclick="fastForward()"><i class="fas fa-forward"></i></button>
+                <button class="loop-button" onclick="toggleLoop()"><i class="fas fa-redo"></i></button>
+            </div>
+            <div class="select-wrapper">
+                <select onchange="changeSpeed(this.value)">
+                    <option value="0.5">0.5x Speed</option>
+                    <option selected value="1">1x Speed</option>
+                    <option value="1.5">1.5x Speed</option>
+                    <option value="2">2x Speed</option>
+                </select>
+            </div>
+        </footer>
+
+        <script>
+            const video = document.getElementById('drone-video');
+            const progressBar = document.getElementById('progress-bar');
+            const timer = document.getElementById('timer');
+            let isPlaying = false;
+            let isLooping = false;
+
+            video.addEventListener('loadedmetadata', function () {
+                progressBar.max = video.duration;
+                timer.textContent = formatTime(video.currentTime) + ' / ' + formatTime(video.duration);
+            });
+
+            video.addEventListener('timeupdate', function () {
+                progressBar.value = video.currentTime;
+                timer.textContent = formatTime(video.currentTime) + ' / ' + formatTime(video.duration);
+            });
+
+            function playPause() {
+                if (isPlaying) {
+                    video.pause();
+                    document.getElementById('main-controller').innerHTML = '<i class="fas fa-play"></i>';
+                } else {
+                    video.play();
+                    document.getElementById('main-controller').innerHTML = '<i class="fas fa-pause"></i>';
+                }
+                isPlaying = !isPlaying;
+            }
+
+            function rewind() {
+                video.currentTime -= 5;
+            }
+
+            function fastForward() {
+                video.currentTime += 5;
+            }
+
+            function toggleLoop() {
+                isLooping = !isLooping;
+                video.loop = isLooping;
+                const loopButton = document.querySelector('.button-group button:nth-child(4)');
+                loopButton.classList.toggle('active', isLooping);
+            }
+
+            function changeSpeed(speed) {
+                video.playbackRate = speed;
+            }
+
+            function formatTime(timeInSeconds) {
+                const minutes = Math.floor(timeInSeconds / 60);
+                const seconds = Math.floor(timeInSeconds % 60);
+                return minutes.toString().padStart(2, '0') + ':' + seconds.toString().padStart(2, '0');
+            }
+        </script>
+    </body>
+</html>

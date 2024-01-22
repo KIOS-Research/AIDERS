@@ -1,0 +1,327 @@
+{% extends "base.html" %} {% load i18n %} {% load static %} {% block title %} Aiders - New Operation {% endblock %} {% block head_block %} {{
+form.media }}
+<link href="{% static 'libs/font-awesome/css/all.css' %}" rel="stylesheet" />
+<script src="{% static 'libs/jquery/code.jquery.com_jquery-1.11.2.min.js' %}"></script>
+<script src="{% static 'libs/bootstrap/bootstrap_v5.js' %}"></script>
+<script src="{% static 'aiders/javascripts/drone/multi_select.js' %}"></script>
+<link rel="stylesheet" href="{% static 'aiders/css/form/operation_new.css' %}" />
+{% endblock %} {% block body_block %}
+<div class="justify-content-center ms-5 me-5 footer-margin header-margin">
+    <div class="row pt-4 pb-0">
+        <h3 class="col float-start">Edit Operation {{operation_name}}</h3>
+        <div class="row">
+            <h3 class="col float-start">{% include 'aiders/errors.html' %}</h3>
+        </div>
+        <form id="form-post" method="post" action="{% url 'edit_operation' operation_name=operation_name %}">
+            <!-- Form Steps / Progress Bar -->
+            <ul class="form-stepper form-stepper-horizontal text-center mx-auto pl-0">
+                <!-- Step 1 -->
+                <li class="form-stepper-active text-center form-stepper-list" step="1">
+                    <a class="mx-2">
+                        <span class="form-stepper-circle form-click-button">
+                            <span>1</span>
+                        </span>
+                        <div class="label form-click-button">Basic Details</div>
+                    </a>
+                </li>
+                <!-- Step 2 -->
+                <li class="form-stepper-unfinished text-center form-stepper-list" step="2">
+                    <a class="mx-2">
+                        <span class="form-stepper-circle form-click-button text-muted">
+                            <span>2</span>
+                        </span>
+                        <div class="label form-click-button text-muted">Users</div>
+                    </a>
+                </li>
+                <!-- Step 3 -->
+                <li class="form-stepper-unfinished text-center form-stepper-list" step="3">
+                    <a class="mx-2">
+                        <span class="form-stepper-circle form-click-button text-muted">
+                            <span>3</span>
+                        </span>
+                        <div class="label form-click-button text-muted">Drones</div>
+                    </a>
+                </li>
+                <!-- Step 4 -->
+                <li class="form-stepper-unfinished text-center form-stepper-list" step="4">
+                    <a class="mx-2">
+                        <span class="form-stepper-circle form-click-button text-muted">
+                            <span>4</span>
+                        </span>
+                        <div class="label form-click-button text-muted">Devices</div>
+                    </a>
+                </li>
+                <!-- Step 5 -->
+                <li class="form-stepper-unfinished text-center form-stepper-list" step="5">
+                    <a class="mx-2">
+                        <span class="form-stepper-circle form-click-button text-muted">
+                            <span>5</span>
+                        </span>
+                        <div class="label form-click-button text-muted">Baloras</div>
+                    </a>
+                </li>
+            </ul>
+            {% csrf_token %}
+            <input type="hidden" id="step" value="1" />
+            <table id="operation_data_form" hidden>
+                <tr>
+                    <th colspan="2"><h4 class="form-titles">Basic Details</h4></th>
+                </tr>
+                <tr>
+                    <th>Operation name:</th>
+                    <td><input type="text" name="operation_name" placeholder="e.g Exercise_02Aug" value="{{operation.operation_name}}" maxlength="100" required="" id="id_operation_name" readonly></td>
+                </tr>
+                <tr>
+                    <th>Location:</th>
+                    <td><input type="text" name="location" placeholder="e.g Aglantzia" maxlength="100" required="" id="id_location" value="{{operation.location}}"></td>
+                </tr>
+                <tr>
+                    <th>Description:</th>
+                    <td><textarea name="description" cols="40" rows="10" placeholder="The objectives and scenario of this operation" id="id_description">{{operation.description}}</textarea></td>
+                </tr>
+                <tr>
+                    <th>Disaster epicenter latitude:</th>
+                    <td><input type="number" name="disaster_epicenter_latitude" id="id_disaster_epicenter_latitude" value="{{operation.disaster_epicenter_latitude}}" step="any" ></td>
+                </tr>
+                <tr>
+                    <th>Disaster epicenter longtitude:</th>
+                    <td><input type="number" name="disaster_epicenter_longtitude" id="id_disaster_epicenter_longtitude" value="{{operation.disaster_epicenter_longtitude}}" step="any" ></td>
+                </tr>                
+                <tr>
+                    <th>Dense area of buildings:</th>
+                    <td><select name="dense_area_of_buildings" id="id_dense_area_of_buildings">
+                            <option value="unknown" selected="">Unknown</option>
+                            <option value="true">Yes</option>
+                            <option value="false">No</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <th>Max extreme temperature:</th>
+                    <td><input type="number" name="max_extreme_temperature" step="any" id="id_max_extreme_temperature" value="{{operation.max_extreme_temperature}}"></td>
+                </tr>
+                <tr>
+                    <th>Risk of explosion and fire:</th>
+                    <td><select name="risk_of_explosion_and_fire" id="id_risk_of_explosion_and_fire">
+                            <option value="unknown" selected="">Unknown</option>
+                            <option value="true">Yes</option>
+                            <option value="false">No</option>
+                        </select>
+                    </td>
+                </tr>
+            </table>
+            <label id="select_users" hidden>
+                <h4 class="form-titles">Users</h4>
+                <p class="text-center my-0">Select the Users <b>that are allowed to join </b> this operation <b>if they attempt to</b></p>
+                <br />
+                <div class="container d-inline-block d-flex justify-content-center" style="width: 900px">
+                    <div class="row" style="height: 280px">
+                        <div class="col" style="width: 600px">
+                            <p class="text-center my-0">ALL Users</p>
+                            <select name="users_all" id="lstviewuser" class="form-control formcls" size="13" multiple="multiple">
+                                {% for user in users_all %} {% if user.username != 'AnonymousUser' %}
+                                <option value="{{user.id}}">{{user}}</option>
+                                {% endif %} {% endfor %}
+                            </select>
+                        </div>
+                        <div class="d-grid gap-2 col-2 mx-auto ui-table-buttons" style="height: 150px">
+                            <button type="button" id="lstviewuser_rightAll" class="btn btn-primary btn-block">
+                                <i class="fa-solid fa-angles-right"></i>
+                            </button>
+                            <button type="button" id="lstviewuser_rightSelected" class="btn btn-success btn-block">
+                                <i class="fa-solid fa-angle-right"></i>
+                            </button>
+                            <button type="button" id="lstviewuser_leftSelected" class="btn btn-success btn-block">
+                                <i class="fa-solid fa-angle-left"></i>
+                            </button>
+                            <button type="button" id="lstviewuser_leftAll" class="btn btn-primary btn-block">
+                                <i class="fa-solid fa-angles-left"></i>
+                            </button>
+                        </div>
+                        <div class="col" style="width: 600px">
+                            <p class="text-center my-0">ALLOWED Users</p>
+                            <select name="users_allow" id="lstviewuser_to" class="form-control formcls" size="13" multiple="multiple">
+                                {% for user in users_allow %} {% if user.username != 'AnonymousUser' %}
+                                <option value="{{user.id}}">{{user}}</option>
+                                {% endif %} {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </label>
+            <label id="select_drones" hidden>
+                <h4 class="form-titles">Drones</h4>
+                <p class="text-center my-0">Select the Drones <b>that are allowed to join </b> this operation <b>if they attempt to</b></p>
+                <br />
+                <div class="container d-inline-block d-flex justify-content-center" style="width: 900px">
+                    <div class="row" style="height: 280px">
+                        <div class="col" style="width: 600px">
+                            <p class="text-center my-0">ALL Drones</p>
+                            <select name="drones_all" id="lstviewdrone" class="form-control formcls" size="13" multiple="multiple">
+                                {% for drone in drones_all %}
+                                <option value="{{drone.id}}">{{drone}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="d-grid gap-2 col-2 mx-auto ui-table-buttons" style="height: 150px">
+                            <button type="button" id="lstviewdrone_rightAll" class="btn btn-primary btn-block">
+                                <i class="fa-solid fa-angles-right"></i>
+                            </button>
+                            <button type="button" id="lstviewdrone_rightSelected" class="btn btn-success btn-block">
+                                <i class="fa-solid fa-angle-right"></i>
+                            </button>
+                            <button type="button" id="lstviewdrone_leftSelected" class="btn btn-success btn-block">
+                                <i class="fa-solid fa-angle-left"></i>
+                            </button>
+                            <button type="button" id="lstviewdrone_leftAll" class="btn btn-primary btn-block">
+                                <i class="fa-solid fa-angles-left"></i>
+                            </button>
+                        </div>
+                        <div class="col" style="width: 600px">
+                            <p class="text-center my-0">ALLOWED Drones</p>
+                            <select name="drones_allow" id="lstviewdrone_to" class="form-control formcls" size="13" multiple="multiple">
+                                {% for drone in drones_allow %}
+                                <option value="{{drone.id}}">{{drone}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div id="check_box_drone" class="text-center">
+			<b>RECOMMENDED</b>
+                    <input id="drone_operation" type="checkbox" name="drone_operation" value="True" />
+                    <label for="drone_operation"> The selected drone will join the current operation.</label>
+                </div>
+            </label>
+            <label id="select_devices" hidden>
+                <h4 class="form-titles">Devices</h4>
+                <p class="text-center my-0">Select the Devices <b>that are allowed to join </b> this operation <b>if they attempt to</b></p>
+                <br />
+                <div class="container d-inline-block d-flex justify-content-center" style="width: 900px">
+                    <div class="row" style="height: 280px">
+                        <div class="col" style="width: 600px">
+                            <p class="text-center my-0">ALL Devices</p>
+                            <select name="devices_all" id="lstviewdevice" class="form-control formcls" size="13" multiple="multiple">
+                                {% for device in devices_all %}
+                                <option value="{{device.id}}">{{device}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="d-grid gap-2 col-2 mx-auto ui-table-buttons" style="height: 150px">
+                            <button type="button" id="lstviewdevice_rightAll" class="btn btn-primary btn-block">
+                                <i class="fa-solid fa-angles-right"></i>
+                            </button>
+                            <button type="button" id="lstviewdevice_rightSelected" class="btn btn-success btn-block">
+                                <i class="fa-solid fa-angle-right"></i>
+                            </button>
+                            <button type="button" id="lstviewdevice_leftSelected" class="btn btn-success btn-block">
+                                <i class="fa-solid fa-angle-left"></i>
+                            </button>
+                            <button type="button" id="lstviewdevice_leftAll" class="btn btn-primary btn-block">
+                                <i class="fa-solid fa-angles-left"></i>
+                            </button>
+                        </div>
+                        <div class="col" style="width: 600px">
+                            <p class="text-center my-0">ALLOWED Devices</p>
+                            <select name="devices_allow" id="lstviewdevice_to" class="form-control formcls" size="13" multiple="multiple">
+                                {% for device in devices_allow %}
+                                <option value="{{device.id}}">{{device}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div id="check_box_device" class="text-center">
+			<b>RECOMMENDED</b>
+                    <input id="device_operation" type="checkbox" name="device_operation" value="True" />
+                    <label for="device_operation"> The selected device will join the current operation.</label>
+                </div>
+            </label>
+            <label id="select_baloras" hidden>
+                <h4 class="form-titles">Baloras</h4>
+                <p class="text-center my-0">Select the Baloras <b>that are allowed to join </b> this operation <b>if they attempt to</b></p>
+                <br />
+                <div class="container d-inline-block d-flex justify-content-center" style="width: 900px">
+                    <div class="row" style="height: 280px">
+                        <div class="col" style="width: 600px">
+                            <p class="text-center my-0">ALL Baloras</p>
+                            <select name="baloras_all" id="lstviewbalora" class="form-control formcls" size="13" multiple="multiple">
+                                {% for balora in baloras_all %}
+                                <option value="{{balora.id}}">{{balora}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="d-grid gap-2 col-2 mx-auto ui-table-buttons" style="height: 150px">
+                            <button type="button" id="lstviewbalora_rightAll" class="btn btn-primary btn-block">
+                                <i class="fa-solid fa-angles-right"></i>
+                            </button>
+                            <button type="button" id="lstviewbalora_rightSelected" class="btn btn-success btn-block">
+                                <i class="fa-solid fa-angle-right"></i>
+                            </button>
+                            <button type="button" id="lstviewbalora_leftSelected" class="btn btn-success btn-block">
+                                <i class="fa-solid fa-angle-left"></i>
+                            </button>
+                            <button type="button" id="lstviewbalora_leftAll" class="btn btn-primary btn-block">
+                                <i class="fa-solid fa-angles-left"></i>
+                            </button>
+                        </div>
+                        <div class="col" style="width: 600px">
+                            <p class="text-center my-0">ALLOWED Baloras</p>
+                            <select name="baloras_allow" id="lstviewbalora_to" class="form-control formcls" size="13" multiple="multiple">
+                                {% for balora in baloras_allow %}
+                                <option value="{{balora.id}}">{{balora}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div id="check_box_balora" class="text-center">
+			<b>RECOMMENDED</b>
+                    <input id="balora_operation" type="checkbox" name="balora_operation" value="True" />
+                    <label for="balora_operation"> The selected balora will join the current operation.</label>
+                </div>
+            </label>
+            <label id="user-input-buttons">
+                <input hidden></input>
+                <input id="previous" type="button" value="Previous" onclick="buttonPrevious()"></input>
+                <input id="next" type="button" value="Next" onclick="buttonNext()" ></input>
+                <input id="submit" type="submit" value="Submit"></input>
+            </label>
+        </form>
+    </div>
+</div>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('#lstviewuser').multiselect({
+            search: {
+                left: '<input type="text" name="q" autocomplete="off" class="form-control" placeholder="Search..." />',
+
+                right: '<input type="text" name="q" autocomplete="off" class="form-control" placeholder="Search..." />',
+            },
+        });
+        $('#lstviewdrone').multiselect({
+            search: {
+                left: '<input type="text" name="q" autocomplete="off" class="form-control" placeholder="Search..." />',
+
+                right: '<input type="text" name="q" autocomplete="off" class="form-control" placeholder="Search..." />',
+            },
+        });
+        $('#lstviewdevice').multiselect({
+            search: {
+                left: '<input type="text" name="q" autocomplete="off" class="form-control" placeholder="Search..." />',
+
+                right: '<input type="text" name="q" autocomplete="off" class="form-control" placeholder="Search..." />',
+            },
+        });
+        $('#lstviewbalora').multiselect({
+            search: {
+                left: '<input type="text" name="q" autocomplete="off" class="form-control" placeholder="Search..." />',
+
+                right: '<input type="text" name="q" autocomplete="off" class="form-control" placeholder="Search..." />',
+            },
+        });
+    });
+</script>
+<script src="{% static 'aiders/javascripts/form/new_operation.js' %}"></script>
+{% endblock %}

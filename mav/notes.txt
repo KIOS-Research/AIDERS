@@ -1,0 +1,28 @@
+Vehicle number
+	DQ1912090103
+Onboard computer
+	
+Console username
+	pi
+Console password
+	GXw9odTi7y27eTkX
+WiFi SSID (hidden)
+	DQ1912090103
+WiFi password (WPA2)
+	c7jMGLzc8lfRA9uP
+DSPS admin panel WiFi
+	http://192.168.4.1
+Using VPN
+	
+DSPS admin panel*
+	http://10.10.12.1
+SSH access / IP address*
+	ssh://10.10.12.1
+RTSP video feed*
+	rtsp://10.10.12.1:8554/fpv
+    rtsp://192.168.4.1:8554/fpv
+
+
+Nikolas VPN
+	Drone IP: 10.8.0.23
+	Stream: rtsp://10.8.0.23:8554/fpv

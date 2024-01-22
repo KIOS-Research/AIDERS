@@ -1,0 +1,120 @@
+{% comment %} this form appears in a modal when the user clicks to show the operation's coverage {% endcomment %}
+<div id="operationCoverageFormWrapper" title="Operation Coverage" style="display: none;">
+  <form id="operationCoverageForm">
+      
+    <br />
+    
+    <div class="row">
+        <div class="col-md-3 text-right">
+            <label for="coverageDateFrom">From:</label>
+        </div>
+        <div class="col-md-9">
+            <input type="date" id="coverageDateFrom" name="coverageDateFrom" size="10"> 
+            <input type="time" name="coverageTimeFrom" id="coverageTimeFrom">
+        </div>
+
+        <div class="col-md-3 text-right">
+            <label for="coverageDateTo">To:</label>
+        </div>
+        <div class="col-md-9">            
+            <input type="date" id="coverageDateTo" name="coverageDateTo" size="10"> 
+            <input type="time" name="coverageTimeTo" id="coverageTimeTo">
+        </div>
+    </div>
+
+    <br />
+
+    <div class="row">
+        <div class="col-md-8 offset-md-2 text-right">
+            <div class="row" style="border: 1px solid black; padding-top: 7px;">
+                <div class="col-md-8 text-right">
+                    <label for="coverageDronesSelected">Show Drones:</label>
+                </div>
+                <div class="col-md-4 text-left">            
+                    <input type="checkbox" id="coverageDronesSelected" name="coverageDronesSelected">
+                </div>
+
+                <div class="col-md-8 text-right">
+                    <label for="coverageDevicesSelected">Show Devices:</label>
+                </div>
+                <div class="col-md-4 text-left">            
+                    <input type="checkbox" id="coverageDevicesSelected" name="coverageDevicesSelected">
+                </div> 
+                
+                <div class="col-md-8 text-right">
+                    <label for="coverageBalorasSelected">Show Baloras:</label>
+                </div>
+                <div class="col-md-4 text-left">            
+                    <input type="checkbox" id="coverageBalorasSelected" name="coverageBalorasSelected">
+                </div>
+            </div>        
+        </div>        
+    </div>
+
+    <br />
+
+    <div class="row">
+        <div class="col-md-8 text-right">
+            <label for="coveragePointsSelected">Show actual paths:</label>
+        </div>
+        <div class="col-md-4 text-left">            
+            <input type="checkbox" id="coveragePointsSelected" name="coveragePointsSelected">
+        </div>
+
+    </div>    
+
+  </form> 
+</div>
+
+
+<script>
+
+$(document).ready(function () {
+
+    // Initialize dialog for the form
+    $("#operationCoverageFormWrapper").dialog({
+        autoOpen: false,
+        width: 350,
+        modal: true,
+        buttons: {
+            "Submit": function () {
+                // Get form values
+                var fromDate = $("#coverageDateFrom").val();
+                var fromTime = $("#coverageTimeFrom").val();
+                var toDate = $("#coverageDateTo").val();                
+                var toTime = $("#coverageTimeTo").val();
+                var getDrones = $("#coverageDronesSelected").is(':checked');
+                var getDevices = $("#coverageDevicesSelected").is(':checked');
+                var getBaloras = $("#coverageBalorasSelected").is(':checked');
+                var getPoints = $("#coveragePointsSelected").is(':checked');
+
+                showOperationCoverage(fromDate, fromTime, toDate, toTime, getDrones, getDevices, getBaloras, getPoints);
+
+                $(this).dialog("close"); // Close dialog
+            },
+            Cancel: function () {
+                $(this).dialog("close");
+            }
+        }
+    });
+
+    // Open dialog when button is clicked
+    $("#coverageShowBtn").click(function () {
+        $("#operationCoverageFormWrapper").dialog("open");
+    });
+
+    // Set the default date to today
+    var today = new Date().toISOString().split('T')[0];
+    $('#coverageDateFrom').val(today);
+    $('#coverageDateTo').val(today);
+    
+    // Set the default time to now
+    var now = new Date();
+    var hours = ("0" + now.getHours()).slice(-2);
+    var currentTime = hours + ":00";
+    $('#coverageTimeFrom').val(currentTime);
+    $('#coverageTimeTo').val(currentTime);
+    
+});
+
+</script>

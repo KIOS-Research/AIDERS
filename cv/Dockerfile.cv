@@ -1,0 +1,47 @@
+#================= BASE IMAGE=================================
+FROM alexpips/cuda-opencv-torch:1.0.0
+
+# FROM nvcr.io/nvidia/tensorrt:23.01-py3
+
+
+# setup keys
+RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654
+
+
+# We use this mode when we need zero interaction (user input) while installing or upgrading the system via apt
+ENV DEBIAN_FRONTEND=noninteractive
+
+#  install ros dependencies and other required packages
+RUN apt update && apt-get install -y \
+	binutils libproj-dev gdal-bin \
+	lsof \	
+	python3-pip \	
+	netcat \
+	python3.8-tk \
+	net-tools 
+
+RUN rm -rf /var/lib/apt/lists/* && rm -rf /var/cache/apt && apt-get clean
+
+
+# Copy the python dependencies
+COPY cv/requirements.txt .
+RUN python -m pip install --upgrade pip
+RUN pip install -r requirements.txt --ignore-installed
+
+
+#This avoids creating the __pycache__ files in the source tree directory
+ENV PYTHONPYCACHEPREFIX="$HOME/.cache/cpython/"
+
+
+COPY cv/entrypoint.cv.sh .
+COPY cv/app /app
+
+# Build the plugin needed for the detection
+RUN /bin/bash -c 'cd /app/object_detection/src/plugins/; \	
+		make clean; \	
+		make;'
+
+ENTRYPOINT ["/bin/bash", "./entrypoint.cv.sh"]
+
+# CMD ["python", "main.py"]
+# CMD ["ls"]

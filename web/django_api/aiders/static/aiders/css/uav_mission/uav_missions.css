@@ -1,0 +1,161 @@
+
+
+/*.detected-object-marker*/
+/*{*/
+/*  background-image: url('photos/mapbox-icon.png');*/
+/*  background-size: cover;*/
+/*  width: 50px;*/
+/*  height: 50px;*/
+/*  border-radius: 50%;*/
+/*  cursor: pointer;*/
+/*}*/
+
+/*.marker {width:0; height:0;}*/
+
+
+.mission-popup {
+  background-color: #DDD;
+  border: 1px solid #2b2a2a !important;
+  font-size: 14px;
+}
+
+.mission-popup .ui-dialog-titlebar {
+  font-size: 18px;
+  text-align: center;
+}
+
+.mission-popup-title {
+    font-size: 16px;
+    font-weight: bold;
+    margin-top: 10px;
+}
+
+.mission-popup .selected-drone-for-mission {
+  margin-left: 15px;
+}
+
+.mission-popup label{
+  display: block;
+}
+
+.mission-popup-inner th,
+.mission-popup-inner td {
+  padding: 2px;
+  border: 1px solid #2b2a2a !important;
+}
+
+.mission-popup-inner table {
+  width: auto;
+  border: 1px solid #2b2a2a !important;
+  margin-bottom: 0px !important;
+  margin-left: 15px;
+  margin-top: 5px;
+}
+
+.mission-popup-inner input {
+  /* margin-right: 10px; */
+  margin-left: 15px;
+  max-width: 85px;
+}
+
+
+.mission-popup-inner table input {
+  margin-left: 0px;
+}
+
+.ui-dialog-buttonpane {
+  background-color: #e9e9e9;
+}
+
+
+
+.marker span {
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  box-sizing:border-box;
+  width: 30px;
+  height: 30px;
+  color:#fff;
+  background: #669933;
+  border:solid 2px;
+  border-radius: 0 70% 70%;
+  box-shadow:0 0 2px #000;
+  cursor: pointer;
+  transform-origin:10px 5px;
+  /*transform: rotateZ(-135deg);*/
+
+  transform: rotateZ(-135deg);
+}
+
+.marker b {transform: rotateZ(135deg)}
+
+.maplibregl-popup {
+  max-width: 200px;
+}
+
+.maplibregl-popup-content {
+  text-align: center;
+  font-family: 'Open Sans', sans-serif;
+}
+
+
+/*.middle_box*/
+/*{*/
+/*  position: absolute;*/
+/*  top: 50%;*/
+/*  left: 50%;*/
+/*  !*margin-top: -20px;*!*/
+/*  !*margin-left: -50px;*!*/
+/*  !*width: 100px;*!*/
+/*  !*height: 100px;*!*/
+/*}*/
+
+/*.center-screen {*/
+/*  display: flex;*/
+/*  flex-direction: column;*/
+/*  justify-content: center;*/
+/*  align-items: center;*/
+/*  text-align: center;*/
+/*  min-height: 100vh;*/
+/*}*/
+
+.alertBoxes{
+  z-index: 9999;
+  width: 19%;
+  margin: auto;
+  position:relative
+}
+
+
+
+/*.outer {*/
+/*  display: table;*/
+/*  position: absolute;*/
+/*  top: 0;*/
+/*  left: 0;*/
+/*  height: 100%;*/
+/*  width: 100%;*/
+/*}*/
+
+/*.middle {*/
+/*  display: table-cell;*/
+/*  vertical-align: middle;*/
+/*}*/
+
+/*.inner {*/
+/*  margin-left: auto;*/
+/*  margin-right: auto;*/
+/*  width: 400px;*/
+/*  !*whatever width you want*!*/
+/*}*/
+.center-element{
+  z-index:1;
+  position: absolute;
+  top: 90%;
+  left: 35%;
+  /*margin-top: -50px;*/
+  /*margin-left: -50px;*/
+  width: fit-content;
+  height: fit-content;
+}

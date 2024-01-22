@@ -1,0 +1,12 @@
+<launch>
+
+    <include file="$(find kios)/launch/mapviz.launch"/>
+    
+
+        <!-- connect to drone and create transforms -->
+        <node name="testMission" pkg="kios" type="testDJIMission.py" required="true">
+        </node>
+
+</launch>
+
+

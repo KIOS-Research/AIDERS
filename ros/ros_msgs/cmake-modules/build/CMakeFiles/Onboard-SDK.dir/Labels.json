@@ -1,0 +1,43 @@
+{
+	"sources" : 
+	[
+		{
+			"file" : "/home/aanast01/catkin_kios/src/cmake-modules/build/CMakeFiles/Onboard-SDK"
+		},
+		{
+			"file" : "/home/aanast01/catkin_kios/src/cmake-modules/build/CMakeFiles/Onboard-SDK.rule"
+		},
+		{
+			"file" : "/home/aanast01/catkin_kios/src/cmake-modules/build/CMakeFiles/Onboard-SDK-complete.rule"
+		},
+		{
+			"file" : "/home/aanast01/catkin_kios/src/cmake-modules/build/Onboard-SDK-prefix/src/Onboard-SDK-stamp/Onboard-SDK-install.rule"
+		},
+		{
+			"file" : "/home/aanast01/catkin_kios/src/cmake-modules/build/Onboard-SDK-prefix/src/Onboard-SDK-stamp/Onboard-SDK-mkdir.rule"
+		},
+		{
+			"file" : "/home/aanast01/catkin_kios/src/cmake-modules/build/Onboard-SDK-prefix/src/Onboard-SDK-stamp/Onboard-SDK-download.rule"
+		},
+		{
+			"file" : "/home/aanast01/catkin_kios/src/cmake-modules/build/Onboard-SDK-prefix/src/Onboard-SDK-stamp/Onboard-SDK-update.rule"
+		},
+		{
+			"file" : "/home/aanast01/catkin_kios/src/cmake-modules/build/Onboard-SDK-prefix/src/Onboard-SDK-stamp/Onboard-SDK-patch.rule"
+		},
+		{
+			"file" : "/home/aanast01/catkin_kios/src/cmake-modules/build/Onboard-SDK-prefix/src/Onboard-SDK-stamp/Onboard-SDK-configure.rule"
+		},
+		{
+			"file" : "/home/aanast01/catkin_kios/src/cmake-modules/build/Onboard-SDK-prefix/src/Onboard-SDK-stamp/Onboard-SDK-build.rule"
+		}
+	],
+	"target" : 
+	{
+		"labels" : 
+		[
+			"Onboard-SDK"
+		],
+		"name" : "Onboard-SDK"
+	}
+}

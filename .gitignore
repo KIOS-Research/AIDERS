@@ -1,36 +1,30 @@
-.env
-aidersplatform/django_api/__pycache__/
-aidersplatform/django_api/__pycache__/
-aidersplatform/django_api/aiders/__pycache__/
-aidersplatform/django_api/aiders/management/commands/__pycache__/
-aidersplatform/django_api/aiders/media/
-aidersplatform/django_api/aiders/migrations/
-aidersplatform/django_api/aiders/tests/__pycache__/
-aidersplatform/django_api/django_api/__pycache__/
-aidersplatform/django_api/general.log
-aidersplatform/django_api/logic/Constants/__pycache__/
-aidersplatform/django_api/logic/__pycache__/
-aidersplatform/django_api/logic/algorithms/__pycache__/
-aidersplatform/django_api/logic/algorithms/build_map/__pycache__/
-aidersplatform/django_api/logic/algorithms/fire_prediction/__pycache__/
-aidersplatform/django_api/logic/algorithms/lora_station/__pycache__/
-aidersplatform/django_api/logic/algorithms/mesh_monitoring/__pycache__/
-aidersplatform/django_api/logic/algorithms/mission/__pycache__/
-aidersplatform/django_api/logic/algorithms/object_detection/__pycache__/
-aidersplatform/django_api/logic/algorithms/object_detection/src/__pycache__/
-aidersplatform/django_api/logic/algorithms/object_detection/src/models/__pycache__/
-aidersplatform/django_api/logic/algorithms/object_detection/src/utils/__pycache__/
-aidersplatform/django_api/logic/algorithms/path_planning/__pycache__/
-aidersplatform/django_api/logic/algorithms/safe_drones/__pycache__/
-aidersplatform/django_api/logic/algorithms/telemetry_listener/__pycache__/
-aidersplatform/django_api/logic/algorithms/weather_station/__pycache__/
-aidersplatform/django_api/logic/djiswarmcatkinws/src/dji_sdk/scripts/online.pyc
-aidersplatform/django_api/logic/djiswarmcatkinws/src/dji_sdk/scripts/online_cluster.pyc
-aidersplatform/django_api/logic/djiswarmcatkinws/src/kios/__pycache__/
-aidersplatform/django_api/logic/djiswarmcatkinws/src/kios/catkin_generated/__pycache__/
-aidersplatform/django_api/logic/djiswarmcatkinws/src/kios/cmake/__pycache__/
-aidersplatform/django_api/logic/djiswarmcatkinws/src/kios/script/
-aidersplatform/django_api/results_TM/
+/.env
+__pycache__
+__init__.py
+!web/django_api/aiders/models/__init__.py
+# frames
+
+general.log
+logs/
+
+web/django_api/aiders/media/*
+web/django_api/aiders/migrations/
+web/django_api/results_TM/
+osm-data
+db-logs
+
+*/app/database/connection.py
 
 
-.idea/
+######################################################
+# these files are zipped because they are over 100mb #
+######################################################
+
+platform_geojson_files_roadnetwork_original.geojson
+platform_geojson_files_buildings.geojson
+cv/app/crowd_loc/weights/model_best.pth
+cv/app/crowd_loc/weights/model_best_half_kernels_05.pth
+
+# SESAME
+safeml/app/safeml/29092023_Good_Results/wasserstein/train_features.npy
+

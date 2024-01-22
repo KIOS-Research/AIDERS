@@ -1,0 +1,32 @@
+FROM python:3.9
+
+# Install required dependencies
+RUN apt-get update && apt-get install -y \ 
+    netcat-traditional \
+	default-libmysqlclient-dev \
+	# django.contrib.gis library
+	binutils libproj-dev gdal-bin \
+	# PDF library
+	wkhtmltopdf
+
+RUN rm -rf /var/lib/apt/lists/* && rm -rf /var/cache/apt && apt-get clean
+
+# Copy the python dependencies
+COPY web/requirements.txt .
+RUN python -m pip install --upgrade pip
+RUN pip install -r requirements.txt --ignore-installed
+
+# Copy the entrypoint bash script
+COPY web/entrypoint.web.sh .
+
+# Copy the python application
+COPY web/django_api /app
+
+ENV DBUS_SESSION_BUS_ADDRESS=unix:path=/var/run/dbus/system_bus_socket
+
+# Django for gdal library
+ENV CPLUS_INCLUDE_PATH=/usr/include/gdal
+ENV C_INCLUDE_PATH=/usr/include/gdal
+
+# run the entrypoint bash script
+ENTRYPOINT ["/bin/bash", "./entrypoint.web.sh"]

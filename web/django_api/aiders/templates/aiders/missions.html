@@ -1,0 +1,69 @@
+{% extends "base.html" %} {% load static %} {% load tags %} {% block title %} Aiders - Missions {% endblock %} {% block head_block %}
+
+<link href="{% static 'libs/jquery.dataTables/http_cdn.datatables.net_1.10.2_css_jquery.dataTables.css' %}" rel="stylesheet" />
+<script src="{% static 'libs/jquery.dataTables/http_cdn.datatables.net_1.10.2_js_jquery.dataTables.js' %}"></script>
+{% endblock %} {% block body_block %}
+<div class="justify-content-center ms-5 me-5 footer-margin header-margin">
+    <div class="row pt-5">
+        <h3 class="col float-start">{{operation_name}} Missions</h3>
+    </div>
+    <div class="row mb-5">
+        <div class="col-sm" style="color: black">
+            <div><br /></div>
+
+            <table id="Table" class="table table-striped">
+                <thead>
+                    <tr>
+                        <td>ID</td>
+                        <td>Type</td>
+                        <td>Name</td>
+                        <td>Start Time</td>
+                        <td>End Time</td>
+                        <td>Actions</td>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if replay_sessions %} {% for session in replay_sessions %}
+                    <tr>
+                        <td class="align-middle">{{session.id}}</td>
+                        <td class="align-middle">
+                            {% if session.drone %} Drone {% elif session.device %} Device {% elif session.balora_master%} Balora {% endif %}
+                        </td>
+                        <td class="align-middle">
+                            {% if session.drone %} {{session.drone}} {% elif session.device %} {{session.device}} {% elif session.balora_master%}
+                            {{session.balora_master}} {% endif %}
+                        </td>
+                        <td class="align-middle">{{session.start_time}}</td>
+                        <td class="align-middle">{{session.end_time}}</td>
+                        <td class="align-middle">
+                            <div>
+                                <form
+                                    class="m-1"
+                                    style="float: left"
+                                    method="get"
+                                    action="{% url 'replay_mission_engine' operation_name=operation_name replay_session_id=session.id %}">
+                                    {% csrf_token %}
+                                    <button type="submit" title="Join Operation" class="btn btn-success">
+                                        <i class="fa-solid fa-right-to-bracket"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                        {% comment %}
+                        <td class="align-middle">{{replay_sessions.mission.mission_type|removeUnderScore|title}}</td>
+                        <td class="align-middle">{{replay_sessions}}</td>
+                        <td class="align-middle">{{replay_sessions.start_time}}</td>
+                        <td class="align-middle">{{replay_sessions.end_time}}</td>
+                        <td class="align-middle">{{replay_sessions.user}}</td>
+
+                        {% endcomment %}
+                    </tr>
+
+                    {% endfor %} {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% endblock %} {% block script_block %} $(document).ready(function(){ $('#Table').dataTable(); }); {% endblock %}

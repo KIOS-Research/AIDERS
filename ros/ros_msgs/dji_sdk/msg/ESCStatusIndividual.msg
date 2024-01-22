@@ -1,0 +1,10 @@
+int16 current
+int16 speed
+uint16 voltage
+int16 temperature
+uint16 stall
+uint16 empty
+uint16 unbalanced
+uint16 escDisconnected
+uint16 temperatureHigh
+uint16 reserved

@@ -1,0 +1,14 @@
+Header header
+bool enableVirtualControlStick
+
+bool isFlightControlData
+kios/FlightControlData flightControlData
+
+bool isBasicCommand
+kios/BasicCommandDJI basicCommand
+
+bool isGPSLocation
+kios/GpsInput gpsInput
+
+bool isGimbalData
+kios/GimbalControlData gimbalControlData

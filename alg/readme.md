@@ -1,0 +1,8 @@
+
+web\django_api\logic\utils.py
+
+from .algorithms.fire_prediction import firePrediction
+FIRE_PROPAGATION_ALGORITHM
+
+from .algorithms.path_planning import pathPlanning
+CALCULATE_SEARCH_AND_RESCUE_MISSION_PATHS_ALGORITHM

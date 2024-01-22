@@ -1,0 +1,27 @@
+int64 seq
+string uid
+int64 timestamp
+
+string flight_logic_state
+float32 wind_speed
+float32 wind_angle
+float32 battery_voltage
+float32 battery_current
+float32 position_x
+float32 position_y
+float32 position_z
+float32 altitude				
+float32 orientation_x
+float32 orientation_y
+float32 orientation_z
+float32 orientation_w
+float32 velocity_x
+float32 velocity_y
+float32 velocity_z
+float32 angular_x
+float32 angular_y
+float32 angular_z
+float32 linear_acceleration_x
+float32 linear_acceleration_y
+float32 linear_acceleration_z
+float32 payload

@@ -1,0 +1,1668 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <title>AIDERS - Platform</title>
+        <link rel="shortcut icon" type="image/png" href="{% static 'aiders/imgs/aiders_logo_no_background.png' %}" />
+        <meta content="initial-scale=1,maximum-scale=1,user-scalable=no" name="viewport" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <script src="{% static 'libs/jquery/http_ajax.googleapis.com_ajax_libs_jquery_3.5.1_jquery.js' %}"></script>
+        <link href="{% static 'libs/bootstrap/bootstrap_v4.css' %}" rel="stylesheet" />
+        <script src="{% static 'libs/bootstrap/bootstrap_v4.js' %}"></script>
+        <link href="{% static 'aiders/css/platform/platform.css' %}" rel="stylesheet" type="text/css" />
+        <script src="{% static 'libs/jquery/http_ajax.googleapis.com_ajax_libs_jquery_3.5.1_jquery.js' %}"></script>
+        <script src="{% static 'libs/jquery/jquery.csv.js' %}" type="text/javascript"></script>
+        <link
+            href="{% static 'libs/jquery-ui/http_ajax.googleapis.com_ajax_libs_jqueryui_1.12.1_themes_smoothness_jquery-ui.css' %}"
+            rel="stylesheet" />
+        <script src="{% static 'libs/jquery-ui/http_ajax.googleapis.com_ajax_libs_jqueryui_1.12.1_jquery-ui.js' %}"></script>
+        <link
+            href="{% static 'libs/jquery.mCustomScrollbar/__malihu.github.io_custom-scrollbar_jquery.mCustomScrollbar.min.css' %}"
+            rel="stylesheet" />
+        <link href="{% static 'libs/jquery-ui/__code.jquery.com_ui_1.12.1_themes_base_jquery-ui.css' %}" rel="stylesheet" />
+        <script src="{% static 'libs/hls/http_cdn.jsdelivr.net_npm_hls.js@1.2.0.js' %}"></script>
+        <link href="{% static 'libs/font-awesome/css/all.css' %}" rel="stylesheet" />
+        <script src="{% static 'libs/popper/http_cdnjs.cloudflare.com_ajax_libs_popper.js_1.14.6_umd_popper.js' %}"></script>
+        <script src="{% static 'libs/jquery.mCustomScrollbar.concat/__malihu.github.io_custom-scrollbar_jquery.mCustomScrollbar.concat.min.js' %}"></script>
+        <script src="{% static 'libs/turf/http_api.tiles.mapbox.com_mapbox.js_plugins_turf_v3.0.11_turf.min.js' %}"></script>
+        <script src="{% static 'libs/turf/http_npmcdn.com_@turf_turf@5.1.6_turf.js' %}"></script>
+        <link href="{% static 'libs/bootstrap/bootstrap_toggle.css' %}" rel="stylesheet" />
+        <script src="{% static 'libs/bootstrap/bootstrap_toggle.js' %}"></script>
+        <link href="{% static 'libs/watergis/watergis.github.io_maplibre-gl-export_maplibre-gl-export.css' %}" rel="stylesheet" />
+        <script src="{% static 'libs/watergis/watergis.github.io_maplibre-gl-export_maplibre-gl-export.js' %}"></script>
+        <script src="{% static 'libs/threebox/threebox.js' %}" type="text/javascript"></script>
+        <link href="{% static 'aiders/css/threebox/threebox.css' %}" rel="stylesheet" />
+        <script src="{% static 'libs/maplibre-gl/http_unpkg.com_maplibre-gl@1.15.2_dist_maplibre-gl.js' %}"></script>
+        <link href="{% static 'libs/maplibre-gl/http_unpkg.com_maplibre-gl@1.15.2_dist_maplibre-gl.css' %}" rel="stylesheet" />
+        <script src="{% static 'libs/deck.gl/http_unpkg.com_deck.gl@8.7.11_dist.min.js' %}"></script>
+        <script src="{% static 'libs/mapbox-geocoder-v5/mapbox-gl-geocoder.min.js' %}"></script>
+        <link rel="stylesheet" href="{% static 'libs/mapbox-geocoder-v5/mapbox-gl-geocoder.css' %}" type="text/css" />
+        <link href="{% static 'aiders/css/video/video_js.css' %}" rel="stylesheet" />
+        <!-- <script src="{% static 'libs/video/video.js' %}"></script> -->
+        <script src="{% static 'aiders/javascripts/constants/constants.js' %}" type="text/javascript"></script>
+    </head>
+    <style>
+
+        .map_popup_list {
+            width: 100%;
+            list-style-type: none;
+            padding: 0rem;
+        }
+
+        .map_popup_list li {
+            text-align: left;
+            padding-top: 0.5rem;
+            padding-bottom: 0.5rem;
+            width: 100%;
+            border-top: solid rgb(200, 200, 200) 1px;
+            float: left;
+        }
+        .map_popup_list li:hover {
+            background-color: #aaaaaa;
+            cursor:pointer;
+        }   
+
+    </style>
+
+    <body>
+        <div class="center-element alert alert-success fade in alert-dismissible show" id="missionDoneBox" style="display: none">
+            Mission Finished Successfully!
+        </div>
+        <div class="center-element alert alert-danger fade in alert-dismissible show" id="mission_failure_box" style="display: none"></div>
+        <div class="center-element alert alert-danger fade in alert-dismissible show" id="pause_failure_box" style="display: none"></div>
+        <div class="center-element alert alert-danger fade in alert-dismissible show" id="resume_failure_box" style="display: none"></div>
+        <div class="center-element alert alert-danger fade in alert-dismissible show" id="cancel_failure_box" style="display: none"></div>
+        <div class="center-element alert alert-secondary fade in alert-dismissible show" id="noMissionBox" style="display: none">
+            There is no active mission at this moment!
+        </div>
+        <div class="center-element alert alert-warning fade in alert-dismissible show" id="noLocationBox" style="display: none">
+            You have to select at least one location to start a mission!
+        </div>
+        <div class="center-element alert alert-warning fade in alert-dismissible show" id="missionInProgressBox" style="display: none">
+            A mission is in progress for at least one selected drone. Cancel the current mission to select locations again
+        </div>
+        <div class="center-element alert alert-success fade in alert-dismissible show" id="missionPausedBox" style="display: none">
+            Mission successfully paused!
+        </div>
+        <div class="center-element alert alert-success fade in alert-dismissible show" id="missionResumedBox" style="display: none">
+            Mission successfully resumed!
+        </div>
+        <div class="center-element alert alert-success fade in alert-dismissible show" id="missionCancelledBox" style="display: none">
+            Mission successfully cancelled!
+        </div>
+        <div class="center-element alert alert-warning fade in alert-dismissible show" id="pausingMissionBox" style="display: none">
+            Pausing Mission. Please wait...
+        </div>
+        <div class="center-element alert alert-warning fade in alert-dismissible show" id="resumingMissionBox" style="display: none">
+            Resuming Mission. Please wait...
+        </div>
+        <div class="center-element alert alert-warning fade in alert-dismissible show" id="cancellingMissionBox" style="display: none">
+            Cancelling Mission. Please wait...
+        </div>
+        <div class="center-element alert alert-danger fade in alert-dismissible show" id="build_map_failed_box" style="display: none"></div>
+        <div class="center-element alert alert-success fade in alert-dismissible show" id="successBox" style="display: none">
+            <strong>Success!</strong> Mission successfully started.
+        </div>
+        <div class="center-element alert alert-warning fade in alert-dismissible show" id="loadingBox" style="display: none">
+            Mission loading. Please wait...
+        </div>
+        <div class="center-element alert alert-warning fade in alert-dismissible show" id="more_than_one_drone_box" style="display: none">
+            Please select only one drone at a time.
+        </div>
+        <div class="center-element alert alert-warning fade in alert-dismissible show" id="mission_failure_box_retry" style="display: none"></div>
+        <div class="center-element alert alert-warning fade in alert-dismissible show" id="pause_failure_box_retry" style="display: none"></div>
+        <div class="center-element alert alert-warning fade in alert-dismissible show" id="resume_failure_box_retry" style="display: none"></div>
+        <div class="center-element alert alert-warning fade in alert-dismissible show" id="cancel_failure_box_retry" style="display: none"></div>
+        <div class="alert alert-warning fade in alert-dismissible show" id="box_layerLoading" style="display: none"></div>
+        <div class="center-element alert alert-warning fade in alert-dismissible show" id="noDroneBox" style="display: none">
+            You have to select a drone first!
+        </div>
+        <div class="center-element alert alert-warning fade in alert-dismissible show" id="oneMissionAtATime" style="display: none">
+            You have to select one mission at a time!
+        </div>
+        <div class="center-element alert alert-warning fade in alert-dismissible show" id="detection_loading_box" style="display: none"></div>
+        <div class="center-element alert alert-warning fade in alert-dismissible show" id="loadingBuildMapBox" style="display: none">
+            Build Map loading. Please wait...
+        </div>
+        <div class="center-element alert alert-success fade in alert-dismissible show" id="detection_success_box" style="display: none"></div>
+        <div class="center-element alert alert-danger fade in alert-dismissible show" id="detection_fail_box" style="display: none"></div>
+        <div class="center-element alert alert-success fade in alert-dismissible show" id="buildMapStartedBox" style="display: none">
+            <strong>Success!</strong> Build Map successfully started!
+        </div>
+        <div class="center-element alert alert-success fade in alert-dismissible show" id="buildMapStopped" style="display: none">
+            <strong>Success!</strong> Build Map successfully stopped!
+        </div>
+        <div class="center-element alert alert-warning fade in alert-dismissible show" id="buildMapStoppedDueToLowAltitude" style="display: none">
+            Build Map stopped because altitude is too low (25m or higher)!
+        </div>
+        <div class="center-element alert alert-warning fade in alert-dismissible show" id="buildMapLoadingToStop" style="display: none">
+            Stopping Build Map...
+        </div>
+        <div
+            class="center-element alert alert-warning fade in alert-dismissible show"
+            id="buildMapLoadingToStopDueToLowAltitude"
+            style="display: none">
+            Stopping Build Map due to low altitude...
+        </div>
+        <div class="center-element alert alert-warning fade in alert-dismissible show" id="buildMapFailedToStart" style="display: none">
+            Something went wrong! Build map failed to start. Retrying again!
+        </div>
+        <div class="center-element alert alert-warning fade in alert-dismissible show" id="buildMapFailedToStop" style="display: none">
+            Something went wrong! Build map failed to stop. Please try again!
+        </div>
+        <div class="center-element alert alert-warning fade in alert-dismissible show" id="buildMapAlreadyStarted" style="display: none">
+            Build Map is already active!
+        </div>
+        <div class="center-element alert alert-warning fade in alert-dismissible show" id="buildMapNotActive" style="display: none">
+            Build Map is not active or is about to stop!
+        </div>
+        <div class="center-element alert alert-warning fade in alert-dismissible show" id="noBuildMapAvailable" style="display: none">
+            There is no any Build Map session saved at the moment!
+        </div>
+        <div class="center-element alert alert-warning fade in alert-dismissible show" id="noMissionAvailable" style="display: none">
+            There is no any Mission saved at the moment!
+        </div>
+        <div class="center-element alert alert-warning fade in alert-dismissible show" id="droneTooLowForBuildMap" style="display: none">
+            Minimum altitude to enable Build Map is 25m!
+        </div>
+        <div class="center-element alert alert-warning fade in alert-dismissible show" id="droneTooLowForMission" style="display: none">
+            Minimum altitude to start a mission is 25m!
+        </div>
+        <div class="center-element alert alert-warning fade in alert-dismissible show" id="failureBox" style="display: none"></div>
+        <div class="center-element alert alert-success fade in alert-dismissible show" id="successBox" style="display: none"></div>
+        <div id="progressDiv" class="loadingIcon center-element" style="display: none; width: fit-content; height: fit-content">
+            <div class="alert alert-warning fade in alert-dismissible show" id="loadingAlgo">
+                <button type="button" class="close" aria-label="Close" onclick="stopFireAlgorithm()">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <img style="width: 30px; height: 30px" src="{% static 'aiders/extra/loading.gif' %}" />
+                Please wait. This might take a while depending on your inputs...
+                <br />
+                <div style="text-align: center">
+                    <button type="button" class="btn btn-warning" onclick="minimizeFireLoadingBox('#progressDiv')">
+                        Notify me when result is ready
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="geocoder" id="geocoder"></div>
+        <script>
+            var CURRENT_OP = '{{ operation.operation_name| safe }}';
+            var OPERATION_ID = '{{ operation.id| safe }}';
+            var NET_IP = '{{ net_ip }}';
+            var WS_PORT = '{{ ws_port }}';
+            var USE_ONLINE_MAPS = '{{use_online_map}}' === 'True';
+            var DISASTER_EPICENTER_LATITUDE = '{{disaster_epicenter_latitude}}'
+            var DISASTER_EPICENTER_LONGITUDE = '{{disaster_epicenter_longitude}}'
+              
+            console.log('NET IP: ', NET_IP);
+        </script>
+        {% if algorithm_results is not None %}
+        <script>
+            sessionStorage.setItem(SessionProfileKeys.SELECTED_ALGORITHMS, JSON.stringify({{algorithm_results|safe}}));
+        </script>
+        {% else %}
+        <script>
+            sessionStorage.setItem(SessionProfileKeys.SELECTED_ALGORITHMS, JSON.stringify([]));
+        </script>
+        {% endif %}
+
+        
+        <div id="drone-warnings"></div>
+        <div id="point-selection-message">Click on the map to place mission waypoints... <button class="btn btn-danger panel-btn msn" id="clickCancelSecondary" type="button">CANCEL</button> <button class="btn btn-success panel-btn msn" id="clickGoSecondary" type="button">GO</button></div>
+        
+
+        <div id="sidebar-overlay" class="sidebar-overlay"></div>
+
+        <div class="sidebar">
+            <div class="logo-details">
+                <i class="logo-menu">
+                    <i class="fa-solid fa-bars"></i>
+                </i>
+                <span class="logo_name">
+                    <a href="{% url 'manage_operations' %}">
+                        <img class="logo-img" src="{% static 'aiders/imgs/aiders_logo_with_text.png' %}" alt="AIDERS" />
+                    </a>
+                    <span id="platform-version">v{{version}}</span>
+                </span>
+            </div>
+            <!-- <hr class="info_table_lines" /> -->
+            <div class="info-menu">
+                <table id="info_table">
+                    <tr>
+                        <th style="width: 30%; text-align: right;">Operation:</th>
+                        <th>{{ operation.operation_name| safe }}</th>
+                    </tr>
+                    <tr>
+                        <th style="text-align: right;">User:</th>
+                        <th>{{ user.username }}</th>
+                    </tr>                  
+                </table>
+            </div>
+            <!-- <hr class="info_table_lines" /> -->
+
+
+
+            <ul class="nav-links">
+
+
+                {% comment %} UAV Mission {% endcomment %}
+                <!-- <li class="showMenu"> -->
+                <li id="drones-menu" style="display: none">
+                    <a href="#" class="arrow-menu">
+                        <i class="fa fa-paper-plane"></i>
+                        <span class="link_name arrow">Drones</span>
+                        <span class="connected-clients" id="connected-drones">0</span>
+                        <i class="fas fa-chevron-down arrow" style="font-size: 15px"></i>
+                    </a>
+                    <ul class="sub-menu">
+                        <li>
+                            <a class="link_name" href="#">Drones</a>
+                        </li>
+                        <div id="uav-missions-ui-side" class="sidebar-submenu">
+
+
+                            <ul id="drone-selection-list"></ul>
+
+                            <div class="drone-sub-section">
+                                <m4><i class="fa fa-life-ring" style="color: white;"></i> Mission</m4>
+                                <ul id="monitor-points-list">
+                                    <li>
+                                        <!-- <m1>Mission</m1> -->
+                                        <m3>
+                                            <button aria-pressed="false" class="btn btn-outline-warning panel-btn msn" id="clickSelect" type="button">SELECT WAYPOINTS</button>
+                                            <button class="btn btn-outline-success panel-btn msn" id="clickGo" type="button">GO</button>
+                                            <button class="btn btn-outline-danger panel-btn msn" id="clickCancel" type="button">CANCEL</button>
+                                        </m3>
+                                    </li>
+                                </ul>
+                            </div>
+                            
+                            <div class="drone-sub-section">
+                                <m4><i class="fa fa-map" style="color: white;"></i> Build Map</m4>
+                                <ul id="uav-build-map-list">
+                                    {% comment %} Stop the prediction be multispectral is broken
+                                    <li>
+                                        <m1>Select Camera</m1>
+
+                                        <m2 class="px-3">
+                                            <select name="selectedCamera" id="selectedCamera">
+                                                <option value="Default">Default</option>
+                                                <option value="Multispectral">Multispectral</option>
+                                            </select>
+                                        </m2>
+                                    </li>
+                                    {% endcomment %}
+                                    <li>
+                                        <m1>Overlap</m1>
+                                        <m2 class="px-3">
+                                            <span id="overlapValue" style="color: white">50</span>
+                                            <span style="color: white">%</span>
+                                        </m2>
+                                    </li>
+                                    <li>
+                                        <input
+                                            type="range"
+                                            class="form-range"
+                                            id="vol"
+                                            name="vol"
+                                            min="0"
+                                            max="99"
+                                            value="50"
+                                            onInput="postElementId('vol', this.value); document.getElementById('overlapValue').innerHTML = this.value;" />
+                                    </li>
+                                    <li>
+                                        <m1> Start Build Map</m1>
+                                        <m2>
+                                            <button
+                                                aria-pressed="false"
+                                                class="btn btn-outline-success panel-btn bldmp"
+                                                id="startBuildMapBtn"
+                                                onclick="startDroneBuildMap()"
+                                                type="button">
+                                                START
+                                            </button>
+                                            <button class="btn btn-outline-danger panel-btn bldmp" id="stopBuildMapBtn" onclick="stopDroneBuildMap()" type="button">STOP</button>
+                                        </m2>
+                                    </li>
+                                    <li>
+                                        <m1> Load Build Map</m1>
+                                        <m2>
+                                            <button
+                                                aria-pressed="false"
+                                                class="btn btn-outline-success panel-btn bldmp"
+                                                id="loadBuildMapBtn"
+                                                onclick="loadDroneBuildMap()"
+                                                type="button">
+                                                LOAD
+                                            </button>
+                                            <button
+                                                aria-pressed="false"
+                                                class="btn btn-outline-danger panel-btn bldmp"
+                                                id="clearBuildMapBtn"
+                                                onclick="clearDroneBuildMap()"
+                                                type="button">
+                                                CLEAR
+                                            </button>
+                                        </m2>
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <div class="drone-sub-section">
+                                <m4><i class="fa fa-cloud-sun" style="color: white;"></i> Weather Data</m4>
+                                <ul id="drone-weather-station-list">
+                                    <li id="drone-weather-station-list-default">
+                                        <m1> No Drone with weather station found. </m1>
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <div class="drone-sub-section">
+                                <m4><i class="fa fa-arrows-down-to-line" style="color: white;"></i> Lidar Scan</m4>
+                                <ul id="drone-lidar-list">
+                                    <li id="lidar-data-list-default">
+                                        <m1> No Drone with Lidar found. </m1>
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <div class="drone-sub-section">
+                                <m4><i class="fa fa-droplet" style="color: white;"></i> Water Sampler</m4>
+                                <ul id="water-collector-list">
+                                    <li id="water-sampler-data-list-default">
+                                        <m1> No Drone with water sampler found. </m1>
+                                    </li>
+                                </ul>
+                            </div>
+
+                            {% comment %} COMMENTED OUT JUST FOR THE DOCKER USAGE
+                            <m4> Multispectral Build Map</m4>
+                            <ul id="uav-multispectral-build-map-list">
+                                <li>
+                                    <m1> Start Build Map</m1>
+                                    <m2>
+                                        <button aria-pressed="false" class="btn btn-outline-success" id="startSpectralBuildMapBtn" type="button">
+                                            START
+                                        </button>
+
+                                        <button class="btn btn-outline-danger" id="stopSpectralBuildMapBtn" type="button">STOP</button>
+                                    </m2>
+                                </li>
+
+                                <li>
+                                    <m1> Load Build Map</m1>
+                                    <m2>
+                                        <button aria-pressed="false" class="btn btn-outline-success" id="loadSpectralBuildMapBtn" type="button">
+                                            LOAD
+                                        </button>
+
+                                        <button aria-pressed="false" class="btn btn-outline-danger" id="clearSpectralBuildMapBtn" type="button">
+                                            CLEAR
+                                        </button>
+                                        &lt;!&ndash;
+                                        <button class="btn btn-outline-danger" id="stopBuildMapBtn" type="button">STOP&ndash;&gt;</button>
+                                    </m2>
+                                </li>
+                            </ul>
+                            {% endcomment %}
+
+
+                        </div>
+                    </ul>
+                </li>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                {% comment %} Video & Detection {% endcomment %}
+                <!-- <li>
+                    <a href="#" class="arrow-menu">
+                        <i class="fa-solid fa-eye"></i>
+                        <span class="link_name arrow">Video & Detection</span>
+                        <i class="fas fa-chevron-down arrow" style="font-size: 15px"></i>
+                    </a>
+                    <ul class="sub-menu">
+                        <li>
+                            <a class="link_name" href="#">Video & Detection</a>
+                        </li>
+                        <m4>Detection</m4>
+                        <div id="enable-detections-ui-side" class="sidebar-submenu">
+                            <ul id="enable-detections-list"></ul>
+                        </div>
+                        <m4>Video Feed</m4>
+                        <div id="video-feeds-ui-side" class="sidebar-submenu">
+                            <ul id="video-feeds-list"></ul>
+                        </div>
+                        <m4>Detection Feed</m4>
+                        <div id="detection-video-feeds-ui-side" class="sidebar-submenu">
+                            <ul id="det-video-feeds-list"></ul>
+                        </div>
+
+                    </ul>
+                </li> -->
+
+
+
+
+                {% comment %} Phone Manage {% endcomment %}
+                <li id="devices-menu" style="display: none">
+                    <a href="#" class="arrow-menu">
+                        <i class="fa-solid fa-mobile-screen-button"></i>
+                        <span class="link_name arrow">Mobile Devices</span>
+                        <span class="connected-clients" id="connected-devices">0</span>
+                        <i class="fas fa-chevron-down arrow" style="font-size: 15px"></i>
+                    </a>
+                    <ul class="sub-menu">
+                        <li>
+                            <a class="link_name" href="#">Mobile Devices</a>
+                        </li>
+                        <ul id="device-selection-list"></ul>
+                    </ul>
+                </li>
+
+
+                {% comment %} Lora Manage {% endcomment %}
+                <li id="trackers-menu" style="display: none">
+                    <a href="#" class="arrow-menu">
+                        <i class="fa-solid fa-satellite-dish"></i>
+                        <span class="link_name arrow">LoRa Trackers</span>
+                        <span class="connected-clients" id="connected-trackers">0</span>
+                        <i class="fas fa-chevron-down arrow" style="font-size: 15px"></i>
+                    </a>
+                    <ul class="sub-menu">
+                        <li>
+                            <a class="link_name" href="#">LoRa Trackers</a>
+                        </li>
+                        <ul id="balora-selection-list"></ul>
+                        <m4><i class="fa fa-wand-magic-sparkles" style="color: white;"></i> Sensors</m4>
+                        <ul id="balora-sensors-list"></ul>
+                    </ul>
+                </li>
+
+                {% comment %} <hr style="background-color: gray; margin-top: 10px; margin-bottom: 10px;"/> {% endcomment %}
+
+                {% comment %} Tools {% endcomment %}
+                <li>
+                    <a href="#" class="arrow-menu">
+                        <i class="fa-solid fa-toolbox"></i>
+                        <span class="link_name arrow">Tools</span>
+                        <i class="fas fa-chevron-down arrow" style="font-size: 15px"></i>
+                    </a>
+                    <ul class="sub-menu">
+                        <li>
+                            <a class="link_name" href="#">Tools</a>
+                        </li>
+                        <div id="map-tools-ui-side" class="sidebar-submenu">
+                            <m4><i class="fa fa-map" style="color: white;"></i> Map Tools</m4>
+                            <table>
+                                <!-- <ul id="map-tools-list"> -->
+                                    {% if use_online_map == True %}
+                                    <tr>
+                                        <td class="tools-option-title">Measurement</td>
+                                        <td>
+                                            <input
+                                                data-onstyle="success"
+                                                data-toggle="toggle"
+                                                id="distanceToggle"
+                                                onchange="toggleDrawingVisibility(this.id)"
+                                                type="checkbox" />
+                                        </td>
+                                    </tr>
+                                    {% endif %}
+                                    <tr>
+                                        <td class="tools-option-title">Search Location</td>
+                                        <td>
+                                            <input
+                                                checked
+                                                data-onstyle="success"
+                                                data-toggle="toggle"
+                                                id="searchBoxToggle"
+                                                onchange="toggleSearchVisibility(this.id)"
+                                                type="checkbox" />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="tools-option-title">
+                                            Click Area Info
+                                            <i class="btn btn-small fas fa-unlock"
+                                                href="#"
+                                                style="color: #00c7ff"
+                                                id="lockUnlockIcn"
+                                                onclick="lockUnlockIcon(this)"></i>
+                                        </td>
+                                        <td>
+                                            <input
+                                                data-onstyle="success"
+                                                data-toggle="toggle"
+                                                id="clickInfoToggle"
+                                                onchange="toggleAreaInfoBoxAndLayer(this.id)"
+                                                type="checkbox" />
+                                        </td>
+                                    </tr>
+                                <!-- </ul> -->
+                            </table>
+
+                            <m4><i class="fa fa-cloud-sun" style="color: white;"></i> Weather Data</m4>
+                            <ul id="weather-tools-list"></ul>
+                            <table>
+                                <tr>
+                                    <td class="tools-option-title">Ground Weather Data</td>
+                                    <td>
+                                        <input
+                                            data-onstyle="success"
+                                            data-toggle="toggle"
+                                            id="weatherInfoToggle"
+                                            onchange="weatherClickInfoBox(this.id)"
+                                            type="checkbox" />
+                                    </td>
+                                </tr>
+                            </table>
+
+
+                            <m4><i class="fa fa-location-dot" style="color: white;"></i> Custom Pins</m4>
+                            <ul id="weather-tools-list"></ul>
+                            <table>
+                                <tr>
+                                    <td class="tools-option-title">Place a Pin</td>
+                                    <td>
+                                        <input
+                                        data-onstyle="success"
+                                        data-toggle="toggle"
+                                        id="AddManuallySetObjectToggle"
+                                        onchange="toggleAddManuallySetObject(this.id)"
+                                        type="checkbox" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="tools-option-title">Show Custom Pins</td>
+                                    <td>
+                                        <input
+                                        data-onstyle="success"
+                                        data-toggle="toggle"
+                                        id="MSO_InfoToggle"
+                                        onchange="startStopMSO(this.id)"
+                                        type="checkbox" />
+                                    </td>
+                                </tr>
+                            </table>
+
+
+                            <table style="width: 100%">
+                                <tr>
+                                    <td colspan="3" style="padding-left: 0px">
+                                        <m4><i class="fa fa-route" style="color: white;"></i> Telemetry</m4>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td width="60%">Trajectories</td>
+                                    <td></td>
+                                    <td>
+                                        <form style="padding-left: 0px">
+                                            <button aria-pressed="false" class="btn btn-outline-danger panel-btn" id="clearLineLayers"
+                                                type="button">
+                                                CLEAR
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td>
+                                        Operation Coverage 
+                                        <span id="coverageLoader" style="display:none;"><img src="{% static 'aiders/imgs/loading.gif' %}" width="20" /></span>
+                                    </td>
+                                    <td>
+                                        <button
+                                            aria-pressed="false"
+                                            class="btn btn-outline-success panel-btn"
+                                            id="coverageShowBtn"
+                                            type="button">
+                                            SHOW
+                                        </button>
+                                    </td>
+                                    <td>
+                                        <button
+                                            aria-pressed="false"
+                                            class="btn btn-outline-danger panel-btn"
+                                            id="coverageClearBtn"
+                                            type="button"
+                                            onclick="clearOperationCoverage()">
+                                            CLEAR
+                                        </button>
+                                    </td>
+                                </tr>
+                                
+                            </table>
+
+
+                            <table style="width: 100%">
+                                <tr>
+                                    <td colspan="2" style="padding-left: 0px">
+                                        <m4><i class="fa fa-video" style="color: white;"></i> Stream replays</m4>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Raw stream</td>
+                                    <td>
+                                        <button
+                                            aria-pressed="false"
+                                            class="btn btn-outline-success panel-btn bldmp"
+                                            id="rawStreamReplayBtn"
+                                            onclick="showAvailableStreams('raw')"
+                                            type="button">
+                                            LOAD
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Detection stream</td>
+                                    <td>
+                                        <button
+                                            aria-pressed="false"
+                                            class="btn btn-outline-success panel-btn bldmp"
+                                            id="detectionStreamReplayBtn"
+                                            onclick="showAvailableStreams('detection')"
+                                            type="button">
+                                            LOAD
+                                        </button>
+                                    </td>
+                                </tr>
+                                
+                            </table>
+                            
+
+
+                            <m4><i class="fa fa-helmet-safety" style="color: white;"></i> Safety</m4>
+                            <ul id="safety-rules-list">
+                                <li>
+                                    <m1>Vertical Separation Warning</m1>
+                                    <m2 class="px-3">
+                                        <span id="safeAltitudeDifference" style="color: white">10</span>
+                                        <span style="color: white">m.</span>
+                                    </m2>
+                                </li>
+                                <li>
+                                    <input type="range" class="form-range" id="vol" name="vol" min="2" max="30" value="10"
+                                        onInput="altitudeSafetyDistance = this.value; document.getElementById('safeAltitudeDifference').innerHTML = this.value;" />
+                                </li>
+                            </ul>
+
+                            {% comment %} <table>
+                                <tr>
+                                    <td class="tools-option-title">SafeDrones Data</td>
+                                    <td>
+                                        <input
+                                            data-onstyle="success"
+                                            data-toggle="toggle"
+                                            id="safedronesInfoToggle"
+                                            onchange="toggleRiskCalculation(this.id)"
+                                            type="checkbox" />
+                                    </td>
+                                </tr>
+                            </table>
+                            
+                            <table>
+                                <tr>
+                                    <td class="tools-option-title">Sinadra Data</td>
+                                    <td>
+                                        <input
+                                            data-onstyle="success"
+                                            data-toggle="toggle"
+                                            id="sinadraInfoToggle"
+                                            onchange="toggleSinadraCalculation(this.id)"
+                                            type="checkbox" />
+                                    </td>
+                                </tr>
+                            </table>     {% endcomment %}                            
+
+
+                            <m4><i class="fa fa-vector-square" style="color: white;"></i> Object Detection</m4>
+                            <table>
+                                <tr>
+                                    <td class="tools-option-title">Show Detections</td>
+                                    <td>
+                                        <input
+                                            data-onstyle="success"
+                                            data-toggle="toggle"
+                                            id="showDetsToggle"
+                                            onchange="toggleDetObject()"
+                                            type="checkbox" />
+                                    </td>
+                                </tr>
+                            </table>                            
+                            <ul id="detection-types-list"></ul>   
+                            
+
+                        </div>
+                    </ul>
+                </li>
+
+                {% comment %} Algorithms {% endcomment %}
+                <li>
+                    <a href="#" class="arrow-menu">
+                        <i class="fa-solid fa-calculator"></i>
+                        <span class="link_name arrow">Algorithms</span>
+                        <i class="fas fa-chevron-down arrow" style="font-size: 15px"></i>
+                    </a>
+                    <ul class="sub-menu">
+                        <li>
+                            <a class="link_name" href="#">Algorithms</a>
+                        </li>
+                        <table>
+                            <tr>
+                                <td colspan="2" style="padding-left: 0px">
+                                    <m4><i class="fa fa-wrench" style="color: white;"></i> Manage</m4>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>View or Load Algorithms</td>
+                                <td>
+                                    <form action="{% url 'algorithms' operation_name=operation.operation_name %}">
+                                        <button aria-pressed="false" class="btn btn-outline-success panel-btn" type="submit">LOAD</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="2" style="padding-left: 0px">
+                                    <m4><i class="fa fa-fire" style="color: white;"></i> Fire Spread</m4>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Calculate Fire Spread</td>
+                                <td>
+                                    <button
+                                        aria-pressed="false"
+                                        class="btn btn-outline-success panel-btn"
+                                        id="fireSpreadAlgorithmBtn"
+                                        type="button"
+                                        onclick="runFireSpreadDetAlgorithm()">
+                                        GO
+                                    </button>
+                                    <button
+                                        aria-pressed="false"
+                                        class="btn btn-outline-danger panel-btn"
+                                        id="clearFireDataBtn"
+                                        type="button"
+                                        onclick="clearFireDataFromMap()">
+                                        CLEAR
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="2" style="padding-left: 0px">
+                                    <m4><i class="fa fa-cube" style="color: white;"></i> Aerial Image Processing</m4>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>3D Model & Orthophoto</td>
+                                <td>
+                                    <button
+                                        aria-pressed="false"
+                                        class="btn btn-outline-success panel-btn"
+                                        id="uploadObjectBtn"
+                                        type="button"
+                                        onclick="loadExternalODMAPI()">
+                                        CREATE
+                                    </button>
+                                    <button
+                                        aria-pressed="false"
+                                        class="btn btn-outline-danger panel-btn"
+                                        id="clearObjectBtn"
+                                        type="button"
+                                        onclick="clearObjectFromMap()">
+                                        CLEAR
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="2" style="padding-left: 0px">
+                                    <m4><i class="fa fa-cubes" style="color: white;"></i> 3D Points & Meshes</m4>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Load 3D Points</td>
+                                <td>
+                                    <button
+                                        aria-pressed="false"
+                                        class="btn btn-outline-success panel-btn bldmp"
+                                        id="points_mesh_load"
+                                        onclick="loadLidarPoints()"
+                                        type="button">
+                                        LOAD
+                                    </button>
+                                    <button
+                                        aria-pressed="false"
+                                        class="btn btn-outline-danger panel-btn bldmp"
+                                        id="points_mesh_clean"
+                                        onclick="clearLidarPoints()"
+                                        type="button">
+                                        CLEAN
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Process 3D Meshes</td>
+                                <td>
+                                    <button
+                                        aria-pressed="false"
+                                        class="btn btn-outline-success panel-btn bldmp"
+                                        id="mesh_process"
+                                        onclick="processLidarPointsToMesh()"
+                                        type="button">
+                                        PROCESS
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Load 3D Meshes</td>
+                                <td>
+                                    <button
+                                        aria-pressed="false"
+                                        class="btn btn-outline-success panel-btn bldmp"
+                                        id="triangle_mesh_load"
+                                        onclick="loadLidarMesh()"
+                                        type="button">
+                                        LOAD
+                                    </button>
+                                    <button
+                                        aria-pressed="false"
+                                        class="btn btn-outline-danger panel-btn bldmp"
+                                        id="triangle_mesh_clean"
+                                        onclick="clearLidarMesh()"
+                                        type="button">
+                                        CLEAN
+                                    </button>
+                                </td>
+                            </tr>
+                            {% comment %}
+                            <tr>
+                                <td colspan="2" style="padding-left: 0px">
+                                    <m4>Motor Failure Risk</m4>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Calculate Risk</td>
+                                <td>
+                                    <button
+                                        aria-pressed="false"
+                                        class="btn btn-outline-success panel-btn"
+                                        id="calculateRiskBtn"
+                                        type="button"
+                                        onclick="startCalculatingRisk()">
+                                        GO
+                                    </button>
+                                </td>
+                                <td>Calculate Risk</td>
+                                <td>
+                                    <button
+                                        aria-pressed="false"
+                                        class="btn btn-outline-success panel-btn"
+                                        id="calculateRiskBtn"
+                                        type="button"
+                                        onclick="startCalculatingRisk()">
+                                        GO
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endcomment %}
+                        </table>
+                    </ul>
+                </li>
+
+
+                {% comment %} Map Layers {% endcomment %}
+                <li>
+                    <a href="#" class="arrow-menu">
+                        <i class="fa-solid fa-layer-group"></i>
+                        <span class="link_name arrow">Map Layers</span>
+                        <i class="fas fa-chevron-down arrow" style="font-size: 15px"></i>
+                    </a>
+                    <ul class="sub-menu" style="overflow: hidden; max-width: 300px">
+                        <li>
+                            <a class="link_name" href="#">Map Layers</a>
+                        </li>
+                        <ul id="map-layers-list">
+                            <table>
+                                <tr>
+                                    <td colspan="2" style="padding-left: 0px">
+                                        <m4><i class="fa fa-location-crosshairs" style="color: white;"></i> Cyprus</m4>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Roads</td>
+                                    <td class="table_second_td">
+                                        <input
+                                            data-onstyle="success"
+                                            data-toggle="toggle"
+                                            id="roadLayerToggle"
+                                            onchange="toggleLayerVisibility(this.id)"
+                                            type="checkbox" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Buildings</td>
+                                    <td class="table_second_td">
+                                        <input
+                                            data-onstyle="success"
+                                            data-toggle="toggle"
+                                            id="buildingsLayerToggle"
+                                            onchange="toggleLayerVisibility(this.id)"
+                                            type="checkbox" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Dams</td>
+                                    <td class="table_second_td">
+                                        <input
+                                            data-onstyle="success"
+                                            data-toggle="toggle"
+                                            id="damsLayerToggle"
+                                            onchange="toggleLayerVisibility(this.id)"
+                                            type="checkbox" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Hospitals</td>
+                                    <td class="table_second_td">
+                                        <input
+                                            data-onstyle="success"
+                                            data-toggle="toggle"
+                                            id="hospitalsLayerToggle"
+                                            onchange="toggleLayerVisibility(this.id)"
+                                            type="checkbox" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>EAC Poles</td>
+                                    <td class="table_second_td">
+                                        <input
+                                            data-onstyle="success"
+                                            data-toggle="toggle"
+                                            id="polesLayerToggle"
+                                            onchange="toggleLayerVisibility(this.id)"
+                                            type="checkbox" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>EAC Pole Lines</td>
+                                    <td class="table_second_td">
+                                        <input
+                                            data-onstyle="success"
+                                            data-toggle="toggle"
+                                            id="polesLinesToggle"
+                                            onchange="toggleLayerVisibility(this.id)"
+                                            type="checkbox" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Restricted/Allowed Area</td>
+                                    <td class="table_second_td">
+                                        <input
+                                            data-onstyle="success"
+                                            data-toggle="toggle"
+                                            id="restrictedAllowedAreasForDroneToggle"
+                                            onchange="toggleLayerVisibility(this.id)"
+                                            type="checkbox" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>FIR</td>
+                                    <td class="table_second_td">
+                                        <input
+                                            data-onstyle="success"
+                                            data-toggle="toggle"
+                                            id="cyprusFirToggle"
+                                            onchange="toggleLayerVisibility(this.id)"
+                                            type="checkbox" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Operation Areas</td>
+                                    <td class="table_second_td">
+                                        <input
+                                            data-onstyle="success"
+                                            data-toggle="toggle"
+                                            id="operationAreasToggle"
+                                            onchange="toggleLayerVisibility(this.id)"
+                                            type="checkbox" />
+                                    </td>
+                                </tr>
+                                {% if use_online_map == True %}
+                                <tr>
+                                    <td colspan="2" style="padding-left: 0px">
+                                        <m4><i class="fa fa-globe" style="color: white;"></i> Global</m4>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Contour Elevation (10m)</td>
+                                    <td class="table_second_td">
+                                        <input
+                                            data-onstyle="success"
+                                            data-toggle="toggle"
+                                            id="contoutEleLayerToggle"
+                                            onchange="toggleLayerVisibility(this.id)"
+                                            type="checkbox" />
+                                    </td>
+                                </tr>
+                                {% endif %}
+                            </table>
+                        </ul>
+                    </ul>
+                </li>
+
+
+
+                {% comment %} Map Styles {% endcomment %}
+                <li>
+                    <a href="#" class="arrow-menu">
+                        <i class="fa-solid fa-earth-americas"></i>
+                        <span class="link_name arrow">Map Styles</span>
+                        <i class="fas fa-chevron-down arrow" style="font-size: 15px"></i>
+                    </a>
+                    <ul class="sub-menu">
+                        <li>
+                            <a class="link_name" href="#">Map Styles</a>
+                        </li>
+                        <div id="map-styles-ui-side" class="sidebar-submenu" id="sidebar-submenu">
+                            <!-- <m4><i class="fa fa-scroll" style="color: white;"></i> Styles</m4> -->
+                            <fieldset>
+                                <div class="custom-control custom-radio">
+                                    <input
+                                        class="custom-control-input"
+                                        id="basic-v2"
+                                        name="map-styles"
+                                        onchange="changeMapStyle(this.id, MAPLIBRE_STYLE)"
+                                        type="radio"
+                                        data-save="false" />
+                                    <label class="custom-control-label" for="basic-v2" style="color: #ffffff; font-size: 13px">Basic</label>
+                                </div>
+                                <div class="custom-control custom-radio">
+                                    <input
+                                        class="custom-control-input"
+                                        id="streets-v2"
+                                        name="map-styles"
+                                        onchange="changeMapStyle(this.id, MAPLIBRE_STYLE)"
+                                        type="radio"
+                                        data-save="false" />
+                                    <label class="custom-control-label" for="streets-v2" style="color: #ffffff; font-size: 13px">Streets</label>
+                                </div>
+                                <div class="custom-control custom-radio">
+                                    <input
+                                        class="custom-control-input"
+                                        id="hybrid"
+                                        name="map-styles"
+                                        onchange="changeMapStyle(this.id, MAPLIBRE_STYLE)"
+                                        type="radio"
+                                        data-save="false" />
+                                    <label class="custom-control-label" for="hybrid" style="color: #ffffff; font-size: 13px">Satellite</label>
+                                </div>
+                                <div class="custom-control custom-radio">
+                                    <input
+                                        class="custom-control-input"
+                                        id="topo"
+                                        name="map-styles"
+                                        onchange="changeMapStyle(this.id, MAPLIBRE_STYLE)"
+                                        type="radio"
+                                        data-save="false" />
+                                    <label class="custom-control-label" for="topo" style="color: #ffffff; font-size: 13px">Terrain-2D</label>
+                                </div>
+                                {% comment %}
+                                <div class="custom-control custom-radio">
+                                    <input
+                                        class="custom-control-input"
+                                        id="offline-tiles"
+                                        name="defaultExampleRadios"
+                                        onchange="changeMapStyle(this.id, OWN_LAYER)"
+                                        type="radio"
+                                        data-save="false" />
+                                    <label class="custom-control-label" for="offline-tiles" style="color: #c7c7c7; font-size: 13px"
+                                        >Offline Layer</label
+                                    >
+                                </div>
+                                {% endcomment %}
+                            </fieldset>
+                        </div>
+                    </ul>
+                </li>
+                
+                
+            </ul>
+            <!-- <li> -->
+                <div class="side-menu-last">
+                    <!-- <hr class="info_table_lines" /> -->
+                    <div class="logos">
+                        <img id="kios_logo" src="{% static 'aiders/imgs/kios_logo.png' %}" />
+                    </div>
+                    <div class="logos-icon">
+                        <a href="{% url 'manage_operations' %}">
+                            <img id="platform_logo" src="{% static 'aiders/imgs/aiders_logo_no_background.png' %}" />
+                        </a>
+                    </div>
+                </div>
+            <!-- </li> -->
+        </div>
+        <section class="main-section">
+            <div class="main-content">
+                <div id="csrf">{% csrf_token %}</div>
+                <div id="map"></div>
+            </div>
+        </section>
+        <div id="overlay" class="overlay-section">
+            <div id="fireSpreadBox" class="fireSpreadBox center-div overlay-popup" style="display: none; border-radius: 2%">
+                <span id="close" style="font-size: 20px; cursor: pointer" onclick="hideParentEl(this)">x</span>
+                <h4 class="card-title mb-3 text-dark text-uppercase" style="font-weight: 700">Fire Spread Prediction</h4>
+                <div class="row">
+                    <label style="font-size: 16px">Click anywhere on the map to indicate the starting point of the fire.</label>
+                </div>
+                <form name="fire_prediction_data" class="fire_prediction_data" action="">
+                    <input type="hidden" id="operationInput" name="operationInput" value="{{ operation }}" />
+                    <input type="hidden" id="userInput" name="userInput" value="{{ user }}" />
+                    <div class="row" style="margin-top: 10px">
+                        <label for="timeStepsInput" class="form-label">Time Steps</label>
+                        <div class="col">
+                            <input type="text" class="form-control" id="timeStepsInput" placeholder="seconds" />
+                        </div>
+                        <div class="col">
+                            <select class="custom-select" hidden id="inlineFormCustomSelect">
+                                <option>Choose...</option>
+                                <option selected value="seconds">Seconds</option>
+                                {% comment %}
+                                <option value="minutes">Minutes</option>
+                                {% endcomment %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row" style="margin-top: 10px">
+                        <label for="initialFFInput" class="form-label">Initial Fire Fronts</label>
+                        <div class="col">
+                            <input type="number" class="form-control" placeholder="Number of initial fire fronts" id="initialFFInput" />
+                        </div>
+                    </div>
+                    <div class="row" style="margin-top: 10px">
+                        <label for="windAngleInput" class="form-label">Wind Angle(°)</label>
+                        <div class="col">
+                            <input type="number" class="form-control" id="windAngleInput" placeholder="Wind angle in radians" />
+                        </div>
+                    </div>
+                    <div class="row" style="margin-top: 10px">
+                        <label for="windSpeedInput" class="form-label">Wind Speed(m/s)</label>
+                        <div class="col">
+                            <input type="number" class="form-control" id="windSpeedInput" placeholder="Ground Wind speed in m/s" />
+                        </div>
+                    </div>
+                    <div class="row" style="margin-top: 10px">
+                        <label for="fireSpeedInput" class="form-label">Fire Speed(m/s)</label>
+                        <div class="col">
+                            <input type="number" class="form-control" id="fireSpeedInput" placeholder="Fire speed in m/s" />
+                        </div>
+                    </div>
+                    <div class="row" style="margin-top: 10px">
+                        <label for="timeIntervalInput" class="form-label">Time Interval</label>
+                        <div class="col">
+                            <input
+                                type="number"
+                                class="form-control"
+                                time="interval"
+                                id="timeIntervalInput"
+                                placeholder="Visualize fire spread in seconds" />
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-form-sbmt" id="firepredictionbutton" onclick="submitFireSpreadInput()">Submit</button>
+                </form>
+            </div>
+            <div class="calculation-box1 overlay-popup" style="display: none" id="calculation-box-div1">
+                <h3 style="font-size: 15px; display: inline">Area of the selected points:</h3>
+                <div id="calculated-area1">Null</div>
+                <h3 style="font-size: 15px">Length of the selected points:</h3>
+                <div id="calculated-area2">Null</div>
+            </div>
+            <div id="clickInfoBox" class="clickInfoBox overlay-popup" style="display: none">
+                <div>
+                    <b>Click Anywhere on the map! </b>
+                </div>
+                <div><b>Longitude: </b><span id="lng"></span></div>
+                <div><b>Latitude: </b> <span id="lat"></span></div>
+                <div><b>Highest Elevation: </b> <span id="ele"></span></div>
+                <div><b>Radius: </b><span id="rad"></span></div>
+                <div><b>Buildings: </b><span id="blds"></span></div>
+                <div><b>Roads: </b> <span id="rds"></span></div>
+            </div>
+            <div id="loraBox0" class="loraBox overlay-popup" style="display: none">
+                <b>
+                    <div id="boxTitle">Loading...</div>
+                </b>
+                <div><b>Tag Name: </b><span id="tagName"></span></div>
+                <div><b>Longitude: </b><span id="lng"></span></div>
+                <div><b>Latitude: </b> <span id="lat"></span></div>
+                <div><b>Last Update: </b> <span id="last_update"></span></div>
+                <div><b>Up Time: </b> <span id="up_time"></span></div>
+            </div>
+            <div id="loraBox1" class="loraBox overlay-popup" style="display: none">
+                <b>
+                    <div id="boxTitle">Loading...</div>
+                </b>
+                <div><b>Tag Name: </b><span id="tagName"></span></div>
+                <div><b>Longitude: </b><span id="lng"></span></div>
+                <div><b>Latitude: </b> <span id="lat"></span></div>
+                <div><b>Last Update: </b> <span id="last_update"></span></div>
+                <div><b>Up Time: </b> <span id="up_time"></span></div>
+            </div>
+            <div id="loraBox2" class="loraBox overlay-popup" style="display: none">
+                <b>
+                    <div id="boxTitle">Loading...</div>
+                </b>
+                <div><b>Tag Name: </b><span id="tagName"></span></div>
+                <div><b>Longitude: </b><span id="lng"></span></div>
+                <div><b>Latitude: </b> <span id="lat"></span></div>
+                <div><b>Last Update: </b> <span id="last_update"></span></div>
+                <div><b>Up Time: </b> <span id="up_time"></span></div>
+            </div>
+            <div id="loraBox3" class="loraBox overlay-popup" style="display: none">
+                <b>
+                    <div id="boxTitle">Loading...</div>
+                </b>
+                <div><b>Tag Name: </b><span id="tagName"></span></div>
+                <div><b>Longitude: </b><span id="lng"></span></div>
+                <div><b>Latitude: </b> <span id="lat"></span></div>
+                <div><b>Last Update: </b> <span id="last_update"></span></div>
+                <div><b>Up Time: </b> <span id="up_time"></span></div>
+            </div>
+            <div id="loraBox4" class="loraBox overlay-popup" style="display: none">
+                <b>
+                    <div id="boxTitle">Loading...</div>
+                </b>
+                <div><b>Tag Name: </b><span id="tagName"></span></div>
+                <div><b>Longitude: </b><span id="lng"></span></div>
+                <div><b>Latitude: </b> <span id="lat"></span></div>
+                <div><b>Last Update: </b> <span id="last_update"></span></div>
+                <div><b>Up Time: </b> <span id="up_time"></span></div>
+            </div>
+            <div id="loraBox5" class="loraBox overlay-popup" style="display: none">
+                <b>
+                    <div id="boxTitle">Loading...</div>
+                </b>
+                <div><b>Tag Name: </b><span id="tagName"></span></div>
+                <div><b>Longitude: </b><span id="lng"></span></div>
+                <div><b>Latitude: </b> <span id="lat"></span></div>
+                <div><b>Last Update: </b> <span id="last_update"></span></div>
+                <div><b>Up Time: </b> <span id="up_time"></span></div>
+            </div>
+            <div id="loraBox6" class="loraBox overlay-popup" style="display: none">
+                <b>
+                    <div id="boxTitle">Loading...</div>
+                </b>
+                <div><b>Tag Name: </b><span id="tagName"></span></div>
+                <div><b>Longitude: </b><span id="lng"></span></div>
+                <div><b>Latitude: </b> <span id="lat"></span></div>
+                <div><b>Last Update: </b> <span id="last_update"></span></div>
+                <div><b>Up Time: </b> <span id="up_time"></span></div>
+            </div>
+            <div id="loraBox7" class="loraBox overlay-popup" style="display: none">
+                <b>
+                    <div id="boxTitle">Loading...</div>
+                </b>
+                <div><b>Tag Name: </b><span id="tagName"></span></div>
+                <div><b>Longitude: </b><span id="lng"></span></div>
+                <div><b>Latitude: </b> <span id="lat"></span></div>
+                <div><b>Last Update: </b> <span id="last_update"></span></div>
+                <div><b>Up Time: </b> <span id="up_time"></span></div>
+            </div>
+            <div id="loraBox8" class="loraBox overlay-popup" style="display: none">
+                <b>
+                    <div id="boxTitle">Loading...</div>
+                </b>
+                <div><b>Tag Name: </b><span id="tagName"></span></div>
+                <div><b>Longitude: </b><span id="lng"></span></div>
+                <div><b>Latitude: </b> <span id="lat"></span></div>
+                <div><b>Last Update: </b> <span id="last_update"></span></div>
+                <div><b>Up Time: </b> <span id="up_time"></span></div>
+            </div>
+            <div id="loraBox9" class="loraBox overlay-popup" style="display: none">
+                <b>
+                    <div id="boxTitle">Loading...</div>
+                </b>
+                <div><b>Tag Name: </b><span id="tagName"></span></div>
+                <div><b>Longitude: </b><span id="lng"></span></div>
+                <div><b>Latitude: </b> <span id="lat"></span></div>
+                <div><b>Last Update: </b> <span id="last_update"></span></div>
+                <div><b>Up Time: </b> <span id="up_time"></span></div>
+            </div>
+        </div>
+
+        <div id="setDetectedObjectModal" class="modal" tabindex="-1" role="dialog">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="setDetectedObjectModalLabel">Set Detected-Object Data</h5>
+                        <button type="button" class="close" data-dismiss="modal" 
+                        onclick="CancelSetDetectedObjectData()" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                            
+                    <form id="SetDetectedObjectDataForm" action="" novalidate="novalidate"
+                        class="single-action-form" method="post">
+                        
+                        <div class="modal-body">
+                    
+                            <div id="form-content">
+
+                                <div class="form-group">
+                                    <label for="add_md_descr">Description</label>
+                                    <input name="description" type="text" class="form-control" id="detected_object_descInput" placeholder="Description">
+                                </div>
+                                
+                                <input type="hidden" id="detected_object_track_id" name="track_id" class="form-control">
+
+                            </div>
+                        
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-outline-dark" data-dismiss="modal" 
+                            onclick="CancelSetDetectedObjectData()">Cancel</button>
+
+                            <button type="button" name="" value="" class="btn btn-primary form-control-button"
+                                onclick="submitSetDetectedObjectData()" >
+                                Submit
+                            </button>
+                        </div>
+                        
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div id="addUserSetObjectModal" class="modal" tabindex="-1" role="dialog">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="addUserSetObjectModalLabel">Add User-Set-Object Data</h5>
+                        <button type="button" class="close" data-dismiss="modal" 
+                        onclick="$('#addUserSetObjectModal').hide();" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+            
+                    <!-- <div class="modal-body">
+                        <p>Are you Sure ?</p>
+                    </div> -->
+                
+                    <form id="addUserSetObjectDataForm" action="" novalidate="novalidate"
+                        class="single-action-form" method="post">
+                        
+                        <div class="modal-body">
+                    
+                            <div id="form-content">
+
+                                <div class="form-group">
+                                    <label for="add_md_descr">Description</label>
+                                    <input name="description" type="text" class="form-control" id="add_user_set_obj_descInput" placeholder="Description">
+                                </div>
+        
+                                <div class="form-group">
+                                    <label for="add_md_latInput">Latitude</label>
+                                    <input name="latitude" type="text" class="form-control" id="add_user_set_obj_latInput" placeholder="Latitude">
+                                </div>
+        
+                                <div class="form-group">
+                                    <label for="add_md_lonInput">Longitude</label>
+                                    <input name="longitude"  type="text" class="form-control" id="add_user_set_obj_lonInput" placeholder="Longitude">
+                                </div>
+
+                            </div>
+                        
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-outline-dark" data-dismiss="modal" 
+                            onclick="$('#addUserSetObjectModal').hide() ;">Cancel</button>
+
+                            <button type="button" name="" value="" class="btn btn-primary form-control-button"
+                                onclick="submitAddUserSetObjectData()" >
+                                Submit
+                            </button>
+                        </div>
+                        
+                    </form>
+                </div>
+            </div>
+        </div>
+    
+        <div id="updateUserSetObjectModal" class="modal" tabindex="-1" role="dialog">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="updateUserSetObjectModalLabel">Update Object Data</h5>
+                        <button type="button" class="close" data-dismiss="modal" 
+                        onclick="CancelObjectUpdate()" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+            
+                    <form id="updateUserSetObjectDataForm" action="" novalidate="novalidate"
+                    class="single-action-form" method="post">
+                    <div class="modal-body">
+                    
+                        <div id="form-content">
+
+                            <div class="form-group">
+                                <label for="upd_user_set_obj_descInput">Description</label>
+                                <input name="description" type="text" class="form-control" id="upd_user_set_obj_descInput" placeholder="Description">
+                            </div>
+    
+                            <div class="form-group">
+                                 <label for="upd_user_set_obj_latInput">Latitude</label>
+                                 <input name="latitude" type="text" class="form-control" id="upd_user_set_obj_latInput" placeholder="Latitude">
+                            </div>
+    
+                            <div class="form-group">
+                                 <label for="upd_user_set_obj_lonInput">Longitude</label>
+                                 <input name="longitude"  type="text" class="form-control" id="upd_user_set_obj_lonInput" placeholder="Longitude">
+                            </div>
+                            
+                            <input type="hidden" id="upd_user_set_obj_id" name="object_id" class="form-control">
+
+                        </div>
+                    
+                    </div>
+                        <div class="modal-footer">
+                        
+                            <button type="button" class="btn btn-outline-dark" data-dismiss="modal" 
+                                onclick="CancelObjectUpdate()">Cancel</button>
+
+                            <button type="button" name="" value="" class="btn btn-primary form-control-button"
+                                onclick="submitUpdateUserSetObjectData()" >
+                                Submit
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div id="UserSetObjectMoveModal" class="modal" tabindex="-1" role="dialog">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="UserSetObjectMoveModalTitle">Change Object Location</h5>
+                        <button type="button" class="close" data-dismiss="modal" 
+                        onclick="CancelObjectLocation()" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+            
+                    <div class="modal-body">
+                        <p>Are you Sure ?</p>
+                    
+                
+                    <form id="ObjectMoveForm" action="" novalidate="novalidate"
+                    class="single-action-form" method="post">
+                    
+                        
+                        
+                            <div class="form-group">
+                                <label for="move_m_object_latInput">Latitude</label>
+                                <input  name="latitude" type="text" class="form-control" id="move_m_object_latInput" placeholder="Γεωγρ. Πλάτος">
+                            </div>
+                        
+                            <div class="form-group">
+                                <label for="move_m_object_lonInput">Longitude</label>
+                                <input  name="longitude" type="text" class="form-control" id="move_m_object_lonInput" placeholder="Γεωγρ. Μήκος">
+                            </div>
+
+                            <input type="hidden" id="move_m_object_id" name="target_id" class="form-control">
+                        </div>
+                        <div class="modal-footer">
+
+                            <button type="button" class="btn btn-outline-dark"
+                            onclick="CancelObjectLocation()">Cancel</button>
+
+                            <button type="button" name="" value="" class="btn btn-primary form-control-button"
+                            onclick="SubmitObjectLocation()" >
+                            Submit
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+
+        {% include 'aiders/forms/coverage.html' %}
+
+
+        <script>
+            let arrowMenu = document.querySelectorAll('.arrow-menu');
+            for (var i = 0; i < arrowMenu.length; i++) {
+                arrowMenu[i].addEventListener('click', (e) => {
+                    let arrowParentMenu = e.target.parentElement; //selecting main parent of arrow
+                    let arrowParent = e.target.parentElement.parentElement;
+                    if (arrowParentMenu.parentElement.classList.contains('nav-links')) {
+                        for (var j = 0; j < arrowMenu.length; j++) {
+                            if (arrowMenu[j].parentElement != arrowParentMenu) {
+                                arrowMenu[j].parentElement.classList.remove('showMenu');
+                            }
+                        }
+                        arrowParentMenu.classList.toggle('showMenu');
+                    }
+                    if (arrowParent.parentElement.classList.contains('nav-links')) {
+                        for (var j = 0; j < arrowMenu.length; j++) {
+                            if (arrowMenu[j].parentElement != arrowParent) {
+                                arrowMenu[j].parentElement.classList.remove('showMenu');
+                            }
+                        }
+                        arrowParent.classList.toggle('showMenu');
+                    }
+                });
+            }
+
+            let sidebar = document.querySelector('.sidebar');
+            let overlay = document.querySelector('.overlay-section');
+            let sidebarBtn = document.querySelector('.logo-menu');
+            sidebarBtn.addEventListener('click', () => {
+                sidebar.classList.toggle('close-bar');
+                overlay.classList.toggle('close-bar');
+            });
+            // Function that will disable buttons for a specific period of time
+            function buttonDelayer(button_id) {
+                button_id.disabled = true;
+                setTimeout(function () {
+                    button_id.disabled = false;
+                }, 2000);
+            }
+            // Send front end user toogle input
+            function postElementId(elementId, elementValue) {
+                //console.log(elementId, elementValue)
+                $.ajax({
+                    type: 'POST',
+                    url: dutils.urls.resolve('front_end_actions', { operation_name: CURRENT_OP }),
+                    data: { elementId: elementId, active: elementValue },
+                    headers: {
+                        'X-CSRFToken': document.getElementById('csrf').querySelector('input').value,
+                    },
+                    success: function (response) {
+                        //console.log(response)
+                    },
+                });
+            }
+        </script>
+        {% if use_online_map == True %}
+        <script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.3.0/mapbox-gl-draw.js"></script>
+        <link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.3.0/mapbox-gl-draw.css" type="text/css" />
+        {% endif %}
+        <script src="{% static 'aiders/javascripts/dutils/dutils.js' %}" type="text/javascript"></script>
+        <script src="{% static 'aiders/javascripts/dutils/dutils_conf_urls.js' %}" type="text/javascript"></script>
+        <script src="{% static 'aiders/javascripts/search_bar/geocoder_lat_lng.js' %}" type="text/javascript"></script>
+        <script src="{% static 'aiders/javascripts/detection/detection_models.js' %}" type="text/javascript"></script>
+        <script src="{% static 'aiders/javascripts/drone/drone_data.js' %}" type="text/javascript"></script>
+        <script src="{% static '/aiders/javascripts/build_map/buildMap.js' %}" type="text/javascript"></script>
+        <script src="{% static 'aiders/javascripts/water_sampler/water_collector.js' %}" type="text/javascript"></script>
+        <script src="{% static 'aiders/javascripts/panel/panel.js' %}" type="text/javascript"></script>
+        <script src="{% static 'aiders/javascripts/live_stream/live_stream.js' %}" type="text/javascript"></script>
+        <script src="{% static 'aiders/javascripts/popups/popups.js' %}" type="text/javascript"></script>
+        <script src="{% static 'aiders/javascripts/map_layers/layer_creation.js' %}" type="text/javascript"></script>
+
+
+        <script src="{% static 'aiders/javascripts/map/map.js' %}" type="text/javascript"></script>
+        <script src="{% static 'aiders/javascripts/platform/platform.js' %}" type="text/javascript"></script>
+
+
+        <script src="{% static 'aiders/javascripts/map_layers/layer_operations.js' %}" type="text/javascript"></script>
+        <script src="{% static 'aiders/javascripts/constants/colors.js' %}"></script>
+        <script src="{% static 'aiders/javascripts/drone/drone_operations.js' %}" type="text/javascript"></script>
+        <script src="{% static 'aiders/javascripts/device/device_operations.js' %}" type="text/javascript"></script>
+        <script src="{% static 'aiders/javascripts/device/device_data.js' %}" type="text/javascript"></script>
+        <script src="{% static 'aiders/javascripts/device/imageMarkers.js' %}" type="text/javascript"></script>
+        <script src="{% static 'aiders/javascripts/balora/balora_operations.js' %}" type="text/javascript"></script>
+        <script src="{% static 'aiders/javascripts/balora/balora_data.js' %}" type="text/javascript"></script>
+        <script src="{% static 'aiders/javascripts/mission/uav_missions.js' %}" type="text/javascript"></script>
+        <script src="{% static 'aiders/javascripts/utils/utils.js' %}" type="text/javascript"></script>
+        <script src="{% static 'aiders/javascripts/map_measure/user_drawing.js' %}" type="text/javascript"></script>
+        <script src="{% static 'aiders/javascripts/detection/detection.js' %}" type="text/javascript"></script>
+        <script src="{% static 'aiders/javascripts/manually_set_objects/manually_set_objects.js' %}" type="text/javascript"></script>
+        <script src="{% static 'aiders/javascripts/manually_set_objects/manually_set_objects_receiver.js' %}" type="text/javascript"></script>
+        <script src="{% static 'aiders/javascripts/manually_set_objects/manually_set_objects_draggable.js' %}" type="text/javascript"></script>
+        <script src="{% static 'aiders/javascripts/manually_set_objects/pointOfInterestMarker.js' %}" type="text/javascript"></script>
+        
+        <script src="{% static 'aiders/javascripts/map/disaster_epicenter_marker.js' %}" type="text/javascript"></script>
+
+        <script src="{% static 'aiders/javascripts/click_area_information/click_area_information.js' %}"></script>
+        <script src="{% static 'aiders/javascripts/map_layers/layer_click_listeners.js' %}"></script>
+        <script src="{% static 'aiders/javascripts/map_layers/ply_loader.js' %}"></script>
+        <script src="{% static 'aiders/javascripts/fire_perdition/fire_spread_detection.js' %}"></script>
+
+        <link href="{% static 'aiders/css/uav_mission/uav_missions.css' %}" rel="stylesheet" />
+        <link href="{% static 'aiders/css/user_drawing/user_drawing.css' %}" rel="stylesheet" />
+        <link href="{% static 'aiders/css/panel/panel.css' %}" rel="stylesheet" />
+        
+        <script src="{% static 'aiders/javascripts/weather/weather_data.js' %}"></script>
+        <script src="{% static 'aiders/javascripts/map_layers/object_loader.js' %}"></script>
+        <script src="{% static 'aiders/javascripts/motor_failure_risk/motor_failure_risk_calculator.js' %}"></script>
+        <script src="{% static 'aiders/javascripts/sesame/sinadra.js' %}"></script>
+        <script src="{% static 'aiders/javascripts/sesame/safeml.js' %}"></script>
+        <script src="{% static 'aiders/javascripts/mission/fetch_path_plan.js' %}"></script>
+        <script src="{% static 'aiders/javascripts/drone/join_operation.js' %}"></script>
+        <script src="{% static 'aiders/javascripts/display_on_map/display_data_on_map.js' %}"></script>
+        <script src="{% static 'aiders/javascripts/drone/lidarPointCloud.js' %}"></script>
+        <script src="{% static 'aiders/javascripts/drone/lidarMesh.js' %}"></script>
+        <script src="{% static 'aiders/javascripts/lora/visualize_lora_devices.js' %}"></script>
+        <script src="{% static 'aiders/javascripts/coverage/coverage.js' %}"></script>
+    </body>
+</html>

@@ -1,0 +1,147 @@
+{
+    "resize_to": [1280, 720],
+
+    "stream_cfg": {
+        "resolution": [1920, 1080],
+        "frame_rate": 30,
+        "buffer_size": 10
+    },
+    "export_cfg": {
+      "folder_name": "results_TM",
+      "filename": "res-tm",
+      "extension": "csv",
+      "api_url": "http://194.42.36.41:8000/temp"
+    },
+    "mot_cfg": {
+        "detector_frame_skip": 2,
+        "class_ids": [0,1,2,3,4],
+        "live_drone":{
+          "START_ROS_MASTER_BASH_SCRIPT": "roslaunch_start.sh",
+          "drone_name": "kios_mavic2e",
+          "result_file": "dji_ros",
+          "ros_ip": "10.42.0.1"
+        },
+        "ssd_detector_cfg": {
+            "model": "SSDInceptionV2",
+            "tile_overlap": 0.25,
+            "tiling_grid": [4, 2],
+            "conf_thresh": 0.5,
+            "merge_thresh": 0.6,
+            "max_area": 120000
+        },
+        "yolo_detector_cfg": {
+            "model": "YOLOv4Tiny3l",
+            "conf_thresh": 0.25,
+            "nms_thresh": 0.5,
+            "max_area": 800000,
+            "min_aspect_ratio": 0.1
+        },
+        "yolo_detector_tile": {
+              "model": "YOLOv4Tiny_tile",
+              "conf_thresh": 0.25,
+              "nms_thresh": 0.4,
+              "max_area": 800000,
+              "min_aspect_ratio": 0.1,
+              "tile_size": [512,512]
+          },
+       "yolo_detector_ocv":{
+            "weights_file": "/app/logic/algorithms/object_detection/src/models/cfg/yolo/tyv43l/tyv4_3l_30000.weights",
+            "config_file": "/app/logic/algorithms/object_detection/src/models/cfg/yolo/tyv43l/tyv4_3l.cfg",
+            "classes_file": "/app/logic/algorithms/object_detection/src/models/cfg/yolo/vehicles.names",
+            "conf_thresh": 0.3 ,
+            "nms_thresh": 0.4,
+            "use_gpu": true,
+            "netsize": [512,512]
+        },
+       "yolov5_cfg": {
+            "size": 512,
+            "model_file": "/app/logic/algorithms/object_detection/src/models/cfg/people/best.engine",
+            "conf_thresh": 0.25,
+            "nms_thresh": 0.5,
+            "use_gpu": true,
+            "batch_size": 64,
+            "tiling": true,
+            "overlap": 0.2,
+            "device": 0,
+            "dnn": false,
+            "data": "/app/logic/algorithms/object_detection/src/models/cfg/yolov5/vehicles.yaml",
+            "fp16":false,
+            "max_det":1000,
+            "classes": []
+       },
+      "yolov5_custom": {
+            "model_path": "/app/logic/algorithms/object_detection/src/models/cfg/yolov5/yolov5m_512.pt",
+            "size": 512,
+            "tiling": true,
+            "use_gpu": true,
+            "batch_size": 64
+      },
+
+
+
+
+        "tracker_cfg": {
+            "max_age": 15,
+            "age_penalty": 1,
+            "motion_weight": 0.2,
+            "max_assoc_cost": 0.8,
+            "max_reid_cost": 0.1,
+            "iou_thresh": 0.3,
+            "duplicate_thresh": 0.6,
+            "occlusion_thresh": 0.6,
+            "conf_thresh": 0.35,
+            "confirm_hits": 1,
+            "history_size": 100,
+
+            "kalman_filter_cfg": {
+                "std_factor_acc": 9.0,
+                "std_offset_acc": 314.0,
+                "std_factor_det": [0.08, 0.08],
+                "std_factor_klt": [0.14, 0.14],
+                "min_std_det": [4.0, 4.0],
+                "min_std_klt": [5.0, 5.0],
+                "init_pos_weight": 20,
+                "init_vel_weight": 48,
+                "vel_coupling": 0.6,
+                "vel_half_life": 8
+            },
+
+            "flow_cfg": {
+                "bg_feat_scale_factor": [0.1, 0.1],
+                "opt_flow_scale_factor": [0.6, 0.6],
+                "feat_density": 0.005,
+                "feat_dist_factor": 0.06,
+                "ransac_max_iter": 500,
+                "ransac_conf": 0.99,
+                "max_error": 100,
+                "inlier_thresh": 4,
+                "bg_feat_thresh": 10,
+                "obj_feat_params": {
+                    "maxCorners": 1000,
+                    "qualityLevel": 0.06,
+                    "blockSize": 3
+                },
+                "opt_flow_params": {
+                    "winSize": [7, 7],
+                    "maxLevel": 5,
+                    "criteria": [3, 10, 0.03]
+                }
+            },
+             "flight_cfg": {
+                "altitude": 119.0,
+                "horizontal_fov" : 70.57,
+                "vertical_fov" : 55.11
+            }
+        },
+
+        "visualizer_cfg": {
+            "draw_detections": false,
+            "draw_confidence": false,
+            "draw_covariance": false,
+            "draw_klt": false,
+            "draw_obj_flow": false,
+            "draw_bg_flow": false,
+            "draw_trajectories": false
+        }
+    }
+}

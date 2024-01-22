@@ -1,0 +1,57 @@
+FROM ros:noetic
+
+#  install ROS and python dependencies and other required packages
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt update && apt-get install -y \
+    ros-noetic-gps-common \
+    ros-noetic-rosbridge-server \
+    ros-noetic-fkie-multimaster \
+    ros-noetic-rosserial-arduino \
+    ros-noetic-rosserial \    
+    python3 \
+    python3-pip \
+    python3-rospy \
+    netcat
+
+# Set the default Python version
+RUN ln -s /usr/bin/python3 /usr/bin/python    
+
+# for rqt graph
+ENV DBUS_SESSION_BUS_ADDRESS=unix:path=/var/run/dbus/system_bus_socket
+
+
+# Copy the python dependencies
+COPY ros/requirements.txt /app/requirements.txt
+# Install Python dependencies
+RUN pip install -r /app/requirements.txt
+
+# Set the sync_remote_nodes parameter to True in the master_sync.launch file
+RUN sed -i 's/<param name="sync_remote_nodes" value="False" \/>/<param name="sync_remote_nodes" value="True" \/>/' /opt/ros/noetic/share/fkie_master_sync/launch/master_sync.launch
+
+# Copy custom ROS message definitions
+COPY ros/ros_msgs /opt/ros_ws/src/ros_msgs
+# Build custom ROS messages
+RUN . /opt/ros/$ROS_DISTRO/setup.sh && \
+    cd /opt/ros_ws && \
+    catkin_make
+
+
+# copy the entrypoint bash script
+COPY ros/entrypoint.ros.sh .
+
+# Copy the python application
+COPY ros/app /app
+
+
+# Expose the port for ROS master and ROS websockets
+EXPOSE 11311 9090
+# Expose the port for the webserver
+EXPOSE 8765
+
+# Set ROS environment variables
+# ENV ROS_IP=192.168.0.2
+# ENV ROS_MASTER_URI=http://$ROS_IP:11311
+
+# run the entrypoint bash script
+ENTRYPOINT ["/bin/bash", "./entrypoint.ros.sh"]
+

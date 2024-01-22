@@ -1,0 +1,3569 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "1",
+        "NAME": "Κούκλια ",
+        "YEAR": "1900",
+        "RIVER": "-",
+        "CAPACITY (m3)": "4545000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "",
+        "ENRICHMENT": "Nαι",
+        "IRRIGATED ARES (Ha)": "-",
+        "KIND OF IRRIGATED AREA": "-",
+        "RIVER BASIN (km2)": "-",
+        "DAM CATEGORY": "Xωμάτινο",
+        "SIZE CATEGORY": "Μικρά Φράγματα",
+        "DAM HEIGHT (m)": "6",
+        "DAM LENGTH (m) ": "-",
+        "DAM VOLUME ('000 m3)": "-",
+        "RESERVOIR SURFACE ('000 m2)": "-",
+        "OVERFLOW SPILLWAY LENGTH (m)": "-",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "-",
+        "STUDY": "Τμήμα Αναπτύξεως Υδάτων",
+        "CONSTRUCTOR": "Τμήμα Αναπτύξεως Υδάτων"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          33.753769,
+          35.127016
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "2",
+        "NAME": "Λυθροδόντας (Κάτω)",
+        "YEAR": "1945",
+        "RIVER": "Κουτσός (Γιαλιάς)",
+        "CAPACITY (m3)": "32000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "Nαι",
+        "ENRICHMENT": "",
+        "IRRIGATED ARES (Ha)": "33.5",
+        "KIND OF IRRIGATED AREA": "Λαχανικά",
+        "RIVER BASIN (km2)": "8.7",
+        "DAM CATEGORY": "Βαρύτητας",
+        "SIZE CATEGORY": "Μικρά Φράγματα",
+        "DAM HEIGHT (m)": "11",
+        "DAM LENGTH (m) ": "42.3",
+        "DAM VOLUME ('000 m3)": "2.9",
+        "RESERVOIR SURFACE ('000 m2)": "15",
+        "OVERFLOW SPILLWAY LENGTH (m)": "34",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "70",
+        "STUDY": "Τμήμα Αναπτύξεως Υδάτων",
+        "CONSTRUCTOR": "Τμήμα Αναπτύξεως Υδάτων"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          33.288629,
+          34.949388
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "3",
+        "NAME": "Ακρούντα",
+        "YEAR": "1947",
+        "RIVER": "Γερμασόγεια",
+        "CAPACITY (m3)": "23000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "Nαι",
+        "ENRICHMENT": "",
+        "IRRIGATED ARES (Ha)": "53",
+        "KIND OF IRRIGATED AREA": "Καλλιέργειες",
+        "RIVER BASIN (km2)": "-",
+        "DAM CATEGORY": "Βαρύτητας",
+        "SIZE CATEGORY": "Μικρά Φράγματα",
+        "DAM HEIGHT (m)": "7",
+        "DAM LENGTH (m) ": "-",
+        "DAM VOLUME ('000 m3)": "-",
+        "RESERVOIR SURFACE ('000 m2)": "-",
+        "OVERFLOW SPILLWAY LENGTH (m)": "-",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "-",
+        "STUDY": "Τμήμα Αναπτύξεως Υδάτων",
+        "CONSTRUCTOR": "Τμήμα Αναπτύξεως Υδάτων"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          33.074904,
+          34.771058
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "4",
+        "NAME": "Γαληνή",
+        "YEAR": "1947",
+        "RIVER": "Κάμπος",
+        "CAPACITY (m3)": "23000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "Nαι",
+        "ENRICHMENT": "",
+        "IRRIGATED ARES (Ha)": "174.1",
+        "KIND OF IRRIGATED AREA": "Καλλιέργειες",
+        "RIVER BASIN (km2)": "25.5",
+        "DAM CATEGORY": "Βαρύτητας",
+        "SIZE CATEGORY": "Μικρά Φράγματα",
+        "DAM HEIGHT (m)": "11",
+        "DAM LENGTH (m) ": "19.2",
+        "DAM VOLUME ('000 m3)": "0.9",
+        "RESERVOIR SURFACE ('000 m2)": "5",
+        "OVERFLOW SPILLWAY LENGTH (m)": "13.4",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "17.2",
+        "STUDY": "Τμήμα Αναπτύξεως Υδάτων",
+        "CONSTRUCTOR": "Τμήμα Αναπτύξεως Υδάτων"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          32.762873,
+          35.107669
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "5",
+        "NAME": "Καλό Χωριό Κλήρου",
+        "YEAR": "1947",
+        "RIVER": "Ακάκι (Σερράχης)",
+        "CAPACITY (m3)": "82000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "Nαι",
+        "ENRICHMENT": "",
+        "IRRIGATED ARES (Ha)": "180.8",
+        "KIND OF IRRIGATED AREA": "Λαχανικά",
+        "RIVER BASIN (km2)": "23.4",
+        "DAM CATEGORY": "Βαρύτητας",
+        "SIZE CATEGORY": "Μικρά Φράγματα",
+        "DAM HEIGHT (m)": "9",
+        "DAM LENGTH (m) ": "37",
+        "DAM VOLUME ('000 m3)": "1.9",
+        "RESERVOIR SURFACE ('000 m2)": "13",
+        "OVERFLOW SPILLWAY LENGTH (m)": "22.5",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "44.1",
+        "STUDY": "Τμήμα Αναπτύξεως Υδάτων",
+        "CONSTRUCTOR": "Τμήμα Αναπτύξεως Υδάτων"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          33.154297,
+          34.98127
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "6",
+        "NAME": "Πέτρα (Κάτω)",
+        "YEAR": "1948",
+        "RIVER": "Ατσάς ",
+        "CAPACITY (m3)": "32000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "Nαι",
+        "ENRICHMENT": "",
+        "IRRIGATED ARES (Ha)": "362",
+        "KIND OF IRRIGATED AREA": "Καλλιέργειες και λαχανικά",
+        "RIVER BASIN (km2)": "37.1",
+        "DAM CATEGORY": "Βαρύτητας",
+        "SIZE CATEGORY": "Μικρά Φράγματα",
+        "DAM HEIGHT (m)": "9",
+        "DAM LENGTH (m) ": "36",
+        "DAM VOLUME ('000 m3)": "1.5",
+        "RESERVOIR SURFACE ('000 m2)": "8",
+        "OVERFLOW SPILLWAY LENGTH (m)": "21.2",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "31.6",
+        "STUDY": "Τμήμα Αναπτύξεως Υδάτων",
+        "CONSTRUCTOR": "Τμήμα Αναπτύξεως Υδάτων"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          32.924504,
+          35.077819
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "7",
+        "NAME": "Πέτρα (Πάνω)",
+        "YEAR": "1951",
+        "RIVER": "Ατσάς ",
+        "CAPACITY (m3)": "23000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "Nαι",
+        "ENRICHMENT": "",
+        "IRRIGATED ARES (Ha)": "260",
+        "KIND OF IRRIGATED AREA": "Καλλιέργειες και λαχανικά",
+        "RIVER BASIN (km2)": "33.7",
+        "DAM CATEGORY": "Βαρύτητας",
+        "SIZE CATEGORY": "Μικρά Φράγματα",
+        "DAM HEIGHT (m)": "9",
+        "DAM LENGTH (m) ": "35",
+        "DAM VOLUME ('000 m3)": "1.5",
+        "RESERVOIR SURFACE ('000 m2)": "4",
+        "OVERFLOW SPILLWAY LENGTH (m)": "30.5",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "52",
+        "STUDY": "Τμήμα Αναπτύξεως Υδάτων",
+        "CONSTRUCTOR": "Τμήμα Αναπτύξεως Υδάτων"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          32.924029,
+          35.073421
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "8",
+        "NAME": "Λυθροδόντας (Πάνω)",
+        "YEAR": "1952",
+        "RIVER": "Κουτσός (Γιαλιάς)",
+        "CAPACITY (m3)": "32000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "Nαι",
+        "ENRICHMENT": "",
+        "IRRIGATED ARES (Ha)": "33.5",
+        "KIND OF IRRIGATED AREA": "Λαχανικά",
+        "RIVER BASIN (km2)": "3",
+        "DAM CATEGORY": "Βαρύτητας",
+        "SIZE CATEGORY": "Μικρά Φράγματα",
+        "DAM HEIGHT (m)": "10",
+        "DAM LENGTH (m) ": "21",
+        "DAM VOLUME ('000 m3)": "2.3",
+        "RESERVOIR SURFACE ('000 m2)": "10",
+        "OVERFLOW SPILLWAY LENGTH (m)": "19",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "13",
+        "STUDY": "Τμήμα Αναπτύξεως Υδάτων",
+        "CONSTRUCTOR": "Τμήμα Αναπτύξεως Υδάτων"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          33.274357,
+          34.943398
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "9",
+        "NAME": "Καφίζες",
+        "YEAR": "1953",
+        "RIVER": "Ξερός (Μόρφου)",
+        "CAPACITY (m3)": "113000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "Nαι",
+        "ENRICHMENT": "",
+        "IRRIGATED ARES (Ha)": "103.1",
+        "KIND OF IRRIGATED AREA": "Εσπεριδοειδή",
+        "RIVER BASIN (km2)": "38.5",
+        "DAM CATEGORY": "Βαρύτητας",
+        "SIZE CATEGORY": "Μεγάλα Φράγματα",
+        "DAM HEIGHT (m)": "23",
+        "DAM LENGTH (m) ": "25.8",
+        "DAM VOLUME ('000 m3)": "2.9",
+        "RESERVOIR SURFACE ('000 m2)": "20",
+        "OVERFLOW SPILLWAY LENGTH (m)": "18.6",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "53",
+        "STUDY": "Τμήμα Αναπτύξεως Υδάτων",
+        "CONSTRUCTOR": "Τμήμα Αναπτύξεως Υδάτων"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          32.787993,
+          35.048599
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "10",
+        "NAME": "Άγιος Λουκάς",
+        "YEAR": "1955",
+        "RIVER": "-",
+        "CAPACITY (m3)": "455000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "",
+        "ENRICHMENT": "Nαι",
+        "IRRIGATED ARES (Ha)": "-",
+        "KIND OF IRRIGATED AREA": "-",
+        "RIVER BASIN (km2)": "-",
+        "DAM CATEGORY": "Xωμάτινο",
+        "SIZE CATEGORY": "Μικρά Φράγματα",
+        "DAM HEIGHT (m)": "3",
+        "DAM LENGTH (m) ": "-",
+        "DAM VOLUME ('000 m3)": "-",
+        "RESERVOIR SURFACE ('000 m2)": "-",
+        "OVERFLOW SPILLWAY LENGTH (m)": "-",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "-",
+        "STUDY": "Τμήμα Αναπτύξεως Υδάτων",
+        "CONSTRUCTOR": "Τμήμα Αναπτύξεως Υδάτων"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          33.912239,
+          35.119457
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "11",
+        "NAME": "Γύψου",
+        "YEAR": "1955",
+        "RIVER": "-",
+        "CAPACITY (m3)": "100000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "",
+        "ENRICHMENT": "Nαι",
+        "IRRIGATED ARES (Ha)": "-",
+        "KIND OF IRRIGATED AREA": "-",
+        "RIVER BASIN (km2)": "-",
+        "DAM CATEGORY": "Xωμάτινο",
+        "SIZE CATEGORY": "Μικρά Φράγματα",
+        "DAM HEIGHT (m)": "3",
+        "DAM LENGTH (m) ": "-",
+        "DAM VOLUME ('000 m3)": "-",
+        "RESERVOIR SURFACE ('000 m2)": "-",
+        "OVERFLOW SPILLWAY LENGTH (m)": "-",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "-",
+        "STUDY": "Τμήμα Αναπτύξεως Υδάτων",
+        "CONSTRUCTOR": "Τμήμα Αναπτύξεως Υδάτων"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          33.795064,
+          35.281924
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "12",
+        "NAME": "Καντού",
+        "YEAR": "1956",
+        "RIVER": "Ταπάχνα (Κούρης)",
+        "CAPACITY (m3)": "34000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "Nαι",
+        "ENRICHMENT": "",
+        "IRRIGATED ARES (Ha)": "75.4",
+        "KIND OF IRRIGATED AREA": "Καλλιέργειες",
+        "RIVER BASIN (km2)": "7.5",
+        "DAM CATEGORY": "Βαρύτητας",
+        "SIZE CATEGORY": "Μεγάλα Φράγματα",
+        "DAM HEIGHT (m)": "15.4",
+        "DAM LENGTH (m) ": "52.5",
+        "DAM VOLUME ('000 m3)": "2.6",
+        "RESERVOIR SURFACE ('000 m2)": "12",
+        "OVERFLOW SPILLWAY LENGTH (m)": "31",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "59",
+        "STUDY": "Τμήμα Αναπτύξεως Υδάτων",
+        "CONSTRUCTOR": "Τμήμα Αναπτύξεως Υδάτων"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          32.898394,
+          34.698433
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "13",
+        "NAME": "Πέρα Πεδι",
+        "YEAR": "1956",
+        "RIVER": "Κρυός (Κούρης)",
+        "CAPACITY (m3)": "55000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "Nαι",
+        "ENRICHMENT": "",
+        "IRRIGATED ARES (Ha)": "14.7",
+        "KIND OF IRRIGATED AREA": "Δέντρα",
+        "RIVER BASIN (km2)": "10",
+        "DAM CATEGORY": "Βαρύτητας",
+        "SIZE CATEGORY": "Μεγάλα Φράγματα",
+        "DAM HEIGHT (m)": "21.6",
+        "DAM LENGTH (m) ": "65.5",
+        "DAM VOLUME ('000 m3)": "4",
+        "RESERVOIR SURFACE ('000 m2)": "12",
+        "OVERFLOW SPILLWAY LENGTH (m)": "36.5",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "105.6",
+        "STUDY": "Τμήμα Αναπτύξεως Υδάτων",
+        "CONSTRUCTOR": "Τμήμα Αναπτύξεως Υδάτων"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          32.865545,
+          34.872005
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "14",
+        "NAME": "Πύργος",
+        "YEAR": "1957",
+        "RIVER": "Κατούρης",
+        "CAPACITY (m3)": "285000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "Nαι",
+        "ENRICHMENT": "",
+        "IRRIGATED ARES (Ha)": "167.4",
+        "KIND OF IRRIGATED AREA": "Δέντρα",
+        "RIVER BASIN (km2)": "13.5",
+        "DAM CATEGORY": "Βαρύτητας",
+        "SIZE CATEGORY": "Μεγάλα Φράγματα",
+        "DAM HEIGHT (m)": "22.3",
+        "DAM LENGTH (m) ": "65.5",
+        "DAM VOLUME ('000 m3)": "7.6",
+        "RESERVOIR SURFACE ('000 m2)": "30",
+        "OVERFLOW SPILLWAY LENGTH (m)": "30",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "120",
+        "STUDY": "Τμήμα Αναπτύξεως Υδάτων",
+        "CONSTRUCTOR": "Τμήμα Αναπτύξεως Υδάτων"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          32.65547,
+          35.147623
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "15",
+        "NAME": "Τριμήκληνη",
+        "YEAR": "1958",
+        "RIVER": "Κούρης",
+        "CAPACITY (m3)": "340000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "Nαι",
+        "ENRICHMENT": "",
+        "IRRIGATED ARES (Ha)": "87",
+        "KIND OF IRRIGATED AREA": "Δέντρα",
+        "RIVER BASIN (km2)": "51.5",
+        "DAM CATEGORY": "Βαρύτητας",
+        "SIZE CATEGORY": "Μεγάλα Φράγματα",
+        "DAM HEIGHT (m)": "33.3",
+        "DAM LENGTH (m) ": "76.2",
+        "DAM VOLUME ('000 m3)": "6.1",
+        "RESERVOIR SURFACE ('000 m2)": "23",
+        "OVERFLOW SPILLWAY LENGTH (m)": "30.5",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "58.7",
+        "STUDY": "Τμήμα Αναπτύξεως Υδάτων",
+        "CONSTRUCTOR": "Τμήμα Αναπτύξεως Υδάτων"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          32.914461,
+          34.863749
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "16",
+        "NAME": "Αθαλάσσα",
+        "YEAR": "1962",
+        "RIVER": "Καλόγηρος (Πεδιαίος)",
+        "CAPACITY (m3)": "791000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "Nαι",
+        "ENRICHMENT": "",
+        "IRRIGATED ARES (Ha)": "41.5",
+        "KIND OF IRRIGATED AREA": "Αντιπλημμυρικό, κτηνοτροφία",
+        "RIVER BASIN (km2)": "34",
+        "DAM CATEGORY": "Xωμάτινο",
+        "SIZE CATEGORY": "Μεγάλα Φράγματα",
+        "DAM HEIGHT (m)": "18.3",
+        "DAM LENGTH (m) ": "415",
+        "DAM VOLUME ('000 m3)": "88.2",
+        "RESERVOIR SURFACE ('000 m2)": "230",
+        "OVERFLOW SPILLWAY LENGTH (m)": "240",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "46.5",
+        "STUDY": "Τμήμα Αναπτύξεως Υδάτων",
+        "CONSTRUCTOR": "Τμήμα Αναπτύξεως Υδάτων"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          33.386629,
+          35.127548
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "17",
+        "NAME": "Κιόνελι",
+        "YEAR": "1962",
+        "RIVER": "Αρμυρός (Πεδιαίος)",
+        "CAPACITY (m3)": "1045000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "Nαι",
+        "ENRICHMENT": "",
+        "IRRIGATED ARES (Ha)": "113.9",
+        "KIND OF IRRIGATED AREA": "Καλλιέργειες",
+        "RIVER BASIN (km2)": "26",
+        "DAM CATEGORY": "Xωμάτινο",
+        "SIZE CATEGORY": "Μεγάλα Φράγματα",
+        "DAM HEIGHT (m)": "15",
+        "DAM LENGTH (m) ": "196",
+        "DAM VOLUME ('000 m3)": "46",
+        "RESERVOIR SURFACE ('000 m2)": "276",
+        "OVERFLOW SPILLWAY LENGTH (m)": "57",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "170",
+        "STUDY": "Τμήμα Αναπτύξεως Υδάτων",
+        "CONSTRUCTOR": "Τμήμα Αναπτύξεως Υδάτων"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          33.302333,
+          35.235836
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "18",
+        "NAME": "Λεύκα",
+        "YEAR": "1962",
+        "RIVER": "Σέτραχος (Μαραθάσας)",
+        "CAPACITY (m3)": "368000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "Nαι",
+        "ENRICHMENT": "",
+        "IRRIGATED ARES (Ha)": "174.1",
+        "KIND OF IRRIGATED AREA": "Εσπεριδοειδή",
+        "RIVER BASIN (km2)": "54.6",
+        "DAM CATEGORY": "Βαρύτητας",
+        "SIZE CATEGORY": "Μεγάλα Φράγματα",
+        "DAM HEIGHT (m)": "34.7",
+        "DAM LENGTH (m) ": "149",
+        "DAM VOLUME ('000 m3)": "20",
+        "RESERVOIR SURFACE ('000 m2)": "45",
+        "OVERFLOW SPILLWAY LENGTH (m)": "30.5",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "246",
+        "STUDY": "Τμήμα Αναπτύξεως Υδάτων",
+        "CONSTRUCTOR": "Τμήμα Αναπτύξεως Υδάτων"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          32.837337,
+          35.063644
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "19",
+        "NAME": "Μόρφου",
+        "YEAR": "1962",
+        "RIVER": "Σερράχης",
+        "CAPACITY (m3)": "1879000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "Nαι",
+        "ENRICHMENT": "Nαι",
+        "IRRIGATED ARES (Ha)": "902.5",
+        "KIND OF IRRIGATED AREA": "Εσπεριδοειδή ",
+        "RIVER BASIN (km2)": "458",
+        "DAM CATEGORY": "Xωμάτινο",
+        "SIZE CATEGORY": "Μεγάλα Φράγματα",
+        "DAM HEIGHT (m)": "13",
+        "DAM LENGTH (m) ": "1400",
+        "DAM VOLUME ('000 m3)": "387",
+        "RESERVOIR SURFACE ('000 m2)": "480",
+        "OVERFLOW SPILLWAY LENGTH (m)": "450",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "680",
+        "STUDY": "Τμήμα Αναπτύξεως Υδάτων",
+        "CONSTRUCTOR": "Τμήμα Αναπτύξεως Υδάτων"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          33.015274,
+          35.194007
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "20",
+        "NAME": "Άγιος Γεώργιος",
+        "YEAR": "1962",
+        "RIVER": "-",
+        "CAPACITY (m3)": "90000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "",
+        "ENRICHMENT": "Nαι",
+        "IRRIGATED ARES (Ha)": "-",
+        "KIND OF IRRIGATED AREA": "-",
+        "RIVER BASIN (km2)": "-",
+        "DAM CATEGORY": "Xωμάτινο",
+        "SIZE CATEGORY": "Μικρά Φράγματα",
+        "DAM HEIGHT (m)": "6",
+        "DAM LENGTH (m) ": "-",
+        "DAM VOLUME ('000 m3)": "-",
+        "RESERVOIR SURFACE ('000 m2)": "-",
+        "OVERFLOW SPILLWAY LENGTH (m)": "-",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "-",
+        "STUDY": "Τμήμα Αναπτύξεως Υδάτων",
+        "CONSTRUCTOR": "Τμήμα Αναπτύξεως Υδάτων"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          33.017625,
+          34.967937
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "21",
+        "NAME": "Παναγιά Αμμοχώστου",
+        "YEAR": "1962",
+        "RIVER": "-",
+        "CAPACITY (m3)": "45000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "",
+        "ENRICHMENT": "Nαι",
+        "IRRIGATED ARES (Ha)": "-",
+        "KIND OF IRRIGATED AREA": "-",
+        "RIVER BASIN (km2)": "-",
+        "DAM CATEGORY": "Xωμάτινο",
+        "SIZE CATEGORY": "Μικρά Φράγματα",
+        "DAM HEIGHT (m)": "7",
+        "DAM LENGTH (m) ": "-",
+        "DAM VOLUME ('000 m3)": "-",
+        "RESERVOIR SURFACE ('000 m2)": "-",
+        "OVERFLOW SPILLWAY LENGTH (m)": "-",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "-",
+        "STUDY": "Τμήμα Αναπτύξεως Υδάτων",
+        "CONSTRUCTOR": "Τμήμα Αναπτύξεως Υδάτων"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          34.04735,
+          35.00471
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "22",
+        "NAME": "Πρόδρομος",
+        "YEAR": "1962",
+        "RIVER": "Εξωποτάμια δεξαμενή",
+        "CAPACITY (m3)": "122000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "Nαι",
+        "ENRICHMENT": "",
+        "IRRIGATED ARES (Ha)": "22.8",
+        "KIND OF IRRIGATED AREA": "Δέντρα",
+        "RIVER BASIN (km2)": "-",
+        "DAM CATEGORY": "Xωμάτινη",
+        "SIZE CATEGORY": "Μικρά Φράγματα",
+        "DAM HEIGHT (m)": "10",
+        "DAM LENGTH (m) ": "-",
+        "DAM VOLUME ('000 m3)": "74",
+        "RESERVOIR SURFACE ('000 m2)": "26",
+        "OVERFLOW SPILLWAY LENGTH (m)": "-",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "-",
+        "STUDY": "Τμήμα Αναπτύξεως Υδάτων",
+        "CONSTRUCTOR": "Τμήμα Αναπτύξεως Υδάτων"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          32.844933,
+          34.948782
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "23",
+        "NAME": "Σωτήρα ",
+        "YEAR": "1962",
+        "RIVER": "-",
+        "CAPACITY (m3)": "45000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "",
+        "ENRICHMENT": "Nαι",
+        "IRRIGATED ARES (Ha)": "-",
+        "KIND OF IRRIGATED AREA": "-",
+        "RIVER BASIN (km2)": "-",
+        "DAM CATEGORY": "Xωμάτινο",
+        "SIZE CATEGORY": "Μικρά Φράγματα",
+        "DAM HEIGHT (m)": "8",
+        "DAM LENGTH (m) ": "-",
+        "DAM VOLUME ('000 m3)": "-",
+        "RESERVOIR SURFACE ('000 m2)": "-",
+        "OVERFLOW SPILLWAY LENGTH (m)": "-",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "-",
+        "STUDY": "Τμήμα Αναπτύξεως Υδάτων",
+        "CONSTRUCTOR": "Τμήμα Αναπτύξεως Υδάτων"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          33.935207,
+          35.014196
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "24",
+        "NAME": "Κανλίκιογιου",
+        "YEAR": "1963",
+        "RIVER": "Τζινάρ (Πεδιαίος)",
+        "CAPACITY (m3)": "1113000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "Nαι",
+        "ENRICHMENT": "",
+        "IRRIGATED ARES (Ha)": "535.6",
+        "KIND OF IRRIGATED AREA": "Σιτηρά και λαχανικά",
+        "RIVER BASIN (km2)": "33",
+        "DAM CATEGORY": "Xωμάτινο",
+        "SIZE CATEGORY": "Μεγάλα Φράγματα",
+        "DAM HEIGHT (m)": "19",
+        "DAM LENGTH (m) ": "297",
+        "DAM VOLUME ('000 m3)": "52",
+        "RESERVOIR SURFACE ('000 m2)": "390",
+        "OVERFLOW SPILLWAY LENGTH (m)": "27.4",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "110",
+        "STUDY": "Τμήμα Αναπτύξεως Υδάτων",
+        "CONSTRUCTOR": "Τμήμα Αναπτύξεως Υδάτων"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          33.25886,
+          35.241586
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "25",
+        "NAME": "Αγία Νάπα ",
+        "YEAR": "1963",
+        "RIVER": "-",
+        "CAPACITY (m3)": "55000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "",
+        "ENRICHMENT": "Nαι",
+        "IRRIGATED ARES (Ha)": "-",
+        "KIND OF IRRIGATED AREA": "-",
+        "RIVER BASIN (km2)": "-",
+        "DAM CATEGORY": "Xωμάτινο",
+        "SIZE CATEGORY": "Μικρά Φράγματα",
+        "DAM HEIGHT (m)": "8",
+        "DAM LENGTH (m) ": "-",
+        "DAM VOLUME ('000 m3)": "-",
+        "RESERVOIR SURFACE ('000 m2)": "-",
+        "OVERFLOW SPILLWAY LENGTH (m)": "-",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "-",
+        "STUDY": "Τμήμα Αναπτύξεως Υδάτων",
+        "CONSTRUCTOR": "Τμήμα Αναπτύξεως Υδάτων"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "26",
+        "NAME": "Αντιπλημμυρικά Αμμοχώστου",
+        "YEAR": "1963",
+        "RIVER": "-",
+        "CAPACITY (m3)": "50000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "",
+        "ENRICHMENT": "Nαι",
+        "IRRIGATED ARES (Ha)": "-",
+        "KIND OF IRRIGATED AREA": "-",
+        "RIVER BASIN (km2)": "-",
+        "DAM CATEGORY": "Xωμάτινο",
+        "SIZE CATEGORY": "Μικρά Φράγματα",
+        "DAM HEIGHT (m)": "5",
+        "DAM LENGTH (m) ": "-",
+        "DAM VOLUME ('000 m3)": "-",
+        "RESERVOIR SURFACE ('000 m2)": "-",
+        "OVERFLOW SPILLWAY LENGTH (m)": "-",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "-",
+        "STUDY": "Τμήμα Αναπτύξεως Υδάτων",
+        "CONSTRUCTOR": "Τμήμα Αναπτύξεως Υδάτων"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "27",
+        "NAME": "Εμπλουτιστικά Αμμοχώστου",
+        "YEAR": "1963",
+        "RIVER": "-",
+        "CAPACITY (m3)": "165000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "",
+        "ENRICHMENT": "Nαι",
+        "IRRIGATED ARES (Ha)": "-",
+        "KIND OF IRRIGATED AREA": "-",
+        "RIVER BASIN (km2)": "-",
+        "DAM CATEGORY": "Xωμάτινο",
+        "SIZE CATEGORY": "Μικρά Φράγματα",
+        "DAM HEIGHT (m)": "8",
+        "DAM LENGTH (m) ": "-",
+        "DAM VOLUME ('000 m3)": "-",
+        "RESERVOIR SURFACE ('000 m2)": "-",
+        "OVERFLOW SPILLWAY LENGTH (m)": "-",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "-",
+        "STUDY": "Τμήμα Αναπτύξεως Υδάτων",
+        "CONSTRUCTOR": "Τμήμα Αναπτύξεως Υδάτων"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "28",
+        "NAME": "Παραλίμνι ",
+        "YEAR": "1963",
+        "RIVER": "-",
+        "CAPACITY (m3)": "115000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "",
+        "ENRICHMENT": "Nαι",
+        "IRRIGATED ARES (Ha)": "-",
+        "KIND OF IRRIGATED AREA": "-",
+        "RIVER BASIN (km2)": "-",
+        "DAM CATEGORY": "Xωμάτινο",
+        "SIZE CATEGORY": "Μικρά Φράγματα",
+        "DAM HEIGHT (m)": "5",
+        "DAM LENGTH (m) ": "-",
+        "DAM VOLUME ('000 m3)": "-",
+        "RESERVOIR SURFACE ('000 m2)": "-",
+        "OVERFLOW SPILLWAY LENGTH (m)": "-",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "-",
+        "STUDY": "Τμήμα Αναπτύξεως Υδάτων",
+        "CONSTRUCTOR": "Τμήμα Αναπτύξεως Υδάτων"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          34.006783,
+          35.010299
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "29",
+        "NAME": "Αγρός",
+        "YEAR": "1964",
+        "RIVER": "Λιμνάτης",
+        "CAPACITY (m3)": "99000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "Nαι",
+        "ENRICHMENT": "",
+        "IRRIGATED ARES (Ha)": "40.2",
+        "KIND OF IRRIGATED AREA": "Δέντρα",
+        "RIVER BASIN (km2)": "0.5",
+        "DAM CATEGORY": "Xωμάτινο",
+        "SIZE CATEGORY": "Μεγάλα Φράγματα",
+        "DAM HEIGHT (m)": "26.2",
+        "DAM LENGTH (m) ": "171",
+        "DAM VOLUME ('000 m3)": "52.5",
+        "RESERVOIR SURFACE ('000 m2)": "15",
+        "OVERFLOW SPILLWAY LENGTH (m)": "50.7",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "6",
+        "STUDY": "Τμήμα Αναπτύξεως Υδάτων",
+        "CONSTRUCTOR": "Τμήμα Αναπτύξεως Υδάτων"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          33.014337,
+          34.924223
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "30",
+        "NAME": "Αργάκα",
+        "YEAR": "1964",
+        "RIVER": "Μακούντα",
+        "CAPACITY (m3)": "990000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "Nαι",
+        "ENRICHMENT": "",
+        "IRRIGATED ARES (Ha)": "321.4",
+        "KIND OF IRRIGATED AREA": "Λαχανικά",
+        "RIVER BASIN (km2)": "50",
+        "DAM CATEGORY": "Λιθόρριπτο",
+        "SIZE CATEGORY": "Μεγάλα Φράγματα",
+        "DAM HEIGHT (m)": "41.1",
+        "DAM LENGTH (m) ": "137",
+        "DAM VOLUME ('000 m3)": "133.7",
+        "RESERVOIR SURFACE ('000 m2)": "107",
+        "OVERFLOW SPILLWAY LENGTH (m)": "146",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "280",
+        "STUDY": "Howard Humphreys & Sons Αγγλίας",
+        "CONSTRUCTOR": "Nowlem and Ridgeways Αγγλίας"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          32.505998,
+          35.047233
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "31",
+        "NAME": "Κίτι (Τρέμιθος)",
+        "YEAR": "1964",
+        "RIVER": "Τρέμιθος",
+        "CAPACITY (m3)": "1614000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "Nαι",
+        "ENRICHMENT": "",
+        "IRRIGATED ARES (Ha)": "664.1",
+        "KIND OF IRRIGATED AREA": "Λαχανικά",
+        "RIVER BASIN (km2)": "130",
+        "DAM CATEGORY": "Xωμάτινο",
+        "SIZE CATEGORY": "Μεγάλα Φράγματα",
+        "DAM HEIGHT (m)": "22",
+        "DAM LENGTH (m) ": "1075",
+        "DAM VOLUME ('000 m3)": "172.5",
+        "RESERVOIR SURFACE ('000 m2)": "360",
+        "OVERFLOW SPILLWAY LENGTH (m)": "150",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "610",
+        "STUDY": "Il Nuovo Castoro της Ιταλίας",
+        "CONSTRUCTOR": "Τμήμα Αναπτύξεως Υδάτων"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          33.557873,
+          34.87332
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "32",
+        "NAME": "Λιοπέτρι",
+        "YEAR": "1964",
+        "RIVER": "Ποταμός",
+        "CAPACITY (m3)": "340000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "",
+        "ENRICHMENT": "Nαι",
+        "IRRIGATED ARES (Ha)": "-",
+        "KIND OF IRRIGATED AREA": "-",
+        "RIVER BASIN (km2)": "37",
+        "DAM CATEGORY": "Xωμάτινο",
+        "SIZE CATEGORY": "Μεγάλα Φράγματα",
+        "DAM HEIGHT (m)": "18.3",
+        "DAM LENGTH (m) ": "540",
+        "DAM VOLUME ('000 m3)": "55",
+        "RESERVOIR SURFACE ('000 m2)": "74",
+        "OVERFLOW SPILLWAY LENGTH (m)": "12",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "90",
+        "STUDY": "Τμήμα Αναπτύξεως Υδάτων",
+        "CONSTRUCTOR": "Τμήμα Αναπτύξεως Υδάτων"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          33.876907,
+          34.985798
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "33",
+        "NAME": "Μια Μηλιά",
+        "YEAR": "1964",
+        "RIVER": "Σιμέας (Πεδιαίος)",
+        "CAPACITY (m3)": "355000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "Nαι",
+        "ENRICHMENT": "",
+        "IRRIGATED ARES (Ha)": "174.1",
+        "KIND OF IRRIGATED AREA": "Καλλιέργειες και σιτηρά",
+        "RIVER BASIN (km2)": "6.8",
+        "DAM CATEGORY": "Xωμάτινο",
+        "SIZE CATEGORY": "Μεγάλα Φράγματα",
+        "DAM HEIGHT (m)": "21.6",
+        "DAM LENGTH (m) ": "125",
+        "DAM VOLUME ('000 m3)": "52.5",
+        "RESERVOIR SURFACE ('000 m2)": "68",
+        "OVERFLOW SPILLWAY LENGTH (m)": "42",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "23.7",
+        "STUDY": "Τμήμα Αναπτύξεως Υδάτων",
+        "CONSTRUCTOR": "Τμήμα Αναπτύξεως Υδάτων"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          33.410747,
+          35.229699
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "34",
+        "NAME": "Οβγός",
+        "YEAR": "1964",
+        "RIVER": "Οβγός",
+        "CAPACITY (m3)": "845000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "Nαι",
+        "ENRICHMENT": "Nαι",
+        "IRRIGATED ARES (Ha)": "852.9",
+        "KIND OF IRRIGATED AREA": "Εσπεριδοειδή",
+        "RIVER BASIN (km2)": "0.2",
+        "DAM CATEGORY": "Xωμάτινο",
+        "SIZE CATEGORY": "Μεγάλα Φράγματα",
+        "DAM HEIGHT (m)": "16",
+        "DAM LENGTH (m) ": "720",
+        "DAM VOLUME ('000 m3)": "146.6",
+        "RESERVOIR SURFACE ('000 m2)": "260",
+        "OVERFLOW SPILLWAY LENGTH (m)": "264",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "780",
+        "STUDY": "Τμήμα Αναπτύξεως Υδάτων",
+        "CONSTRUCTOR": "Τμήμα Αναπτύξεως Υδάτων"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          33.03882,
+          35.216351
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "35",
+        "NAME": "Άγιος Νικόλαος ",
+        "YEAR": "1964",
+        "RIVER": "-",
+        "CAPACITY (m3)": "1365000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "",
+        "ENRICHMENT": "Nαι",
+        "IRRIGATED ARES (Ha)": "-",
+        "KIND OF IRRIGATED AREA": "-",
+        "RIVER BASIN (km2)": "-",
+        "DAM CATEGORY": "Xωμάτινο",
+        "SIZE CATEGORY": "Μικρά Φράγματα",
+        "DAM HEIGHT (m)": "2",
+        "DAM LENGTH (m) ": "-",
+        "DAM VOLUME ('000 m3)": "-",
+        "RESERVOIR SURFACE ('000 m2)": "-",
+        "OVERFLOW SPILLWAY LENGTH (m)": "-",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "-",
+        "STUDY": "Τμήμα Αναπτύξεως Υδάτων",
+        "CONSTRUCTOR": "Τμήμα Αναπτύξεως Υδάτων"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          33.890779,
+          35.112251
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "36",
+        "NAME": "Δερύνεια ",
+        "YEAR": "1964",
+        "RIVER": "-",
+        "CAPACITY (m3)": "23000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "",
+        "ENRICHMENT": "Nαι",
+        "IRRIGATED ARES (Ha)": "-",
+        "KIND OF IRRIGATED AREA": "-",
+        "RIVER BASIN (km2)": "-",
+        "DAM CATEGORY": "Xωμάτινο",
+        "SIZE CATEGORY": "Μικρά Φράγματα",
+        "DAM HEIGHT (m)": "6",
+        "DAM LENGTH (m) ": "-",
+        "DAM VOLUME ('000 m3)": "-",
+        "RESERVOIR SURFACE ('000 m2)": "-",
+        "OVERFLOW SPILLWAY LENGTH (m)": "-",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "-",
+        "STUDY": "Τμήμα Αναπτύξεως Υδάτων",
+        "CONSTRUCTOR": "Τμήμα Αναπτύξεως Υδάτων"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          33.930531,
+          35.066896
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "37",
+        "NAME": "Λίμνη Αγίου Λουκά",
+        "YEAR": "1964",
+        "RIVER": "-",
+        "CAPACITY (m3)": "4545000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "",
+        "ENRICHMENT": "Nαι",
+        "IRRIGATED ARES (Ha)": "-",
+        "KIND OF IRRIGATED AREA": "-",
+        "RIVER BASIN (km2)": "-",
+        "DAM CATEGORY": "Xωμάτινη",
+        "SIZE CATEGORY": "Μικρά Φράγματα",
+        "DAM HEIGHT (m)": "3",
+        "DAM LENGTH (m) ": "-",
+        "DAM VOLUME ('000 m3)": "-",
+        "RESERVOIR SURFACE ('000 m2)": "-",
+        "OVERFLOW SPILLWAY LENGTH (m)": "-",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "-",
+        "STUDY": "Τμήμα Αναπτύξεως Υδάτων",
+        "CONSTRUCTOR": "Τμήμα Αναπτύξεως Υδάτων"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          33.906727,
+          35.133417
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "38",
+        "NAME": "Λίμνη Παραλιμνίου ",
+        "YEAR": "1964",
+        "RIVER": "-",
+        "CAPACITY (m3)": "1365000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "",
+        "ENRICHMENT": "Nαι",
+        "IRRIGATED ARES (Ha)": "-",
+        "KIND OF IRRIGATED AREA": "-",
+        "RIVER BASIN (km2)": "-",
+        "DAM CATEGORY": "Xωμάτινη",
+        "SIZE CATEGORY": "Μικρά Φράγματα",
+        "DAM HEIGHT (m)": "1",
+        "DAM LENGTH (m) ": "-",
+        "DAM VOLUME ('000 m3)": "-",
+        "RESERVOIR SURFACE ('000 m2)": "-",
+        "OVERFLOW SPILLWAY LENGTH (m)": "-",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "-",
+        "STUDY": "Τμήμα Αναπτύξεως Υδάτων",
+        "CONSTRUCTOR": "Τμήμα Αναπτύξεως Υδάτων"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          33.96621,
+          35.03758
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "39",
+        "NAME": "Φρέναρος ",
+        "YEAR": "1964",
+        "RIVER": "-",
+        "CAPACITY (m3)": "115000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "",
+        "ENRICHMENT": "Nαι",
+        "IRRIGATED ARES (Ha)": "-",
+        "KIND OF IRRIGATED AREA": "-",
+        "RIVER BASIN (km2)": "-",
+        "DAM CATEGORY": "Xωμάτινο",
+        "SIZE CATEGORY": "Μικρά Φράγματα",
+        "DAM HEIGHT (m)": "5",
+        "DAM LENGTH (m) ": "-",
+        "DAM VOLUME ('000 m3)": "-",
+        "RESERVOIR SURFACE ('000 m2)": "-",
+        "OVERFLOW SPILLWAY LENGTH (m)": "-",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "-",
+        "STUDY": "Τμήμα Αναπτύξεως Υδάτων",
+        "CONSTRUCTOR": "Τμήμα Αναπτύξεως Υδάτων"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "40",
+        "NAME": "Αγιά Μαρίνα",
+        "YEAR": "1965",
+        "RIVER": "Ξερός",
+        "CAPACITY (m3)": "298000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "Nαι",
+        "ENRICHMENT": "",
+        "IRRIGATED ARES (Ha)": "200.8",
+        "KIND OF IRRIGATED AREA": "Λαχανικά",
+        "RIVER BASIN (km2)": "8.4",
+        "DAM CATEGORY": "Λιθόρριπτο",
+        "SIZE CATEGORY": "Μεγάλα Φράγματα",
+        "DAM HEIGHT (m)": "33",
+        "DAM LENGTH (m) ": "116",
+        "DAM VOLUME ('000 m3)": "61.2",
+        "RESERVOIR SURFACE ('000 m2)": "33",
+        "OVERFLOW SPILLWAY LENGTH (m)": "26",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "160",
+        "STUDY": "Energoproject, Γιουγκοσλαβίας",
+        "CONSTRUCTOR": "Mediterreanean Constructors - G.P. Zachariades, Ελλάδας - Κύπρου"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          32.543156,
+          35.11697
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "41",
+        "NAME": "Πολεμίδια",
+        "YEAR": "1965",
+        "RIVER": "Γαρύλλης",
+        "CAPACITY (m3)": "3400000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "Nαι",
+        "ENRICHMENT": "",
+        "IRRIGATED ARES (Ha)": "1937.5",
+        "KIND OF IRRIGATED AREA": "Εσπεριδοειδή και επιτραπέζια σταφύλια",
+        "RIVER BASIN (km2)": "75.6",
+        "DAM CATEGORY": "Xωμάτινο",
+        "SIZE CATEGORY": "Μεγάλα Φράγματα",
+        "DAM HEIGHT (m)": "44.8",
+        "DAM LENGTH (m) ": "170",
+        "DAM VOLUME ('000 m3)": "215",
+        "RESERVOIR SURFACE ('000 m2)": "110",
+        "OVERFLOW SPILLWAY LENGTH (m)": "134.1",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "580",
+        "STUDY": "Energoproject, Γιουγκοσλαβίας",
+        "CONSTRUCTOR": "Mowlem & Ridway της Αγλίας"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          32.983983,
+          34.722354
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "42",
+        "NAME": "Καλοπαναγιώτης",
+        "YEAR": "1966",
+        "RIVER": "Σέτραχος (Μαραθάσας)",
+        "CAPACITY (m3)": "363000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "Nαι",
+        "ENRICHMENT": "",
+        "IRRIGATED ARES (Ha)": "58.2",
+        "KIND OF IRRIGATED AREA": "Δέντρα",
+        "RIVER BASIN (km2)": "26",
+        "DAM CATEGORY": "Xωμάτινο",
+        "SIZE CATEGORY": "Μεγάλα Φράγματα",
+        "DAM HEIGHT (m)": "40",
+        "DAM LENGTH (m) ": "137",
+        "DAM VOLUME ('000 m3)": "156.2",
+        "RESERVOIR SURFACE ('000 m2)": "47",
+        "OVERFLOW SPILLWAY LENGTH (m)": "77.7",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "204",
+        "STUDY": "Howard Humphreys & Sons Αγγλίας",
+        "CONSTRUCTOR": "Τμήμα Αναπτύξεως Υδάτων"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          32.825859,
+          35.004341
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "43",
+        "NAME": "Μαυροκόλυμπος",
+        "YEAR": "1966",
+        "RIVER": "Μαυροκόλυμπος",
+        "CAPACITY (m3)": "2180000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "Nαι",
+        "ENRICHMENT": "",
+        "IRRIGATED ARES (Ha)": "449.2",
+        "KIND OF IRRIGATED AREA": "Λαχανικά",
+        "RIVER BASIN (km2)": "37.8",
+        "DAM CATEGORY": "Xωμάτινο",
+        "SIZE CATEGORY": "Μεγάλα Φράγματα",
+        "DAM HEIGHT (m)": "45.1",
+        "DAM LENGTH (m) ": "183",
+        "DAM VOLUME ('000 m3)": "302",
+        "RESERVOIR SURFACE ('000 m2)": "175",
+        "OVERFLOW SPILLWAY LENGTH (m)": "284",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "366",
+        "STUDY": "Energoproject, Γιουγκοσλαβίας",
+        "CONSTRUCTOR": "Cybarco, Κύπρου"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          32.410351,
+          34.857463
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "44",
+        "NAME": "Πομός",
+        "YEAR": "1966",
+        "RIVER": "Λειβάδι",
+        "CAPACITY (m3)": "860000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "Nαι",
+        "ENRICHMENT": "",
+        "IRRIGATED ARES (Ha)": "381.6",
+        "KIND OF IRRIGATED AREA": "Λαχανικά",
+        "RIVER BASIN (km2)": "36.3",
+        "DAM CATEGORY": "Λιθόρριπτο",
+        "SIZE CATEGORY": "Μεγάλα Φράγματα",
+        "DAM HEIGHT (m)": "38.4",
+        "DAM LENGTH (m) ": "168",
+        "DAM VOLUME ('000 m3)": "150",
+        "RESERVOIR SURFACE ('000 m2)": "83",
+        "OVERFLOW SPILLWAY LENGTH (m)": "129",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "280",
+        "STUDY": "Energoproject, Γιουγκοσλαβίας",
+        "CONSTRUCTOR": "Mediterreanean Constructors - G.P. Zachariades, Ελλάδας - Κύπρου"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          32.576959,
+          35.142298
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "45",
+        "NAME": "Αυγόρου ",
+        "YEAR": "1966",
+        "RIVER": "-",
+        "CAPACITY (m3)": "68000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "",
+        "ENRICHMENT": "Nαι",
+        "IRRIGATED ARES (Ha)": "-",
+        "KIND OF IRRIGATED AREA": "-",
+        "RIVER BASIN (km2)": "-",
+        "DAM CATEGORY": "Xωμάτινο",
+        "SIZE CATEGORY": "Μικρά Φράγματα",
+        "DAM HEIGHT (m)": "3",
+        "DAM LENGTH (m) ": "-",
+        "DAM VOLUME ('000 m3)": "-",
+        "RESERVOIR SURFACE ('000 m2)": "-",
+        "OVERFLOW SPILLWAY LENGTH (m)": "-",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "-",
+        "STUDY": "Τμήμα Αναπτύξεως Υδάτων",
+        "CONSTRUCTOR": "Τμήμα Αναπτύξεως Υδάτων"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "46",
+        "NAME": "Κοντέα ",
+        "YEAR": "1966",
+        "RIVER": "-",
+        "CAPACITY (m3)": "82000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "",
+        "ENRICHMENT": "Nαι",
+        "IRRIGATED ARES (Ha)": "-",
+        "KIND OF IRRIGATED AREA": "-",
+        "RIVER BASIN (km2)": "-",
+        "DAM CATEGORY": "Xωμάτινο",
+        "SIZE CATEGORY": "Μικρά Φράγματα",
+        "DAM HEIGHT (m)": "5",
+        "DAM LENGTH (m) ": "-",
+        "DAM VOLUME ('000 m3)": "-",
+        "RESERVOIR SURFACE ('000 m2)": "-",
+        "OVERFLOW SPILLWAY LENGTH (m)": "-",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "-",
+        "STUDY": "Τμήμα Αναπτύξεως Υδάτων",
+        "CONSTRUCTOR": "Τμήμα Αναπτύξεως Υδάτων"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          33.717284,
+          35.075593
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "47",
+        "NAME": "Μακράσυκα ",
+        "YEAR": "1966",
+        "RIVER": "-",
+        "CAPACITY (m3)": "195000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "",
+        "ENRICHMENT": "Nαι",
+        "IRRIGATED ARES (Ha)": "-",
+        "KIND OF IRRIGATED AREA": "-",
+        "RIVER BASIN (km2)": "-",
+        "DAM CATEGORY": "Xωμάτινο",
+        "SIZE CATEGORY": "Μικρά Φράγματα",
+        "DAM HEIGHT (m)": "8",
+        "DAM LENGTH (m) ": "-",
+        "DAM VOLUME ('000 m3)": "-",
+        "RESERVOIR SURFACE ('000 m2)": "-",
+        "OVERFLOW SPILLWAY LENGTH (m)": "-",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "-",
+        "STUDY": "Τμήμα Αναπτύξεως Υδάτων",
+        "CONSTRUCTOR": "Τμήμα Αναπτύξεως Υδάτων"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          33.747988,
+          35.073544
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "48",
+        "NAME": "Ξυλοφάγου ",
+        "YEAR": "1966",
+        "RIVER": "-",
+        "CAPACITY (m3)": "86000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "",
+        "ENRICHMENT": "Nαι",
+        "IRRIGATED ARES (Ha)": "-",
+        "KIND OF IRRIGATED AREA": "-",
+        "RIVER BASIN (km2)": "-",
+        "DAM CATEGORY": "Xωμάτινο",
+        "SIZE CATEGORY": "Μικρά Φράγματα",
+        "DAM HEIGHT (m)": "7",
+        "DAM LENGTH (m) ": "-",
+        "DAM VOLUME ('000 m3)": "-",
+        "RESERVOIR SURFACE ('000 m2)": "-",
+        "OVERFLOW SPILLWAY LENGTH (m)": "-",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "-",
+        "STUDY": "Τμήμα Αναπτύξεως Υδάτων",
+        "CONSTRUCTOR": "Τμήμα Αναπτύξεως Υδάτων"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          33.825013,
+          34.973128
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "49",
+        "NAME": "Σωτήρα ",
+        "YEAR": "1966",
+        "RIVER": "-",
+        "CAPACITY (m3)": "32000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "",
+        "ENRICHMENT": "Nαι",
+        "IRRIGATED ARES (Ha)": "-",
+        "KIND OF IRRIGATED AREA": "-",
+        "RIVER BASIN (km2)": "-",
+        "DAM CATEGORY": "Xωμάτινο",
+        "SIZE CATEGORY": "Μικρά Φράγματα",
+        "DAM HEIGHT (m)": "5",
+        "DAM LENGTH (m) ": "-",
+        "DAM VOLUME ('000 m3)": "-",
+        "RESERVOIR SURFACE ('000 m2)": "-",
+        "OVERFLOW SPILLWAY LENGTH (m)": "-",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "-",
+        "STUDY": "Τμήμα Αναπτύξεως Υδάτων",
+        "CONSTRUCTOR": "Τμήμα Αναπτύξεως Υδάτων"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          33.939232,
+          35.003838
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "50",
+        "NAME": "Φρέναρος ",
+        "YEAR": "1966",
+        "RIVER": "-",
+        "CAPACITY (m3)": "45000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "",
+        "ENRICHMENT": "Nαι",
+        "IRRIGATED ARES (Ha)": "-",
+        "KIND OF IRRIGATED AREA": "-",
+        "RIVER BASIN (km2)": "-",
+        "DAM CATEGORY": "Xωμάτινο",
+        "SIZE CATEGORY": "Μικρά Φράγματα",
+        "DAM HEIGHT (m)": "7",
+        "DAM LENGTH (m) ": "-",
+        "DAM VOLUME ('000 m3)": "-",
+        "RESERVOIR SURFACE ('000 m2)": "-",
+        "OVERFLOW SPILLWAY LENGTH (m)": "-",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "-",
+        "STUDY": "Τμήμα Αναπτύξεως Υδάτων",
+        "CONSTRUCTOR": "Τμήμα Αναπτύξεως Υδάτων"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "51",
+        "NAME": "Άγιος Γεώργιος ",
+        "YEAR": "1967",
+        "RIVER": "-",
+        "CAPACITY (m3)": "68000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "",
+        "ENRICHMENT": "Nαι",
+        "IRRIGATED ARES (Ha)": "-",
+        "KIND OF IRRIGATED AREA": "-",
+        "RIVER BASIN (km2)": "-",
+        "DAM CATEGORY": "Xωμάτινο",
+        "SIZE CATEGORY": "Μικρά Φράγματα",
+        "DAM HEIGHT (m)": "3",
+        "DAM LENGTH (m) ": "-",
+        "DAM VOLUME ('000 m3)": "-",
+        "RESERVOIR SURFACE ('000 m2)": "-",
+        "OVERFLOW SPILLWAY LENGTH (m)": "-",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "-",
+        "STUDY": "Τμήμα Αναπτύξεως Υδάτων",
+        "CONSTRUCTOR": "Τμήμα Αναπτύξεως Υδάτων"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          33.401419,
+          35.142639
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "52",
+        "NAME": "Άχνα Μεσάνια  ",
+        "YEAR": "1967",
+        "RIVER": "-",
+        "CAPACITY (m3)": "90000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "",
+        "ENRICHMENT": "Nαι",
+        "IRRIGATED ARES (Ha)": "-",
+        "KIND OF IRRIGATED AREA": "-",
+        "RIVER BASIN (km2)": "-",
+        "DAM CATEGORY": "Xωμάτινο",
+        "SIZE CATEGORY": "Μικρά Φράγματα",
+        "DAM HEIGHT (m)": "4",
+        "DAM LENGTH (m) ": "-",
+        "DAM VOLUME ('000 m3)": "-",
+        "RESERVOIR SURFACE ('000 m2)": "-",
+        "OVERFLOW SPILLWAY LENGTH (m)": "-",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "-",
+        "STUDY": "Τμήμα Αναπτύξεως Υδάτων",
+        "CONSTRUCTOR": "Τμήμα Αναπτύξεως Υδάτων"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          32.987065,
+          34.942475
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "53",
+        "NAME": "Λύση ",
+        "YEAR": "1967",
+        "RIVER": "-",
+        "CAPACITY (m3)": "77000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "",
+        "ENRICHMENT": "Nαι",
+        "IRRIGATED ARES (Ha)": "-",
+        "KIND OF IRRIGATED AREA": "-",
+        "RIVER BASIN (km2)": "-",
+        "DAM CATEGORY": "Xωμάτινο",
+        "SIZE CATEGORY": "Μικρά Φράγματα",
+        "DAM HEIGHT (m)": "7",
+        "DAM LENGTH (m) ": "-",
+        "DAM VOLUME ('000 m3)": "-",
+        "RESERVOIR SURFACE ('000 m2)": "-",
+        "OVERFLOW SPILLWAY LENGTH (m)": "-",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "-",
+        "STUDY": "Τμήμα Αναπτύξεως Υδάτων",
+        "CONSTRUCTOR": "Τμήμα Αναπτύξεως Υδάτων"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          33.671626,
+          35.088809
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "54",
+        "NAME": "Γερμασόγεια",
+        "YEAR": "1968",
+        "RIVER": "Γερμασόγεια",
+        "CAPACITY (m3)": "13500000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "Nαι",
+        "ENRICHMENT": "",
+        "IRRIGATED ARES (Ha)": "1924.1",
+        "KIND OF IRRIGATED AREA": "Εσπεριδοειδή και επιτραπέζια σταφύλια",
+        "RIVER BASIN (km2)": "156.7",
+        "DAM CATEGORY": "Xωμάτινο",
+        "SIZE CATEGORY": "Μεγάλα Φράγματα",
+        "DAM HEIGHT (m)": "48.8",
+        "DAM LENGTH (m) ": "294.1",
+        "DAM VOLUME ('000 m3)": "525",
+        "RESERVOIR SURFACE ('000 m2)": "1100",
+        "OVERFLOW SPILLWAY LENGTH (m)": "115",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "850",
+        "STUDY": "Energoproject, Γιουγκοσλαβίας",
+        "CONSTRUCTOR": "Cybarco, Κύπρου"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          33.09097,
+          34.75407
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "55",
+        "NAME": "Άγιος Επίκτητος ",
+        "YEAR": "1968",
+        "RIVER": "-",
+        "CAPACITY (m3)": "34000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "",
+        "ENRICHMENT": "Nαι",
+        "IRRIGATED ARES (Ha)": "-",
+        "KIND OF IRRIGATED AREA": "-",
+        "RIVER BASIN (km2)": "-",
+        "DAM CATEGORY": "Xωμάτινο",
+        "SIZE CATEGORY": "Μικρά Φράγματα",
+        "DAM HEIGHT (m)": "6",
+        "DAM LENGTH (m) ": "-",
+        "DAM VOLUME ('000 m3)": "-",
+        "RESERVOIR SURFACE ('000 m2)": "-",
+        "OVERFLOW SPILLWAY LENGTH (m)": "-",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "-",
+        "STUDY": "Τμήμα Αναπτύξεως Υδάτων",
+        "CONSTRUCTOR": "Τμήμα Αναπτύξεως Υδάτων"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          33.432927,
+          35.324123
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "56",
+        "NAME": "Ακανθού ",
+        "YEAR": "1968",
+        "RIVER": "-",
+        "CAPACITY (m3)": "45000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "",
+        "ENRICHMENT": "Nαι",
+        "IRRIGATED ARES (Ha)": "-",
+        "KIND OF IRRIGATED AREA": "-",
+        "RIVER BASIN (km2)": "-",
+        "DAM CATEGORY": "Xωμάτινο",
+        "SIZE CATEGORY": "Μικρά Φράγματα",
+        "DAM HEIGHT (m)": "6",
+        "DAM LENGTH (m) ": "-",
+        "DAM VOLUME ('000 m3)": "-",
+        "RESERVOIR SURFACE ('000 m2)": "-",
+        "OVERFLOW SPILLWAY LENGTH (m)": "-",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "-",
+        "STUDY": "Τμήμα Αναπτύξεως Υδάτων",
+        "CONSTRUCTOR": "Τμήμα Αναπτύξεως Υδάτων"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          33.843603,
+          35.406372
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "57",
+        "NAME": "Ορμίδεια ",
+        "YEAR": "1968",
+        "RIVER": "-",
+        "CAPACITY (m3)": "100000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "",
+        "ENRICHMENT": "Nαι",
+        "IRRIGATED ARES (Ha)": "-",
+        "KIND OF IRRIGATED AREA": "-",
+        "RIVER BASIN (km2)": "-",
+        "DAM CATEGORY": "Xωμάτινο",
+        "SIZE CATEGORY": "Μικρά Φράγματα",
+        "DAM HEIGHT (m)": "5",
+        "DAM LENGTH (m) ": "-",
+        "DAM VOLUME ('000 m3)": "-",
+        "RESERVOIR SURFACE ('000 m2)": "-",
+        "OVERFLOW SPILLWAY LENGTH (m)": "-",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "-",
+        "STUDY": "Τμήμα Αναπτύξεως Υδάτων",
+        "CONSTRUCTOR": "Τμήμα Αναπτύξεως Υδάτων"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          33.769786,
+          35.002133
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "58",
+        "NAME": "Σύγκραση",
+        "YEAR": "1968",
+        "RIVER": "Μερίκερος",
+        "CAPACITY (m3)": "1115000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "Nαι",
+        "ENRICHMENT": "Nαι",
+        "IRRIGATED ARES (Ha)": "-",
+        "KIND OF IRRIGATED AREA": "Σιτηρά και καλλιέργειες",
+        "RIVER BASIN (km2)": "44",
+        "DAM CATEGORY": "Xωμάτινο",
+        "SIZE CATEGORY": "Μικρά Φράγματα",
+        "DAM HEIGHT (m)": "7",
+        "DAM LENGTH (m) ": "489",
+        "DAM VOLUME ('000 m3)": "63.2",
+        "RESERVOIR SURFACE ('000 m2)": "720",
+        "OVERFLOW SPILLWAY LENGTH (m)": "18.6",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "164",
+        "STUDY": "Τμήμα Αναπτύξεως Υδάτων",
+        "CONSTRUCTOR": "Τμήμα Αναπτύξεως Υδάτων"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          33.844752,
+          35.284124
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "59",
+        "NAME": "Βρυσούλλες ",
+        "YEAR": "1969",
+        "RIVER": "-",
+        "CAPACITY (m3)": "140000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "",
+        "ENRICHMENT": "Nαι",
+        "IRRIGATED ARES (Ha)": "-",
+        "KIND OF IRRIGATED AREA": "-",
+        "RIVER BASIN (km2)": "-",
+        "DAM CATEGORY": "Xωμάτινο",
+        "SIZE CATEGORY": "Μικρά Φράγματα",
+        "DAM HEIGHT (m)": "7",
+        "DAM LENGTH (m) ": "-",
+        "DAM VOLUME ('000 m3)": "-",
+        "RESERVOIR SURFACE ('000 m2)": "-",
+        "OVERFLOW SPILLWAY LENGTH (m)": "-",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "-",
+        "STUDY": "Τμήμα Αναπτύξεως Υδάτων",
+        "CONSTRUCTOR": "Τμήμα Αναπτύξεως Υδάτων"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          33.871777,
+          35.074083
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "60",
+        "NAME": "Εμπλουτιστικά Μόρφου",
+        "YEAR": "1969",
+        "RIVER": "-",
+        "CAPACITY (m3)": "130000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "",
+        "ENRICHMENT": "Nαι",
+        "IRRIGATED ARES (Ha)": "-",
+        "KIND OF IRRIGATED AREA": "-",
+        "RIVER BASIN (km2)": "-",
+        "DAM CATEGORY": "Xωμάτινο",
+        "SIZE CATEGORY": "Μικρά Φράγματα",
+        "DAM HEIGHT (m)": "5",
+        "DAM LENGTH (m) ": "-",
+        "DAM VOLUME ('000 m3)": "-",
+        "RESERVOIR SURFACE ('000 m2)": "-",
+        "OVERFLOW SPILLWAY LENGTH (m)": "-",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "-",
+        "STUDY": "Τμήμα Αναπτύξεως Υδάτων",
+        "CONSTRUCTOR": "Τμήμα Αναπτύξεως Υδάτων"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          33.002911,
+          35.201024
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "61",
+        "NAME": "Ξυλοτύμβου ",
+        "YEAR": "1969",
+        "RIVER": "-",
+        "CAPACITY (m3)": "50000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "",
+        "ENRICHMENT": "Nαι",
+        "IRRIGATED ARES (Ha)": "-",
+        "KIND OF IRRIGATED AREA": "-",
+        "RIVER BASIN (km2)": "-",
+        "DAM CATEGORY": "Xωμάτινο",
+        "SIZE CATEGORY": "Μικρά Φράγματα",
+        "DAM HEIGHT (m)": "7",
+        "DAM LENGTH (m) ": "-",
+        "DAM VOLUME ('000 m3)": "-",
+        "RESERVOIR SURFACE ('000 m2)": "-",
+        "OVERFLOW SPILLWAY LENGTH (m)": "-",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "-",
+        "STUDY": "Τμήμα Αναπτύξεως Υδάτων",
+        "CONSTRUCTOR": "Τμήμα Αναπτύξεως Υδάτων"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          33.76618,
+          35.012448
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "62",
+        "NAME": "Πρωτοπαπάς ",
+        "YEAR": "1970",
+        "RIVER": "-",
+        "CAPACITY (m3)": "90000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "",
+        "ENRICHMENT": "Nαι",
+        "IRRIGATED ARES (Ha)": "-",
+        "KIND OF IRRIGATED AREA": "-",
+        "RIVER BASIN (km2)": "-",
+        "DAM CATEGORY": "Xωμάτινο",
+        "SIZE CATEGORY": "Μικρά Φράγματα",
+        "DAM HEIGHT (m)": "6",
+        "DAM LENGTH (m) ": "-",
+        "DAM VOLUME ('000 m3)": "-",
+        "RESERVOIR SURFACE ('000 m2)": "-",
+        "OVERFLOW SPILLWAY LENGTH (m)": "-",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "-",
+        "STUDY": "Τμήμα Αναπτύξεως Υδάτων",
+        "CONSTRUCTOR": "Τμήμα Αναπτύξεως Υδάτων"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          33.154297,
+          34.98127
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "63",
+        "NAME": "Λεύκαρα",
+        "YEAR": "1973",
+        "RIVER": "Συριάτης (Πεντάσχ/νος)",
+        "CAPACITY (m3)": "13850000",
+        "WATER SUPPLY": "Nαι",
+        "IRRIGATION": "Nαι",
+        "ENRICHMENT": "",
+        "IRRIGATED ARES (Ha)": "89.4",
+        "KIND OF IRRIGATED AREA": "Καλλιέργειες",
+        "RIVER BASIN (km2)": "36.3",
+        "DAM CATEGORY": "Xωμάτινο\nΛιθόρριπτο",
+        "SIZE CATEGORY": "Μεγάλα Φράγματα",
+        "DAM HEIGHT (m)": "71",
+        "DAM LENGTH (m) ": "233",
+        "DAM VOLUME ('000 m3)": "830",
+        "RESERVOIR SURFACE ('000 m2)": "650",
+        "OVERFLOW SPILLWAY LENGTH (m)": "70",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "300",
+        "STUDY": "Howard Humphreys & Sons Αγγλίας",
+        "CONSTRUCTOR": "J.V.L. Fairclough of UK & Medcon Cyprus"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          33.287679,
+          34.896917
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "64",
+        "NAME": "Μάσαρη ",
+        "YEAR": "1973",
+        "RIVER": "Σερράχης",
+        "CAPACITY (m3)": "2273000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "",
+        "ENRICHMENT": "Nαι",
+        "IRRIGATED ARES (Ha)": "-",
+        "KIND OF IRRIGATED AREA": "-",
+        "RIVER BASIN (km2)": "430",
+        "DAM CATEGORY": "Xωμάτινο",
+        "SIZE CATEGORY": "Μεγάλα Φράγματα",
+        "DAM HEIGHT (m)": "15",
+        "DAM LENGTH (m) ": "1000",
+        "DAM VOLUME ('000 m3)": "278",
+        "RESERVOIR SURFACE ('000 m2)": "620",
+        "OVERFLOW SPILLWAY LENGTH (m)": "110",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "560",
+        "STUDY": "Τμήμα Αναπτύξεως Υδάτων",
+        "CONSTRUCTOR": "Τμήμα Αναπτύξεως Υδάτων"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          33.090106,
+          35.172948
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "65",
+        "NAME": "Παλαιχώρι - Καμπί",
+        "YEAR": "1973",
+        "RIVER": "Ακάκι (Σερράχης)",
+        "CAPACITY (m3)": "620000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "Nαι",
+        "ENRICHMENT": "",
+        "IRRIGATED ARES (Ha)": "156.1",
+        "KIND OF IRRIGATED AREA": "Δέντρα και λαχανικά",
+        "RIVER BASIN (km2)": "8",
+        "DAM CATEGORY": "Βαρύτητας",
+        "SIZE CATEGORY": "Μεγάλα Φράγματα",
+        "DAM HEIGHT (m)": "33",
+        "DAM LENGTH (m) ": "132",
+        "DAM VOLUME ('000 m3)": "39",
+        "RESERVOIR SURFACE ('000 m2)": "110",
+        "OVERFLOW SPILLWAY LENGTH (m)": "45.4",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "62.9",
+        "STUDY": "Τμήμα Αναπτύξεως Υδάτων",
+        "CONSTRUCTOR": "Ιωάννου & Παρασκευαίδη "
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          33.129002,
+          34.928006
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "66",
+        "NAME": "Κυπερούντα Αρ.1",
+        "YEAR": "1974",
+        "RIVER": "Εξωποτάμια δεξαμενή",
+        "CAPACITY (m3)": "50000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "Nαι",
+        "ENRICHMENT": "",
+        "IRRIGATED ARES (Ha)": "8",
+        "KIND OF IRRIGATED AREA": "Δέντρα, λαχανικά",
+        "RIVER BASIN (km2)": "1",
+        "DAM CATEGORY": "Xωμάτινη",
+        "SIZE CATEGORY": "Μικρά Φράγματα",
+        "DAM HEIGHT (m)": "7",
+        "DAM LENGTH (m) ": "-",
+        "DAM VOLUME ('000 m3)": "-",
+        "RESERVOIR SURFACE ('000 m2)": "-",
+        "OVERFLOW SPILLWAY LENGTH (m)": "-",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "-",
+        "STUDY": "Τμήμα Αναπτύξεως Υδάτων",
+        "CONSTRUCTOR": "Τμήμα Αναπτύξεως Υδάτων"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          32.954711,
+          34.941927
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "67",
+        "NAME": "Αρακαπάς",
+        "YEAR": "1975",
+        "RIVER": "Γερμασόγεια",
+        "CAPACITY (m3)": "129000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "Nαι",
+        "ENRICHMENT": "",
+        "IRRIGATED ARES (Ha)": "24",
+        "KIND OF IRRIGATED AREA": "Εσπεριδοειδή",
+        "RIVER BASIN (km2)": "37.7",
+        "DAM CATEGORY": "Βαρύτητας",
+        "SIZE CATEGORY": "Μεγάλα Φράγματα",
+        "DAM HEIGHT (m)": "23",
+        "DAM LENGTH (m) ": "96.5",
+        "DAM VOLUME ('000 m3)": "10.1",
+        "RESERVOIR SURFACE ('000 m2)": "20",
+        "OVERFLOW SPILLWAY LENGTH (m)": "45",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "204",
+        "STUDY": "Τμήμα Αναπτύξεως Υδάτων",
+        "CONSTRUCTOR": "Τμήμα Αναπτύξεως Υδάτων"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          33.088789,
+          34.842932
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "68",
+        "NAME": "Λύμπια (Νέον)",
+        "YEAR": "1977",
+        "RIVER": "Τρέμιθος",
+        "CAPACITY (m3)": "220000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "Nαι",
+        "ENRICHMENT": "",
+        "IRRIGATED ARES (Ha)": "50.9",
+        "KIND OF IRRIGATED AREA": "Λαχανικά",
+        "RIVER BASIN (km2)": "29",
+        "DAM CATEGORY": "Βαρύτητας",
+        "SIZE CATEGORY": "Μικρά Φράγματα",
+        "DAM HEIGHT (m)": "12",
+        "DAM LENGTH (m) ": "122",
+        "DAM VOLUME ('000 m3)": "4.7",
+        "RESERVOIR SURFACE ('000 m2)": "90",
+        "OVERFLOW SPILLWAY LENGTH (m)": "25",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "155",
+        "STUDY": "Τμήμα Αναπτύξεως Υδάτων",
+        "CONSTRUCTOR": "Τμήμα Αναπτύξεως Υδάτων"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          33.41825,
+          34.975329
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "69",
+        "NAME": "Άγιοι Βαβατσινιάς Αρ.1 ",
+        "YEAR": "1980",
+        "RIVER": "Εξωποτάμια δεξαμενή",
+        "CAPACITY (m3)": "55000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "Nαι",
+        "ENRICHMENT": "",
+        "IRRIGATED ARES (Ha)": "11.3",
+        "KIND OF IRRIGATED AREA": "Εσπεριδοειδή, ελιές, λαχανικά",
+        "RIVER BASIN (km2)": "-",
+        "DAM CATEGORY": "Xωμάτινη",
+        "SIZE CATEGORY": "Μεγάλα Φράγματα",
+        "DAM HEIGHT (m)": "17",
+        "DAM LENGTH (m) ": "-",
+        "DAM VOLUME ('000 m3)": "32",
+        "RESERVOIR SURFACE ('000 m2)": "11",
+        "OVERFLOW SPILLWAY LENGTH (m)": "-",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "-",
+        "STUDY": "Τμήμα Αναπτύξεως Υδάτων",
+        "CONSTRUCTOR": "Iacovou Bros"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          33.181671,
+          34.868288
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "70",
+        "NAME": "Επταγώνεια  Αρ.1 ",
+        "YEAR": "1980",
+        "RIVER": "Εξωποτάμια δεξαμενή",
+        "CAPACITY (m3)": "92000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "Nαι",
+        "ENRICHMENT": "",
+        "IRRIGATED ARES (Ha)": "18.5",
+        "KIND OF IRRIGATED AREA": "Εσπεριδοειδή, ελιές, λαχανικά",
+        "RIVER BASIN (km2)": "5",
+        "DAM CATEGORY": "Xωμάτινη",
+        "SIZE CATEGORY": "Μεγάλα Φράγματα",
+        "DAM HEIGHT (m)": "16",
+        "DAM LENGTH (m) ": "-",
+        "DAM VOLUME ('000 m3)": "46",
+        "RESERVOIR SURFACE ('000 m2)": "17",
+        "OVERFLOW SPILLWAY LENGTH (m)": "-",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "-",
+        "STUDY": "Τμήμα Αναπτύξεως Υδάτων",
+        "CONSTRUCTOR": "Iacovou Bros"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          33.717284,
+          35.075593
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "71",
+        "NAME": "Μελίνη Αρ.1",
+        "YEAR": "1980",
+        "RIVER": "Εξωποτάμια δεξαμενή",
+        "CAPACITY (m3)": "59000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "Nαι",
+        "ENRICHMENT": "",
+        "IRRIGATED ARES (Ha)": "12",
+        "KIND OF IRRIGATED AREA": "Εσπεριδοειδή, ελιές",
+        "RIVER BASIN (km2)": "6,5",
+        "DAM CATEGORY": "Xωμάτινη",
+        "SIZE CATEGORY": "Μεγάλα Φράγματα",
+        "DAM HEIGHT (m)": "22",
+        "DAM LENGTH (m) ": "-",
+        "DAM VOLUME ('000 m3)": "32",
+        "RESERVOIR SURFACE ('000 m2)": "13",
+        "OVERFLOW SPILLWAY LENGTH (m)": "-",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "-",
+        "STUDY": "Τμήμα Αναπτύξεως Υδάτων",
+        "CONSTRUCTOR": "Iacovou Bros"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          33.168384,
+          34.865585
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "72",
+        "NAME": "Πελένδρι ",
+        "YEAR": "1980",
+        "RIVER": "Εξωποτάμια δεξαμενή",
+        "CAPACITY (m3)": "123000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "Nαι",
+        "ENRICHMENT": "",
+        "IRRIGATED ARES (Ha)": "50.1",
+        "KIND OF IRRIGATED AREA": "Εσπεριδοειδή, λαχανικά",
+        "RIVER BASIN (km2)": "2",
+        "DAM CATEGORY": "Xωμάτινη",
+        "SIZE CATEGORY": "Μεγάλα Φράγματα",
+        "DAM HEIGHT (m)": "18",
+        "DAM LENGTH (m) ": "-",
+        "DAM VOLUME ('000 m3)": "59",
+        "RESERVOIR SURFACE ('000 m2)": "21",
+        "OVERFLOW SPILLWAY LENGTH (m)": "-",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "-",
+        "STUDY": "Τμήμα Αναπτύξεως Υδάτων",
+        "CONSTRUCTOR": "Fysko Constructing Ltd"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          32.967781,
+          34.891657
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "73",
+        "NAME": "Χανδριά ",
+        "YEAR": "1980",
+        "RIVER": "Εξωποτάμια δεξαμενή",
+        "CAPACITY (m3)": "70000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "Nαι",
+        "ENRICHMENT": "",
+        "IRRIGATED ARES (Ha)": "13.4",
+        "KIND OF IRRIGATED AREA": "Δέντρα, λαχανικά",
+        "RIVER BASIN (km2)": "0,8",
+        "DAM CATEGORY": "Xωμάτινη",
+        "SIZE CATEGORY": "Μεγάλα Φράγματα",
+        "DAM HEIGHT (m)": "35",
+        "DAM LENGTH (m) ": "-",
+        "DAM VOLUME ('000 m3)": "41",
+        "RESERVOIR SURFACE ('000 m2)": "14",
+        "OVERFLOW SPILLWAY LENGTH (m)": "-",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "-",
+        "STUDY": "Τμήμα Αναπτύξεως Υδάτων",
+        "CONSTRUCTOR": "Cybarco Ltd"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          32.987065,
+          34.942475
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "74",
+        "NAME": "Άγιοι Βαβατσινιάς",
+        "YEAR": "1981",
+        "RIVER": "Βασιλικός",
+        "CAPACITY (m3)": "53000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "Nαι",
+        "ENRICHMENT": "",
+        "IRRIGATED ARES (Ha)": "11.4",
+        "KIND OF IRRIGATED AREA": "Εσπεριδοειδή, ελιές, λαχανικά",
+        "RIVER BASIN (km2)": "8.6",
+        "DAM CATEGORY": "Τοξωτό",
+        "SIZE CATEGORY": "Μεγάλα Φράγματα",
+        "DAM HEIGHT (m)": "19",
+        "DAM LENGTH (m) ": "58",
+        "DAM VOLUME ('000 m3)": "2",
+        "RESERVOIR SURFACE ('000 m2)": "12",
+        "OVERFLOW SPILLWAY LENGTH (m)": "",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "63",
+        "STUDY": "Τμήμα Αναπτύξεως Υδάτων",
+        "CONSTRUCTOR": "Τμήμα Αναπτύξεως Υδάτων"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          33.182523,
+          34.873303
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "75",
+        "NAME": "Ακαπνού -  Επταγώνεια ",
+        "YEAR": "1981",
+        "RIVER": "Εξωποτάμια δεξαμενή",
+        "CAPACITY (m3)": "132000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "Nαι",
+        "ENRICHMENT": "",
+        "IRRIGATED ARES (Ha)": "21.7",
+        "KIND OF IRRIGATED AREA": "Εσπεριδοειδή, ελιές",
+        "RIVER BASIN (km2)": "19,6",
+        "DAM CATEGORY": "Xωμάτινη",
+        "SIZE CATEGORY": "Μεγάλα Φράγματα",
+        "DAM HEIGHT (m)": "9",
+        "DAM LENGTH (m) ": "-",
+        "DAM VOLUME ('000 m3)": "67",
+        "RESERVOIR SURFACE ('000 m2)": "33",
+        "OVERFLOW SPILLWAY LENGTH (m)": "-",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "-",
+        "STUDY": "Τμήμα Αναπτύξεως Υδάτων",
+        "CONSTRUCTOR": "Iacovou Brothers (Construction) Ltd"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          33.176145,
+          34.847584
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "76",
+        "NAME": "Κάτω Μύλος ",
+        "YEAR": "1981",
+        "RIVER": "Εξωποτάμια δεξαμενή",
+        "CAPACITY (m3)": "104000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "Nαι",
+        "ENRICHMENT": "",
+        "IRRIGATED ARES (Ha)": "22.8",
+        "KIND OF IRRIGATED AREA": "Εσπεριδοειδή, λαχανικά",
+        "RIVER BASIN (km2)": "6,2",
+        "DAM CATEGORY": "Xωμάτινη",
+        "SIZE CATEGORY": "Μεγάλα Φράγματα",
+        "DAM HEIGHT (m)": "23",
+        "DAM LENGTH (m) ": "-",
+        "DAM VOLUME ('000 m3)": "41",
+        "RESERVOIR SURFACE ('000 m2)": "20",
+        "OVERFLOW SPILLWAY LENGTH (m)": "-",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "-",
+        "STUDY": "Τμήμα Αναπτύξεως Υδάτων",
+        "CONSTRUCTOR": "Phoenic Construction Ltd"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          33.007508,
+          34.900712
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "77",
+        "NAME": "Επταγώνεια  Αρ.3 ",
+        "YEAR": "1981",
+        "RIVER": "Εξωποτάμια δεξαμενή",
+        "CAPACITY (m3)": "65000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "Nαι",
+        "ENRICHMENT": "",
+        "IRRIGATED ARES (Ha)": "12",
+        "KIND OF IRRIGATED AREA": "Εσπεριδοειδή, ελιές",
+        "RIVER BASIN (km2)": "3,9",
+        "DAM CATEGORY": "Xωμάτινη",
+        "SIZE CATEGORY": "Μικρά Φράγματα",
+        "DAM HEIGHT (m)": "12",
+        "DAM LENGTH (m) ": "-",
+        "DAM VOLUME ('000 m3)": "67",
+        "RESERVOIR SURFACE ('000 m2)": "24",
+        "OVERFLOW SPILLWAY LENGTH (m)": "-",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "-",
+        "STUDY": "Τμήμα Αναπτύξεως Υδάτων",
+        "CONSTRUCTOR": "Iacovou Bros"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          33.152396,
+          34.838273
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "78",
+        "NAME": "Ασπρόκρεμμος",
+        "YEAR": "1982",
+        "RIVER": "Ξεροπόταμος",
+        "CAPACITY (m3)": "52375000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "Nαι",
+        "ENRICHMENT": "",
+        "IRRIGATED ARES (Ha)": "5088.2",
+        "KIND OF IRRIGATED AREA": "Καλλιέργειες",
+        "RIVER BASIN (km2)": "227",
+        "DAM CATEGORY": "Xωμάτινο",
+        "SIZE CATEGORY": "Μεγάλα Φράγματα",
+        "DAM HEIGHT (m)": "53",
+        "DAM LENGTH (m) ": "700",
+        "DAM VOLUME ('000 m3)": "2097",
+        "RESERVOIR SURFACE ('000 m2)": "2590",
+        "OVERFLOW SPILLWAY LENGTH (m)": "230",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "1484",
+        "STUDY": "Sir M. MacDonald & Partners",
+        "CONSTRUCTOR": "J & P and Medcon Construction Ltd., JV"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          32.56459,
+          34.741306
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "79",
+        "NAME": "Ξυλιάτος",
+        "YEAR": "1982",
+        "RIVER": "Λαγουδερά (Ελιά)",
+        "CAPACITY (m3)": "1430000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "Nαι",
+        "ENRICHMENT": "",
+        "IRRIGATED ARES (Ha)": "308",
+        "KIND OF IRRIGATED AREA": "Εσπεριδοειδή και δέντρα",
+        "RIVER BASIN (km2)": "19.2",
+        "DAM CATEGORY": "Λιθόρριπτο",
+        "SIZE CATEGORY": "Μεγάλα Φράγματα",
+        "DAM HEIGHT (m)": "42",
+        "DAM LENGTH (m) ": "155",
+        "DAM VOLUME ('000 m3)": "240",
+        "RESERVOIR SURFACE ('000 m2)": "96",
+        "OVERFLOW SPILLWAY LENGTH (m)": "75",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "100",
+        "STUDY": "Τμήμα Αναπτύξεως Υδάτων",
+        "CONSTRUCTOR": "General Construction Co"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          33.036986,
+          35.006364
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "80",
+        "NAME": "Αρακαπάς Αρ.1 ",
+        "YEAR": "1982",
+        "RIVER": "Εξωποτάμια δεξαμενή",
+        "CAPACITY (m3)": "192000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "Nαι",
+        "ENRICHMENT": "",
+        "IRRIGATED ARES (Ha)": "34.7",
+        "KIND OF IRRIGATED AREA": "Εσπεριδοειδή, ελιές",
+        "RIVER BASIN (km2)": "4,6",
+        "DAM CATEGORY": "Xωμάτινη",
+        "SIZE CATEGORY": "Μικρά Φράγματα",
+        "DAM HEIGHT (m)": "12",
+        "DAM LENGTH (m) ": "-",
+        "DAM VOLUME ('000 m3)": "77",
+        "RESERVOIR SURFACE ('000 m2)": "31",
+        "OVERFLOW SPILLWAY LENGTH (m)": "-",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "-",
+        "STUDY": "Τμήμα Αναπτύξεως Υδάτων",
+        "CONSTRUCTOR": "Iacovou Bros"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          33.080233,
+          34.847062
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "81",
+        "NAME": "Επταγώνεια  Αρ.2 ",
+        "YEAR": "1982",
+        "RIVER": "Εξωποτάμια δεξαμενή",
+        "CAPACITY (m3)": "127000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "Nαι",
+        "ENRICHMENT": "",
+        "IRRIGATED ARES (Ha)": "20",
+        "KIND OF IRRIGATED AREA": "Εσπεριδοειδή, ελιές",
+        "RIVER BASIN (km2)": "3,9",
+        "DAM CATEGORY": "Xωμάτινη",
+        "SIZE CATEGORY": "Μικρά Φράγματα",
+        "DAM HEIGHT (m)": "8",
+        "DAM LENGTH (m) ": "-",
+        "DAM VOLUME ('000 m3)": "68",
+        "RESERVOIR SURFACE ('000 m2)": "36",
+        "OVERFLOW SPILLWAY LENGTH (m)": "-",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "-",
+        "STUDY": "Τμήμα Αναπτύξεως Υδάτων",
+        "CONSTRUCTOR": "Hadjiconstantis-Fysentides-Charalambous"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          33.153088,
+          34.848963
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "82",
+        "NAME": "Αγρίδια ",
+        "YEAR": "1983",
+        "RIVER": "Εξωποτάμια δεξαμενή",
+        "CAPACITY (m3)": "59000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "Nαι",
+        "ENRICHMENT": "",
+        "IRRIGATED ARES (Ha)": "10.2",
+        "KIND OF IRRIGATED AREA": "Δένδρα, λαχανικά",
+        "RIVER BASIN (km2)": "0,7",
+        "DAM CATEGORY": "Xωμάτινη",
+        "SIZE CATEGORY": "Μεγάλα Φράγματα",
+        "DAM HEIGHT (m)": "18",
+        "DAM LENGTH (m) ": "-",
+        "DAM VOLUME ('000 m3)": "25",
+        "RESERVOIR SURFACE ('000 m2)": "12",
+        "OVERFLOW SPILLWAY LENGTH (m)": "-",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "-",
+        "STUDY": "Τμήμα Αναπτύξεως Υδάτων",
+        "CONSTRUCTOR": "Iacovou Bros"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          33.000681,
+          34.930217
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "83",
+        "NAME": "Κυπερούντα Αρ. 2 ",
+        "YEAR": "1983",
+        "RIVER": "Εξωποτάμια δεξαμενή",
+        "CAPACITY (m3)": "273000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "Nαι",
+        "ENRICHMENT": "",
+        "IRRIGATED ARES (Ha)": "59.6",
+        "KIND OF IRRIGATED AREA": "Δένδρα, λαχανικά",
+        "RIVER BASIN (km2)": "1,6",
+        "DAM CATEGORY": "Xωμάτινο",
+        "SIZE CATEGORY": "Μεγάλα Φράγματα",
+        "DAM HEIGHT (m)": "27",
+        "DAM LENGTH (m) ": "-",
+        "DAM VOLUME ('000 m3)": "94",
+        "RESERVOIR SURFACE ('000 m2)": "36",
+        "OVERFLOW SPILLWAY LENGTH (m)": "-",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "-",
+        "STUDY": "Τμήμα Αναπτύξεως Υδάτων",
+        "CONSTRUCTOR": "Iacovou Bros"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          32.983302,
+          34.940486
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "84",
+        "NAME": "Λαγουδερά ",
+        "YEAR": "1983",
+        "RIVER": "Εξωποτάμια δεξαμενή",
+        "CAPACITY (m3)": "71000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "Nαι",
+        "ENRICHMENT": "",
+        "IRRIGATED ARES (Ha)": "16",
+        "KIND OF IRRIGATED AREA": "Κερασιές, ροδακινιές, ελιές",
+        "RIVER BASIN (km2)": "5,7",
+        "DAM CATEGORY": "Xωμάτινη",
+        "SIZE CATEGORY": "Μεγάλα Φράγματα",
+        "DAM HEIGHT (m)": "36",
+        "DAM LENGTH (m) ": "-",
+        "DAM VOLUME ('000 m3)": "63",
+        "RESERVOIR SURFACE ('000 m2)": "14",
+        "OVERFLOW SPILLWAY LENGTH (m)": "-",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "-",
+        "STUDY": "Τμήμα Αναπτύξεως Υδάτων",
+        "CONSTRUCTOR": "Phoenic Construction Ltd Kykon"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          33.017625,
+          34.967937
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "85",
+        "NAME": "Ορά ",
+        "YEAR": "1983",
+        "RIVER": "Εξωποτάμια δεξαμενή",
+        "CAPACITY (m3)": "62000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "Nαι",
+        "ENRICHMENT": "",
+        "IRRIGATED ARES (Ha)": "15",
+        "KIND OF IRRIGATED AREA": "Εσπεριδοειδή, ελιές",
+        "RIVER BASIN (km2)": "1,7",
+        "DAM CATEGORY": "Xωμάτινη",
+        "SIZE CATEGORY": "Μικρά Φράγματα",
+        "DAM HEIGHT (m)": "18",
+        "DAM LENGTH (m) ": "-",
+        "DAM VOLUME ('000 m3)": "34",
+        "RESERVOIR SURFACE ('000 m2)": "13",
+        "OVERFLOW SPILLWAY LENGTH (m)": "-",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "-",
+        "STUDY": "Τμήμα Αναπτύξεως Υδάτων",
+        "CONSTRUCTOR": "Phoenic Construction Ltd"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          33.192733,
+          34.870031
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "86",
+        "NAME": "Άγιοι Βαβατσινιάς  Αρ.2 ",
+        "YEAR": "1984",
+        "RIVER": "Εξωποτάμια δεξαμενή",
+        "CAPACITY (m3)": "43000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "Nαι",
+        "ENRICHMENT": "",
+        "IRRIGATED ARES (Ha)": "7",
+        "KIND OF IRRIGATED AREA": "Εσπεριδοειδή",
+        "RIVER BASIN (km2)": "-",
+        "DAM CATEGORY": "Xωμάτινη",
+        "SIZE CATEGORY": "Μεγάλα Φράγματα",
+        "DAM HEIGHT (m)": "25",
+        "DAM LENGTH (m) ": "-",
+        "DAM VOLUME ('000 m3)": "30",
+        "RESERVOIR SURFACE ('000 m2)": "9",
+        "OVERFLOW SPILLWAY LENGTH (m)": "-",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "-",
+        "STUDY": "Τμήμα Αναπτύξεως Υδάτων",
+        "CONSTRUCTOR": "Chr. Charalampous"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          33.188603,
+          34.874656
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "87",
+        "NAME": "Διερώνα ",
+        "YEAR": "1984",
+        "RIVER": "Εξωποτάμια δεξαμενή",
+        "CAPACITY (m3)": "159000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "Nαι",
+        "ENRICHMENT": "",
+        "IRRIGATED ARES (Ha)": "34",
+        "KIND OF IRRIGATED AREA": "Εσπεριδοειδή, ελιές",
+        "RIVER BASIN (km2)": "18,7",
+        "DAM CATEGORY": "Xωμάτινη",
+        "SIZE CATEGORY": "Μεγάλα Φράγματα",
+        "DAM HEIGHT (m)": "24",
+        "DAM LENGTH (m) ": "-",
+        "DAM VOLUME ('000 m3)": "59",
+        "RESERVOIR SURFACE ('000 m2)": "27",
+        "OVERFLOW SPILLWAY LENGTH (m)": "-",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "-",
+        "STUDY": "Τμήμα Αναπτύξεως Υδάτων",
+        "CONSTRUCTOR": "Char. Apostolides"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          33.121058,
+          34.839264
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "88",
+        "NAME": "Χοιροκοιτία ",
+        "YEAR": "1984",
+        "RIVER": "Εξωποτάμια δεξαμενή",
+        "CAPACITY (m3)": "205000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "Nαι",
+        "ENRICHMENT": "",
+        "IRRIGATED ARES (Ha)": "39",
+        "KIND OF IRRIGATED AREA": "Εσπεριδοειδή, λαχανικά",
+        "RIVER BASIN (km2)": "-",
+        "DAM CATEGORY": "Xωμάτινη",
+        "SIZE CATEGORY": "Μεγάλα Φράγματα",
+        "DAM HEIGHT (m)": "16",
+        "DAM LENGTH (m) ": "-",
+        "DAM VOLUME ('000 m3)": "95",
+        "RESERVOIR SURFACE ('000 m2)": "31",
+        "OVERFLOW SPILLWAY LENGTH (m)": "-",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "-",
+        "STUDY": "Τμήμα Αναπτύξεως Υδάτων",
+        "CONSTRUCTOR": "Iacovou Bros"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          33.327507,
+          34.806045
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "89",
+        "NAME": "Αρακαπάς  Αρ.2 ",
+        "YEAR": "1984",
+        "RIVER": "Εξωποτάμια δεξαμενή",
+        "CAPACITY (m3)": "120000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "Nαι",
+        "ENRICHMENT": "",
+        "IRRIGATED ARES (Ha)": "23",
+        "KIND OF IRRIGATED AREA": "Εσπεριδοειδή, ελιές",
+        "RIVER BASIN (km2)": "4,5",
+        "DAM CATEGORY": "Xωμάτινη",
+        "SIZE CATEGORY": "Μικρά Φράγματα",
+        "DAM HEIGHT (m)": "12",
+        "DAM LENGTH (m) ": "-",
+        "DAM VOLUME ('000 m3)": "44",
+        "RESERVOIR SURFACE ('000 m2)": "27",
+        "OVERFLOW SPILLWAY LENGTH (m)": "-",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "-",
+        "STUDY": "Τμήμα Αναπτύξεως Υδάτων",
+        "CONSTRUCTOR": "Char. Apostolides"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          33.129882,
+          34.840893
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "90",
+        "NAME": "Φαρμακάς  Αρ.1",
+        "YEAR": "1984",
+        "RIVER": "Εξωποτάμια δεξαμενή",
+        "CAPACITY (m3)": "21000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "Nαι",
+        "ENRICHMENT": "",
+        "IRRIGATED ARES (Ha)": "5",
+        "KIND OF IRRIGATED AREA": "Ελιές, λαχανικά",
+        "RIVER BASIN (km2)": "-",
+        "DAM CATEGORY": "Xωμάτινη",
+        "SIZE CATEGORY": "Μικρά Φράγματα",
+        "DAM HEIGHT (m)": "18",
+        "DAM LENGTH (m) ": "-",
+        "DAM VOLUME ('000 m3)": "19",
+        "RESERVOIR SURFACE ('000 m2)": "6",
+        "OVERFLOW SPILLWAY LENGTH (m)": "-",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "-",
+        "STUDY": "Τμήμα Αναπτύξεως Υδάτων",
+        "CONSTRUCTOR": "Iacovou Bros"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          33.136084,
+          34.918946
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "91",
+        "NAME": "Φαρμακάς  Αρ.2 ",
+        "YEAR": "1984",
+        "RIVER": "Εξωποτάμια δεξαμενή",
+        "CAPACITY (m3)": "61000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "Nαι",
+        "ENRICHMENT": "",
+        "IRRIGATED ARES (Ha)": "10",
+        "KIND OF IRRIGATED AREA": "Ελιές, λαχανικά",
+        "RIVER BASIN (km2)": "-",
+        "DAM CATEGORY": "Xωμάτινη",
+        "SIZE CATEGORY": "Μικρά Φράγματα",
+        "DAM HEIGHT (m)": "24",
+        "DAM LENGTH (m) ": "-",
+        "DAM VOLUME ('000 m3)": "47",
+        "RESERVOIR SURFACE ('000 m2)": "12",
+        "OVERFLOW SPILLWAY LENGTH (m)": "-",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "-",
+        "STUDY": "Τμήμα Αναπτύξεως Υδάτων",
+        "CONSTRUCTOR": "Iacovou Bros"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          33.13479,
+          34.920408
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "92",
+        "NAME": "Διπόταμος",
+        "YEAR": "1985",
+        "RIVER": "Πεντάσχοινος",
+        "CAPACITY (m3)": "15500000",
+        "WATER SUPPLY": "Nαι",
+        "IRRIGATION": "Nαι",
+        "ENRICHMENT": "",
+        "IRRIGATED ARES (Ha)": "320",
+        "KIND OF IRRIGATED AREA": "Καλλιέργειες",
+        "RIVER BASIN (km2)": "79",
+        "DAM CATEGORY": "Λιθόρριπτο",
+        "SIZE CATEGORY": "Μεγάλα Φράγματα",
+        "DAM HEIGHT (m)": "60",
+        "DAM LENGTH (m) ": "390",
+        "DAM VOLUME ('000 m3)": "1090",
+        "RESERVOIR SURFACE ('000 m2)": "1000",
+        "OVERFLOW SPILLWAY LENGTH (m)": "61.95",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "1130",
+        "STUDY": "Rofe Kennard & Lapworth in assosiation Chr. Ioannides",
+        "CONSTRUCTOR": "Shephard Hill - GP Zachariades Joint Venture"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          33.355127,
+          34.859369
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "93",
+        "NAME": "Καλαβασός",
+        "YEAR": "1985",
+        "RIVER": "Βασιλικός",
+        "CAPACITY (m3)": "17100000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "Nαι",
+        "ENRICHMENT": "",
+        "IRRIGATED ARES (Ha)": "765",
+        "KIND OF IRRIGATED AREA": "Καλλιέργειες",
+        "RIVER BASIN (km2)": "95.5",
+        "DAM CATEGORY": "Λιθόρριπτο",
+        "SIZE CATEGORY": "Μεγάλα Φράγματα",
+        "DAM HEIGHT (m)": "60",
+        "DAM LENGTH (m) ": "482",
+        "DAM VOLUME ('000 m3)": "1700",
+        "RESERVOIR SURFACE ('000 m2)": "875",
+        "OVERFLOW SPILLWAY LENGTH (m)": "68.5",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "1268",
+        "STUDY": "Rofe Kennard & Lapworth in assosiation Chr. Ioannides",
+        "CONSTRUCTOR": "J&P - Medcon"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          33.255641,
+          34.806617
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "94",
+        "NAME": "Έσσω Γαλάτα ",
+        "YEAR": "1985",
+        "RIVER": "Εξωποτάμια δεξαμενή",
+        "CAPACITY (m3)": "35000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "Nαι",
+        "ENRICHMENT": "",
+        "IRRIGATED ARES (Ha)": "17",
+        "KIND OF IRRIGATED AREA": "Φυλλοβόλα Δένδρα",
+        "RIVER BASIN (km2)": "-",
+        "DAM CATEGORY": "Xωμάτινη",
+        "SIZE CATEGORY": "Μικρά Φράγματα",
+        "DAM HEIGHT (m)": "27",
+        "DAM LENGTH (m) ": "-",
+        "DAM VOLUME ('000 m3)": "-",
+        "RESERVOIR SURFACE ('000 m2)": "8",
+        "OVERFLOW SPILLWAY LENGTH (m)": "-",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "-",
+        "STUDY": "Τμήμα Αναπτύξεως Υδάτων",
+        "CONSTRUCTOR": "Τμήμα Αναπτύξεως Υδάτων"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          32.880034,
+          34.987497
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "95",
+        "NAME": "Ευρέτου",
+        "YEAR": "1986",
+        "RIVER": "Σταυρός της Ψώκας",
+        "CAPACITY (m3)": "24000000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "Nαι",
+        "ENRICHMENT": "",
+        "IRRIGATED ARES (Ha)": "3300",
+        "KIND OF IRRIGATED AREA": "Εσπεριδοειδή, λαχανικά, επιτρ. σταφύλια",
+        "RIVER BASIN (km2)": "91",
+        "DAM CATEGORY": "Λιθόρριπτο",
+        "SIZE CATEGORY": "Μεγάλα Φράγματα",
+        "DAM HEIGHT (m)": "70",
+        "DAM LENGTH (m) ": "260",
+        "DAM VOLUME ('000 m3)": "1400",
+        "RESERVOIR SURFACE ('000 m2)": "1250",
+        "OVERFLOW SPILLWAY LENGTH (m)": "182",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "360",
+        "STUDY": "Sir William Halcrow and Partners",
+        "CONSTRUCTOR": "Shephard Hill - Zachariades Joint Venture"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          32.477712,
+          34.966413
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "96",
+        "NAME": "Άχνα",
+        "YEAR": "1987",
+        "RIVER": "Εξωποτάμιο φράγμα",
+        "CAPACITY (m3)": "6800000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "",
+        "ENRICHMENT": "Nαι",
+        "IRRIGATED ARES (Ha)": "-",
+        "KIND OF IRRIGATED AREA": "-",
+        "RIVER BASIN (km2)": "-",
+        "DAM CATEGORY": "Xωμάτινο",
+        "SIZE CATEGORY": "Μεγάλα Φράγματα",
+        "DAM HEIGHT (m)": "16",
+        "DAM LENGTH (m) ": "272",
+        "DAM VOLUME ('000 m3)": "220",
+        "RESERVOIR SURFACE ('000 m2)": "1250",
+        "OVERFLOW SPILLWAY LENGTH (m)": "-",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "35",
+        "STUDY": "Sir William Halcrow",
+        "CONSTRUCTOR": "Iacovou Bros"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          33.804913,
+          35.048491
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "97",
+        "NAME": "Αραδίππου ",
+        "YEAR": "1987",
+        "RIVER": "-",
+        "CAPACITY (m3)": "90000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "",
+        "ENRICHMENT": "Nαι",
+        "IRRIGATED ARES (Ha)": "-",
+        "KIND OF IRRIGATED AREA": "-",
+        "RIVER BASIN (km2)": "-",
+        "DAM CATEGORY": "Βαρύτητας",
+        "SIZE CATEGORY": "Μικρά Φράγματα",
+        "DAM HEIGHT (m)": "14",
+        "DAM LENGTH (m) ": "-",
+        "DAM VOLUME ('000 m3)": "-",
+        "RESERVOIR SURFACE ('000 m2)": "-",
+        "OVERFLOW SPILLWAY LENGTH (m)": "-",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "-",
+        "STUDY": "Τμήμα Αναπτύξεως Υδάτων",
+        "CONSTRUCTOR": "Τμήμα Αναπτύξεως Υδάτων"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          33.671626,
+          35.088809
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "98",
+        "NAME": "Κούρης",
+        "YEAR": "1988",
+        "RIVER": "Κούρης",
+        "CAPACITY (m3)": "115000000",
+        "WATER SUPPLY": "Nαι",
+        "IRRIGATION": "Nαι",
+        "ENRICHMENT": "Nαι",
+        "IRRIGATED ARES (Ha)": "-",
+        "KIND OF IRRIGATED AREA": "-",
+        "RIVER BASIN (km2)": "308",
+        "DAM CATEGORY": "Xωμάτινο",
+        "SIZE CATEGORY": "Μεγάλα Φράγματα",
+        "DAM HEIGHT (m)": "110",
+        "DAM LENGTH (m) ": "550",
+        "DAM VOLUME ('000 m3)": "9400",
+        "RESERVOIR SURFACE ('000 m2)": "3600",
+        "OVERFLOW SPILLWAY LENGTH (m)": "407.5",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "1928",
+        "STUDY": "Sogreah and Hydroconsult",
+        "CONSTRUCTOR": "Impregilo J&P"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          32.923037,
+          34.749357
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "99",
+        "NAME": "Βυζακιά",
+        "YEAR": "1994",
+        "RIVER": "Εξωποτάμιο φράγμα",
+        "CAPACITY (m3)": "1690000",
+        "WATER SUPPLY": "Nαι",
+        "IRRIGATION": "Nαι",
+        "ENRICHMENT": "",
+        "IRRIGATED ARES (Ha)": "350",
+        "KIND OF IRRIGATED AREA": "Καλλιέργειες",
+        "RIVER BASIN (km2)": "350",
+        "DAM CATEGORY": "Xωμάτινο",
+        "SIZE CATEGORY": "Μεγάλα Φράγματα",
+        "DAM HEIGHT (m)": "37",
+        "DAM LENGTH (m) ": "394",
+        "DAM VOLUME ('000 m3)": "366",
+        "RESERVOIR SURFACE ('000 m2)": "160",
+        "OVERFLOW SPILLWAY LENGTH (m)": "22.4",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "30",
+        "STUDY": "Τμήμα Αναπτύξεως Υδάτων",
+        "CONSTRUCTOR": "Cybarco, Ltd"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          33.029536,
+          35.061692
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "100",
+        "NAME": "Μελίνη Αρ.2",
+        "YEAR": "1996",
+        "RIVER": "Εξωποτάμια δεξαμενή",
+        "CAPACITY (m3)": "97000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "Nαι",
+        "ENRICHMENT": "",
+        "IRRIGATED ARES (Ha)": "14",
+        "KIND OF IRRIGATED AREA": "Εσπεριδοειδή",
+        "RIVER BASIN (km2)": "-",
+        "DAM CATEGORY": "Xωμάτινη",
+        "SIZE CATEGORY": "Μεγάλα Φράγματα",
+        "DAM HEIGHT (m)": "36",
+        "DAM LENGTH (m) ": "-",
+        "DAM VOLUME ('000 m3)": "97",
+        "RESERVOIR SURFACE ('000 m2)": "14",
+        "OVERFLOW SPILLWAY LENGTH (m)": "-",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "-",
+        "STUDY": "Τμήμα Αναπτύξεως Υδάτων",
+        "CONSTRUCTOR": "Αδ/φοί Χαραλάμπους ΛΤΔ"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          33.825013,
+          34.973128
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "101",
+        "NAME": "Οδού Αρ.2",
+        "YEAR": "1996",
+        "RIVER": "Εξωποτάμια δεξαμενή",
+        "CAPACITY (m3)": "53000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "Nαι",
+        "ENRICHMENT": "",
+        "IRRIGATED ARES (Ha)": "13",
+        "KIND OF IRRIGATED AREA": "Εσπεριδοειδή",
+        "RIVER BASIN (km2)": "2,9",
+        "DAM CATEGORY": "Xωμάτινη",
+        "SIZE CATEGORY": "Μεγάλα Φράγματα",
+        "DAM HEIGHT (m)": "34",
+        "DAM LENGTH (m) ": "-",
+        "DAM VOLUME ('000 m3)": "30",
+        "RESERVOIR SURFACE ('000 m2)": "13",
+        "OVERFLOW SPILLWAY LENGTH (m)": "-",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "-",
+        "STUDY": "Τμήμα Αναπτύξεως Υδάτων",
+        "CONSTRUCTOR": "Αδ/φοί Χαραλάμπους ΛΤΔ"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          33.169333,
+          34.880357
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "102",
+        "NAME": "Οδού Αρ.1",
+        "YEAR": "1996",
+        "RIVER": "Εξωποτάμια δεξαμενή",
+        "CAPACITY (m3)": "32000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "Nαι",
+        "ENRICHMENT": "",
+        "IRRIGATED ARES (Ha)": "12",
+        "KIND OF IRRIGATED AREA": "Εσπεριδοειδή",
+        "RIVER BASIN (km2)": "2,9",
+        "DAM CATEGORY": "Xωμάτινη",
+        "SIZE CATEGORY": "Μεγάλα Φράγματα",
+        "DAM HEIGHT (m)": "33",
+        "DAM LENGTH (m) ": "-",
+        "DAM VOLUME ('000 m3)": "46",
+        "RESERVOIR SURFACE ('000 m2)": "9",
+        "OVERFLOW SPILLWAY LENGTH (m)": "-",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "-",
+        "STUDY": "Τμήμα Αναπτύξεως Υδάτων",
+        "CONSTRUCTOR": "Αδ/φοί Χαραλάμπους ΛΤΔ"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          33.167171,
+          34.879563
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "103",
+        "NAME": "Αρμίνου",
+        "YEAR": "1998",
+        "RIVER": "Διάριζος",
+        "CAPACITY (m3)": "4300000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "Nαι",
+        "ENRICHMENT": "Nαι",
+        "IRRIGATED ARES (Ha)": "1,600\n2,300",
+        "KIND OF IRRIGATED AREA": "Εσπεριδοειδή, λαχανικά, επιτρ. σταφύλια",
+        "RIVER BASIN (km2)": "116",
+        "DAM CATEGORY": "Xωμάτινο\nΛιθόρριπτο",
+        "SIZE CATEGORY": "Μεγάλα Φράγματα",
+        "DAM HEIGHT (m)": "45",
+        "DAM LENGTH (m) ": "208",
+        "DAM VOLUME ('000 m3)": "430",
+        "RESERVOIR SURFACE ('000 m2)": "353",
+        "OVERFLOW SPILLWAY LENGTH (m)": "80",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "2450",
+        "STUDY": "Howard Humphreys & Sons Αγγλίας",
+        "CONSTRUCTOR": "Γ.Π. Ζαχαριαδης Λτδ"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          32.74143,
+          34.881283
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "104",
+        "NAME": "Τσακίστρα ",
+        "YEAR": "2000",
+        "RIVER": "Λιμνίτης",
+        "CAPACITY (m3)": "100000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "Nαι",
+        "ENRICHMENT": "",
+        "IRRIGATED ARES (Ha)": "44",
+        "KIND OF IRRIGATED AREA": "Εσπεριδοειδή",
+        "RIVER BASIN (km2)": "10.7",
+        "DAM CATEGORY": "Βαρύτητας",
+        "SIZE CATEGORY": "Μεγάλα Φράγματα",
+        "DAM HEIGHT (m)": "23",
+        "DAM LENGTH (m) ": "78.5",
+        "DAM VOLUME ('000 m3)": "8.68",
+        "RESERVOIR SURFACE ('000 m2)": "15.4",
+        "OVERFLOW SPILLWAY LENGTH (m)": "25",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "400",
+        "STUDY": "Τμήμα Αναπτύξεως Υδάτων",
+        "CONSTRUCTOR": "Γ.Π. Ζαχαριαδης Λτδ"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          32.70299,
+          35.022447
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "105",
+        "NAME": "Ταμασσός ",
+        "YEAR": "2002",
+        "RIVER": "Πεδιαίος",
+        "CAPACITY (m3)": "2800000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "",
+        "ENRICHMENT": "Nαι",
+        "IRRIGATED ARES (Ha)": "-",
+        "KIND OF IRRIGATED AREA": "-",
+        "RIVER BASIN (km2)": "45",
+        "DAM CATEGORY": "Xωμάτινο\nΛιθόρριπτο",
+        "SIZE CATEGORY": "Μεγάλα Φράγματα",
+        "DAM HEIGHT (m)": "33",
+        "DAM LENGTH (m) ": "200",
+        "DAM VOLUME ('000 m3)": "260",
+        "RESERVOIR SURFACE ('000 m2)": "305",
+        "OVERFLOW SPILLWAY LENGTH (m)": "68",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "800",
+        "STUDY": "Mott MacDonald",
+        "CONSTRUCTOR": "Char. Apostolides Ltd and Co."
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          33.247088,
+          35.010816
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "106",
+        "NAME": "Κανναβιού ",
+        "YEAR": "2004",
+        "RIVER": "Έζουσας",
+        "CAPACITY (m3)": "18000000",
+        "WATER SUPPLY": "Nαι",
+        "IRRIGATION": "Nαι",
+        "ENRICHMENT": "",
+        "IRRIGATED ARES (Ha)": "-",
+        "KIND OF IRRIGATED AREA": "-",
+        "RIVER BASIN (km2)": "56",
+        "DAM CATEGORY": "Λιθόρριπτο (Σκυρόδεμα ανάντι)",
+        "SIZE CATEGORY": "Μεγάλα Φράγματα",
+        "DAM HEIGHT (m)": "75",
+        "DAM LENGTH (m) ": "650",
+        "DAM VOLUME ('000 m3)": "1900",
+        "RESERVOIR SURFACE ('000 m2)": "926",
+        "OVERFLOW SPILLWAY LENGTH (m)": "119",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "780",
+        "STUDY": "Howard Humphreys & partners with J. Theophilou",
+        "CONSTRUCTOR": "AEGEC-IACOVOU BROS-CYBARCO"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          32.595163,
+          34.933022
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "107",
+        "NAME": "Κλήρου-Μαλούντα-Ακακι",
+        "YEAR": "2007",
+        "RIVER": "Ακάκι (Σερράχης)",
+        "CAPACITY (m3)": "2000000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "Nαι",
+        "ENRICHMENT": "Nαι",
+        "IRRIGATED ARES (Ha)": "",
+        "KIND OF IRRIGATED AREA": "",
+        "RIVER BASIN (km2)": "84",
+        "DAM CATEGORY": "Χωμάτινο",
+        "SIZE CATEGORY": "Μεγάλα Φράγματα",
+        "DAM HEIGHT (m)": "38",
+        "DAM LENGTH (m) ": "265",
+        "DAM VOLUME ('000 m3)": "215",
+        "RESERVOIR SURFACE ('000 m2)": "180",
+        "OVERFLOW SPILLWAY LENGTH (m)": "59",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "1200",
+        "STUDY": "Τμήμα Αναπτύξεως Υδάτων",
+        "CONSTRUCTOR": "CYBARCO PLC"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          33.168385,
+          35.028421
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "A/A": "108",
+        "NAME": "Σολέας",
+        "YEAR": "2010",
+        "RIVER": "Εξωποτάμιο φράγμα",
+        "CAPACITY (m3)": "4500000",
+        "WATER SUPPLY": "",
+        "IRRIGATION": "Nαι",
+        "ENRICHMENT": "",
+        "IRRIGATED ARES (Ha)": "667",
+        "KIND OF IRRIGATED AREA": "Εσπεριδοειδή, ελιές, Καλλιέργειες, λαχανικά, φυλλοβόλα δένδρα",
+        "RIVER BASIN (km2)": "-",
+        "DAM CATEGORY": "Χωμάτινο",
+        "SIZE CATEGORY": "Μεγάλα Φράγματα",
+        "DAM HEIGHT (m)": "56",
+        "DAM LENGTH (m) ": "444",
+        "DAM VOLUME ('000 m3)": "1800",
+        "RESERVOIR SURFACE ('000 m2)": "189",
+        "OVERFLOW SPILLWAY LENGTH (m)": "220",
+        "OVERFLOW SPILLWAY DISCHARGE (m3/s)": "1",
+        "STUDY": "Τμήμα Αναπτύξεως Υδάτων",
+        "CONSTRUCTOR": "Κοινοπραξία ΝΕΜΕΣΙΣ - ΕΛΤΕΡ Α.Τ.Ε."
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          32.90279,
+          35.066347
+        ]
+      }
+    }
+  ]
+}

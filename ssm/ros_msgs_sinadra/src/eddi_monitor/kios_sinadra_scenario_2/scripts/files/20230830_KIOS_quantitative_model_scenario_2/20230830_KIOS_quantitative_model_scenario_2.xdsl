@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<smile version="1.0" id="Network1" numsamples="10000" discsamples="10000">
+	<nodes>
+		<cpt id="Density_of_buildings_that_could_collide_due_to_the_disaster">
+			<state id="Dense" />
+			<state id="Broad" />
+			<probabilities>0.5 0.5</probabilities>
+		</cpt>
+		<cpt id="Distance_to_the_disaster_epicenter">
+			<state id="Close" />
+			<state id="Far" />
+			<probabilities>0.5 0.5</probabilities>
+		</cpt>
+		<cpt id="Extreme_temperatures">
+			<state id="Hot" />
+			<state id="Normal" />
+			<probabilities>0.5 0.5</probabilities>
+		</cpt>
+		<cpt id="Increased_risk_of_fire_or_explosions">
+			<state id="Yes" />
+			<state id="No" />
+			<probabilities>0.5 0.5</probabilities>
+		</cpt>
+		<cpt id="Expected_human_injury_criticality_in_area">
+			<state id="High" />
+			<state id="Low" />
+			<parents>Distance_to_the_disaster_epicenter Increased_risk_of_fire_or_explosions Extreme_temperatures Density_of_buildings_that_could_collide_due_to_the_disaster</parents>
+			<probabilities>0.99 0.01000000000000001 0.99 0.01000000000000001 0.9 0.09999999999999998 0.8 0.2 0.99 0.01000000000000001 0.9 0.09999999999999998 0.9 0.09999999999999998 0.8 0.2 0.8 0.2 0.5 0.5 0.5 0.5 0.3 0.7 0.5 0.5 0.3 0.7 0.3 0.7 0.1 0.9</probabilities>
+		</cpt>
+	</nodes>
+	<extensions>
+		<genie version="1.0" app="GeNIe 4.0.2423.2 1d9170b50187700" name="Network1">
+			<textbox>
+				<caption>Scenario 2</caption>
+				<font color="000000" name="Arial" size="14" bold="true" align="center" />
+				<position>526 74 625 96</position>
+			</textbox>
+			<node id="Expected_human_injury_criticality_in_area">
+				<name>Expected human injury criticality in area</name>
+				<interior color="99ccff" />
+				<outline color="000080" />
+				<font color="000000" name="Arial" size="8" />
+				<position>519 200 632 270</position>
+				<barchart active="true" />
+			</node>
+			<node id="Distance_to_the_disaster_epicenter">
+				<name>Distance to the disaster epicenter</name>
+				<interior color="e5f6f7" />
+				<outline color="000080" />
+				<font color="000000" name="Arial" size="8" />
+				<position>261 328 370 396</position>
+				<barchart active="true" width="128" height="68" />
+			</node>
+			<node id="Density_of_buildings_that_could_collide_due_to_the_disaster">
+				<name>Density of buildings that could collide due to the disaster</name>
+				<interior color="e5f6f7" />
+				<outline color="000080" />
+				<font color="000000" name="Arial" size="8" />
+				<position>403 414 534 495</position>
+				<barchart active="true" width="128" height="82" />
+			</node>
+			<node id="Extreme_temperatures">
+				<name>Extreme temperatures</name>
+				<interior color="e5f6f7" />
+				<outline color="000080" />
+				<font color="000000" name="Arial" size="8" />
+				<position>622 426 710 481</position>
+				<barchart active="true" width="128" height="54" />
+			</node>
+			<textbox>
+				<caption>1) detect fires via the thermal camera\n2) hot weather + area without much shadows (no buildings, no trees, ...)</caption>
+				<font color="000000" name="Arial" size="8" />
+				<position>610 492 790 534</position>
+			</textbox>
+			<textbox>
+				<caption>Map information from KIOS covering the building density</caption>
+				<font color="000000" name="Arial" size="8" />
+				<position>321 501 458 529</position>
+			</textbox>
+			<textbox>
+				<caption>Area location\n+ initial manual operator input about the disaster location</caption>
+				<font color="000000" name="Arial" size="8" />
+				<position>162 292 349 334</position>
+			</textbox>
+			<textbox>
+				<caption>Can be used in combination with the SafeML output to prioritize areas to send the swarm of drones to investigate for people to rescue</caption>
+				<font color="000000" name="Arial" size="8" />
+				<position>571 135 767 191</position>
+			</textbox>
+			<node id="Increased_risk_of_fire_or_explosions">
+				<name>Increased risk of fire or explosions</name>
+				<interior color="e5f6f7" />
+				<outline color="000080" />
+				<font color="000000" name="Arial" size="8" />
+				<position>841 402 947 468</position>
+				<barchart active="true" width="128" height="68" />
+			</node>
+			<textbox>
+				<caption>Locations potentially handling inflammable or explodable chemicals:\n- Power production plants\n- Chemical factories\n- Ammunition depots\n--&gt; based on the map data ?</caption>
+				<font color="000000" name="Arial" size="8" />
+				<position>874 314 1074 398</position>
+			</textbox>
+		</genie>
+	</extensions>
+</smile>

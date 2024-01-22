@@ -1,0 +1,36 @@
+version: '3'
+services:
+    sim:
+        container_name: sim
+        runtime: nvidia                       # nvidia-runtime
+        deploy:                               # nvidia-runtime
+          resources:                          # nvidia-runtime
+            reservations:                     # nvidia-runtime
+              devices:                        # nvidia-runtime
+                - driver: nvidia              # nvidia-runtime
+                  device_ids: ['0']           # nvidia-runtime
+                  capabilities: [gpu,video]   # nvidia-runtime
+        build:
+            context: .
+            dockerfile: Dockerfile
+        volumes:
+            - ./app:/app
+            - ./logs:/logs
+            - ./vids:/vids
+            - ./pics:/pics
+            - ./lidarPoints:/lidarPoints
+        env_file:
+            - ./.env
+        network_mode: host
+
+
+    # volumes:
+    #   - /usr/local/nvidia/lib64:/usr/local/nvidia/lib64
+    #   - /dev/nvidia:/dev/nvidia
+    #   - /tmp/.X11-unix:/tmp/.X11-unix
+    #   - $HOME/.Xauthority:/root/.Xauthority
+    # environment:
+    #   - NVIDIA_VISIBLE_DEVICES=all  # Expose all GPUs to the container
+    #   - LD_LIBRARY_PATH=/usr/local/nvidia/lib64:/usr/local/cuda/lib64
+    #   # /lib/x86_64-linux-gnu
+    #   - CUDA_HOME=/usr/local/cuda        

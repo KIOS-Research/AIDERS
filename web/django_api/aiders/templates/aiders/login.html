@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+Aiders - Login
+{% endblock %}
+
+{% block style_block %}
+
+{% endblock %}
+
+{% block head_block %}
+    <link href="{% static 'aiders/css/login/login.css' %}" rel="stylesheet"/>
+    <link href="{% static 'aiders/css/platform/platform.css' %}" rel="stylesheet" type="text/css"/>
+{% endblock %}
+
+
+{% block body_block %}
+    <center>
+    <div class="centerScreen">
+        <h3>AIDERS Platform</h3>
+        <form action="{% url 'login' %}" method="post">
+            {% csrf_token %}
+            <table>
+                <tr>
+
+                    <td>{{ auth_form.username.label_tag }}</td>
+                    <td>{{ auth_form.username }}</td>
+                </tr>
+                <tr>
+                    <td>{{ auth_form.password.label_tag }}</td>
+                    <td>{{ auth_form.password }}</td>
+                </tr>
+            </table>
+
+
+            {% include 'aiders/messages.html' %}
+
+            <input type="submit" value="login"/>
+            <input type="hidden" name="next" value="{{ next }}"/>
+            <!--           <a href="{% url 'register' %}"><button type="button" >Register</button></a>-->
+            <td><p>Not yet a Member? <a href="{% url 'register' %}">Register</a></p></td>
+
+        </form>
+
+    </div>
+</center>
+{% endblock %}
+
