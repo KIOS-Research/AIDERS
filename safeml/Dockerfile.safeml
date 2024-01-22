@@ -1,0 +1,117 @@
+FROM nvcr.io/nvidia/tensorrt:23.09-py3
+
+ENV INSTALLATION_PATH="/workspace"
+
+# OpenCV Setup
+ARG SELECT_OPENCV_VERSION=4.8.0
+ARG SELECT_CUDA_ARCH_BIN=7.5
+ARG SELECT_CUDNN_VERSION=8.9.5
+# Depentacies
+RUN apt-get update && apt-get install -y \ 
+    build-essential \
+    cmake \
+    unzip \
+    pkg-config \
+    libxmu-dev \
+    libxi-dev \
+    libglu1-mesa \
+    libglu1-mesa-dev \
+    libjpeg-dev \
+    libpng-dev \
+    libtiff-dev \
+    libavcodec-dev \
+    libavformat-dev \
+    libswscale-dev \
+    libv4l-dev \
+    libxvidcore-dev \
+    libx264-dev \
+    libopenblas-dev \
+    libatlas-base-dev \
+    liblapack-dev \
+    gfortran \
+    libhdf5-serial-dev \
+    python3-dev \
+    python3-tk \
+    libgtk-3-dev
+
+# Build OpenCV
+WORKDIR ${INSTALLATION_PATH}
+RUN wget https://github.com/opencv/opencv/archive/${SELECT_OPENCV_VERSION}.zip && \
+    unzip ${SELECT_OPENCV_VERSION}.zip && rm ${SELECT_OPENCV_VERSION}.zip && \
+    mv opencv-${SELECT_OPENCV_VERSION} OpenCV && \
+    wget https://github.com/opencv/opencv_contrib/archive/${SELECT_OPENCV_VERSION}.zip && \
+    unzip ${SELECT_OPENCV_VERSION}.zip && rm ${SELECT_OPENCV_VERSION}.zip && \
+    mv opencv_contrib-${SELECT_OPENCV_VERSION} OpenCV/opencv_contrib
+
+# If you have issues with GStreamer, set -DWITH_GSTREAMER=OFF and -DWITH_FFMPEG=ON
+WORKDIR ${INSTALLATION_PATH}/OpenCV/build
+RUN cmake \
+    -D OPENCV_EXTRA_MODULES_PATH=${INSTALLATION_PATH}/OpenCV/opencv_contrib/modules \
+    -D INSTALL_PYTHON_EXAMPLES=ON \
+    -D WITH_CUDA=ON \
+    -D CUDA_ARCH_BIN=${SELECT_CUDA_ARCH_BIN} \
+    -D WITH_CUDNN=ON \
+    -D CUDA_ARCH_PTX="" \
+	-D CUDNN_VERSION=${SELECT_CUDNN_VERSION} \
+	-D OPENCV_DNN_CUDA=ON \
+	-D BUILD_EXAMPLES=OFF \	
+    -D CMAKE_BUILD_TYPE=RELEASE \
+    -D CUDA_FAST_MATH=ON \
+    -D WITH_CUBLAS=ON \
+	-D INSTALL_C_EXAMPLES=OFF \
+	-D BUILD_opencv_python2=OFF \
+	-D BUILD_TESTS=OFF \
+	-D BUILD_PERF_TESTS=OFF \
+	-D ENABLE_FAST_MATH=ON \	
+	-D WITH_OPENGL=ON \
+	-D WITH_TBB=ON \
+    -D WITH_V4l=YES \
+    -D WITH_GSTREAMER=ON\
+    -D WITH_LIBV4L=ON \
+    -D WITH_GSTREAMER_0_10=OFF \
+	-D WITH_FFMPEG=ON \
+    # Install path will be /usr/local/lib (lib is implicit)
+    -D CMAKE_INSTALL_PREFIX=/usr/local \
+    -D PYTHON3_PACKAGES_PATH=/usr/lib/python3/dist-packages \
+    ..
+# fix for compatibility with CUDA Toolkit >= 12.2.0 with OpenCV == 4.8.0
+RUN sed -i '114s/1.0/static_cast<T>(1.0f)/' ../modules/dnn/src/cuda4dnn/primitives/normalize_bbox.hpp
+RUN sed -i '124s/0/static_cast<T>(0.0f)/' ../modules/dnn/src/cuda4dnn/primitives/region.hpp
+# Make with max CPU cores
+RUN make -j"$(nproc)"
+
+# Install to /usr/local/lib
+RUN make install && \
+    ldconfig
+
+RUN rm -rf ${INSTALLATION_PATH}/OpenCV && \
+    rm -rf /var/lib/apt/lists/* && \
+    apt-get autoremove
+
+RUN pip install torch torchvision torchaudio
+
+RUN pip install tensorflow[and-cuda]
+
+# Install for platform utils
+RUN apt update && apt-get install -y \
+    net-tools \
+    netcat 
+
+# Copy the python dependencies
+COPY safeml/requirements.txt .
+RUN python -m pip install --upgrade pip
+RUN pip install -r requirements.txt --ignore-installed
+
+# To clear the cache
+RUN pip cache purge
+RUN rm -rf /root/.cache/pip/*
+
+WORKDIR /
+
+COPY safeml/app/deepKnowledgeSrc/ deepKnowledgeSetup/
+
+COPY safeml/entrypoint.safeml.sh .
+
+COPY safeml/app /app
+
+ENTRYPOINT ["/bin/bash", "./entrypoint.safeml.sh"]

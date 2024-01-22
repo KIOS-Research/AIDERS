@@ -1,0 +1,2 @@
+int8 batteryPercentage
+int8 randomNumber

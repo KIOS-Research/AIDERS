@@ -1,64 +1,223 @@
-version: '3.7'
+version: '3'
+
 services:
+
+
     web:
         container_name: web
-        image: alexpips/aiders-web:1.4.3
-        build: ./aidersplatform
-        command: python manage.py runserver ${NET_IP}:8000
+        build:
+            context: .
+            dockerfile: web/Dockerfile.web
         init: true # To be able to kill docker from inside. Reference: https://stackoverflow.com/a/31539425
         volumes:
-            - /dev/:/dev/ #So docker can access USB devices (i.e Weather station etc.) #Production
-            #- ./aidersplatform/:/usr/src/aidersplatform/:rw #Development
-            #- /usr/src/aidersplatform/django_api/logic/djiswarmcatkinws/ #This is to exclude this folder from being mapped into the docker. Reference https://stackoverflow.com/questions/29181032/add-a-volume-to-docker-but-exclude-a-sub-folder #Development
-            - /tmp/.X11-unix:/tmp/.X11-unix:rw #Production
-            - ./aidersplatform/django_api/aiders/media:/usr/src/aidersplatform/django_api/aiders/media:rw #Production
+            - ./web/django_api:/app/:rw #Development
+            - ./web/django_api/logic/algorithms/object_detection/src/models/cfg/config.json:/app/logic/algorithms/object_detection/src/models/cfg/config.json #Development
+            # - /tmp/.X11-unix:/tmp/.X11-unix:rw #Production
+            - ./web/django_api/aiders/media:/app/aiders/media:rw #Production
+            - /dev/:/dev/        
         device_cgroup_rules:
             - 'c 188:* rmw'
         network_mode: 'host'
         env_file:
             - ./.env
-
         logging:
             driver: 'json-file'
             options:
                 max-size: '15m'
                 max-file: '5'
-        deploy:
-            resources:
-                limits:
-                    memory: 2000M
-                reservations:
-                    memory: 20M
         depends_on:
             - db
 
+
+    cv:
+        container_name: cv
+        runtime: nvidia                       # nvidia-runtime
+        deploy:                               # nvidia-runtime
+          resources:                          # nvidia-runtime
+            reservations:                     # nvidia-runtime
+              devices:                        # nvidia-runtime
+                - driver: nvidia              # nvidia-runtime
+                  device_ids: ['0']           # nvidia-runtime
+                  capabilities: [gpu,video]   # nvidia-runtime
+        build:
+            context: .
+            dockerfile: cv/Dockerfile.cv
+        volumes:
+            - ./cv/app:/app # Development
+            - ./_shared_code/database/connection.py:/app/database/connection.py
+            - ./db_states.txt:/db_states.txt
+            - ./web/django_api/aiders/media:/media:rw # django's media folder
+            # - ./aidersplatform/django_api/logic/algorithms/object_detection/src/models/cfg/config.json:/usr/src/aidersplatform/django_api/logic/algorithms/object_detection/src/models/cfg/config.json #Development
+        network_mode: 'host'
+        env_file:
+            - ./.env
+        depends_on:
+            - db
+
+
+    ros:
+        container_name: ros
+        build:
+            context: .
+            dockerfile: ros/Dockerfile.ros
+        volumes:
+            - ./ros/app:/app # Development
+            - ./_shared_code/database/connection.py:/app/database/connection.py
+            - ./db_states.txt:/db_states.txt
+            - /dev/:/dev/ # container access to USB devices
+        device_cgroup_rules:
+            - 'c 188:* rmw'
+        network_mode: host
+        env_file:
+            - ./.env
+        environment:
+            - ROS_IP=$NET_IP
+            - ROS_MASTER_URI=http://${NET_IP}:11311
+        depends_on:
+            - db
+
+
+    lsc:
+        container_name: lsc
+        build:
+            context: .
+            dockerfile: lsc/Dockerfile.lsc
+        volumes:
+            - ./lsc/app:/app # Development
+            - ./_shared_code/database/connection.py:/app/database/connection.py
+            - ./db_states.txt:/db_states.txt
+            - ./web/django_api/aiders/media:/media:rw # django's media folder
+        network_mode: host
+        env_file:
+            - ./.env
+        depends_on:
+            - db
+
+
+    alg:
+        container_name: alg
+        build:
+            context: .
+            dockerfile: alg/Dockerfile.alg
+        volumes:
+            - ./alg/app:/app # Development
+            - ./_shared_code/database/connection.py:/app/database/connection.py
+            - ./db_states.txt:/db_states.txt
+            - ./web/django_api/aiders/media:/media:rw # django's media folder
+        network_mode: host
+        env_file:
+            - ./.env
+        depends_on:
+            - db
+
+
+    mav:
+        container_name: mav
+        build:
+            context: .
+            dockerfile: mav/Dockerfile.mav
+        volumes:
+            - ./mav/app:/app # Development
+            - ./_shared_code/database/connection.py:/app/database/connection.py
+            - ./db_states.txt:/db_states.txt
+            - ./web/django_api/aiders/media:/media:rw # django's media folder
+        network_mode: host
+        env_file:
+            - ./.env
+        depends_on:
+            - db
+
+
+    ws:
+        container_name: ws
+        build:
+            context: .
+            dockerfile: ws/Dockerfile.ws
+        #     dockerfile: ws/Dockerfile.ws.dev # Development
+        # volumes:
+        #     - ./ws/app:/application # Development
+        network_mode: host
+        env_file:
+            - ./.env
+        depends_on:
+            - db
+
+
+    ccd:
+        container_name: ccd
+        build:
+            context: .
+            dockerfile: ccd/Dockerfile.ccd
+        network_mode: host
+        env_file:
+            - ./.env
+        depends_on:
+            - db
+
+
+    rtmp:
+        container_name: rtmp
+        build:
+            context: .
+            dockerfile: rtmp/Dockerfile.rtmp
+        network_mode: host
+        ports:
+            - '1935:1935'
+
+
+    nginx:
+        container_name: nginx
+        build:
+            context: .
+            dockerfile: nginx/Dockerfile.nginx
+        network_mode: host
+        ports:
+            - "${NGINX_PORT}:${NGINX_PORT}"
+        env_file:
+            - ./.env          
+        volumes:
+            - ./nginx/nginx.conf:/etc/nginx/nginx.conf  # Path to your Nginx configuration file
+            - ./nginx/templates/default.conf.template:/etc/nginx/conf.d/default.conf.template
+            - ./web/django_api/aiders/static:/app/aiders/static:rw #Production
+            - ./web/django_api/aiders/media:/app/aiders/media:rw #Production
+        depends_on:
+            - web
+        command: /bin/bash -c "envsubst '$$NGINX_PORT $$NET_IP $$WEB_URL' < /etc/nginx/conf.d/default.conf.template > /etc/nginx/conf.d/default.conf && exec nginx -g 'daemon off;'"
+    
+    
     db:
         container_name: db
-        image: mysql:8.0
+        build:
+            context: .
+            dockerfile: db/Dockerfile.db
         restart: unless-stopped
+        env_file:
+            - ./.env        
         environment:
-            MYSQL_USER: test_user
-            MYSQL_PASSWORD: test_password
-            MYSQL_ROOT_PASSWORD: test_password
-            MYSQL_DATABASE: testdb
+            MYSQL_USER: ${SQL_USER}
+            MYSQL_PASSWORD: ${SQL_PASSWORD}
+            MYSQL_ROOT_PASSWORD: ${SQL_PASSWORD}
+            MYSQL_DATABASE: ${SQL_DATABASE}
         network_mode: 'host'
         volumes:
             - mysql-data:/var/lib/mysql
-            - ./init:/docker-entrypoint-initdb.d
+            # - ./db-logs:/var/log/mysql:rw
+
+
     odm:
         container_name: odm
-        image: opendronemap/nodeodm
+        build:
+            context: .
+            dockerfile: odm/Dockerfile.odm
         ports:
             - '4000:3000'
 
-    nginx:
-        image: georgesofro/kios:nginx_25Aug
-        container_name: nginx
-        network_mode: 'host'
 
-    geoserver:
-        image: overv/openstreetmap-tile-server:2.2.0
-        container_name: geoserver
+    geo:
+        container_name: geo
+        build:
+            context: .
+            dockerfile: geo/Dockerfile.geo
         command:
             - run
         ports:
@@ -66,10 +225,49 @@ services:
         environment:
             ALLOW_CORS: enabled
         volumes:
-            - './osm-data:/data/database/'
-            - 'osm-tiles:/data/tiles/'
+            - ./geo/osm-data:/data/database/
+            - ./geo/osm-data:/data/tiles/
+
+
+    # ssm:
+    #     container_name: ssm
+    #     build:
+    #         context: .
+    #         dockerfile: ssm/Dockerfile.ssm
+    #     volumes:
+    #         - ./ssm/app:/app
+    #         - ./_shared_code/database/connection.py:/app/database/connection.py
+    #         - ./db_states.txt:/db_states.txt
+    #     network_mode: host
+    #     env_file:
+    #         - ./.env
+    #     depends_on:
+    #         - db
+
+    # safeml:
+    #     container_name: safeml
+    #     runtime: nvidia                       # nvidia-runtime
+    #     deploy:                               # nvidia-runtime
+    #       resources:                          # nvidia-runtime
+    #         reservations:                     # nvidia-runtime
+    #           devices:                        # nvidia-runtime
+    #             - driver: nvidia              # nvidia-runtime
+    #               device_ids: ['0']           # nvidia-runtime
+    #               capabilities: [gpu,video]   # nvidia-runtime
+    #     build:
+    #         context: .
+    #         dockerfile: safeml/Dockerfile.safeml
+    #     volumes:
+    #         - ./safeml/app:/app
+    #         - ./_shared_code/database/connection.py:/app/database/connection.py
+    #         - ./db_states.txt:/db_states.txt
+    #         - ./web/django_api/aiders/media:/media:rw # django's media folder
+    #     network_mode: 'host'
+    #     env_file:
+    #         - ./.env
+    #     depends_on:
+    #         - db
 
 volumes:
     mysql-data:
         driver: local
-    osm-tiles:

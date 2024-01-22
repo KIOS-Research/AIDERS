@@ -1,0 +1,40 @@
+{% extends "base.html" %} {% load static %} {% block title %} Aiders - Settings {% endblock %} {% block head_block %}
+
+<link href="{% static 'libs/bootstrap/bootstrap_v5.css' %}" rel="stylesheet" />
+<script src="{% static 'libs/bootstrap/bootstrap_v4.js' %}"></script>
+
+<script src="{% static 'aiders/javascripts/constants/settings_constants.js' %}"></script>
+
+{% endblock %} {% block body_block %}
+
+<div class="justify-content-center ms-5 me-5 footer-margin header-margin">
+    <div class="row pt-5">
+        <h4 class="col float-start">Settings</h4>
+    </div>
+    <div class="justify-content-center ms-6 me-6 footer-margin header-margin">
+        <h4>Map Mode</h4>
+        <p>
+            You can either use an online map or use your own offline OpenStreetMap PNG tile server locally on your machine. <br />Instructions for the
+            offline server can be found <a href="https://www.kios.ucy.ac.cy/aiders/aiders-ai-toolkit/">here</a>
+        </p>
+        <label for="sel1" class="form-label">Selected mode:</label>
+        <form method="post" action="{% url 'settings' %}">
+            {% csrf_token %}
+            <select id="map_mode_dropdown_id" name="map_mode_dropdown" class="form-select" style="width: auto"></select>
+            <script>
+                var select = document.querySelector('select');
+                let use_online_map = '{{use_online_map}}';
+                if (use_online_map === 'True') {
+                    select.options.add(new Option('Online Maps', ONLINE_MAP_MODE, true, true));
+                    select.options.add(new Option('Offline Maps', OFFLINE_MAP_MODE, false, false));
+                } else {
+                    select.options.add(new Option('Online Maps', ONLINE_MAP_MODE, false, false));
+                    select.options.add(new Option('Offline Maps', OFFLINE_MAP_MODE, true, true));
+                }
+            </script>
+            <button type="submit" class="btn btn-primary mt-3">Save</button>
+        </form>
+    </div>
+</div>
+
+{% endblock %}

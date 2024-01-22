@@ -1,0 +1,5 @@
+mysql-connector-python
+flask
+
+# Sinadra
+importlib-resources

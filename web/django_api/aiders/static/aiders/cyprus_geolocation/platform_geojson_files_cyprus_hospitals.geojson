@@ -1,0 +1,133 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "Hospital": "Γενικό Νοσοκομείο Λευκωσίας",
+        "Address": "Παλαιός Δρόμος Λευκωσίας Λεμεσού, Αρ. 215, 2029 Στρόβολος Λευκωσία",
+        "Tel": "22603000",
+        "Info_URL": "http://www.moh.gov.cy/moh/ngh/ngh.nsf/index_en/index_en?OpenDocument"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          33.3775,
+          35.1275
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Hospital": "Νοσοκομείο Αρχιεπίσκοπος Μακάριος ΙΙΙ",
+        "Address": "Κορυτσάς 6, 2012 Στρόβολος Λευκωσία",
+        "Tel": "22405000",
+        "Info_URL": "http://www.moh.gov.cy/moh/amh/amh.nsf/index_gr/index_gr?OpenDocument"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          33.3572,
+          35.1518
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Hospital": "Γενικό Νοσοκομείο Λάρνακας",
+        "Address": "Λεωφ. Ηνωμένων Πολιτειών 1, Λάρνακα",
+        "Tel": "24800500",
+        "Info_URL": "http://www.moh.gov.cy/moh/lgh/lgh.nsf/index_gr/index_gr?OpenDocument"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          33.6056,
+          34.9216
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Hospital": "Γενικό Νοσοκομείο Λεμεσού",
+        "Address": "Νίκαιας, Κάτω Πολεμίδια Λεμεσός",
+        "Tel": "25801100",
+        "Info_URL": "http://www.moh.gov.cy/moh/llgh/llgh.nsf/index_gr/index_gr?opendocument"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          32.9844,
+          34.7064
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Hospital": "Γενικό Νοσοκομείο Πάφου",
+        "Address": "Αχέπανς 8026 Πάφος",
+        "Tel": "26803100",
+        "Info_URL": "http://www.moh.gov.cy/moh/pgh/pgh.nsf/index_gr/index_gr?OpenDocument"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          32.446,
+          34.7889
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Hospital": "Γενικό Νοσοκομείο Αμμοχώστου",
+        "Address": "Χρίστου Κκέλη 25, Παραλίμνι",
+        "Tel": "23200000",
+        "Info_URL": "https://www.moh.gov.cy/moh/fgh/fgh.nsf/index_gr/index_gr?opendocument"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          33.9719,
+          35.0627
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Hospital": "Νοσοκομείο Κυπερούντας",
+        "Address": "Κυπερούντα Λεμεσός",
+        "Tel": "25806700",
+        "Info_URL": "http://www.moh.gov.cy/moh/kph.nsf/index_gr/index_gr?opendocument"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          32.9523,
+          34.9514
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Hospital": "Νοσοκομείο Πόλης Χρυσοχούς",
+        "Address": "Βεργίνας 25, 8820\nΠόλης Χρυσοχούς",
+        "Tel": "26821800",
+        "Info_URL": "http://www.moh.gov.cy/moh/pph/pph.nsf/index_gr/index_gr?OpenDocument"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          32.4243,
+          35.0394
+        ]
+      }
+    }
+  ]
+}

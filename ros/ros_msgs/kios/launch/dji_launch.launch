@@ -1,0 +1,34 @@
+<launch>
+
+    <!-- Set ids for drones -->
+    <arg name="drone1" value="drone_DJI_1" />
+    <arg name="drone2" value="drone_DJI_2" />
+   
+   <!-- Run rosbridge to allow incoming websocket connection -->
+    <include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch"/>
+    
+    <!-- Drone 1 nodes -->
+    <group ns="$(arg drone1)">
+        <!-- connect to drone and create transforms -->
+        <node name="$(arg drone1)" pkg="kios" type="DJI_ROS.py" respawn="true">
+             <param name="~dji_name" type="string" value="$(arg drone1)" />
+        </node>
+         <!-- decompress camera output -->
+       <node name="rep_$(arg drone1)" type="republish" pkg="image_transport" output="screen" args="compressed in:=/$(arg drone1)/image_raw raw out:=/$(arg drone1)/image_raw" />
+    <!-- gps to odometry NOT TESTED-->
+    <node name="gps_$(arg drone1)" pkg="gps_common" type="utm_odometry_node" respawn="true">
+        <param name="~frame_id" type="string" value="$(arg drone1)_odomGPS" />
+        <param name="~child_frame_id" type="string" value="$(arg drone1)"/>
+        <remap from="fix" to="gps" />
+        <remap from="odom" to="odom_gps"/>
+    </node>
+    <!-- Transform of drone to the map tf! --> 
+    <node pkg="tf" type="static_transform_publisher" name="tf_$(arg drone1)" args="0 0 0 0 0 0 1 $(arg drone1) map 100" />
+    </group>
+
+
+    
+<!-- Drone 2 nodes (copy from above and chage all drone1 to drone[#]-->
+</launch>
+
+

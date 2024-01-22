@@ -1,0 +1,8 @@
+The module is Open Source.
+Created by Sondess Missaoui
+This project has received funding from the European Union's Horizon 2020 research and innovation programme
+under INDUSTRIAL LEADERSHIP - Leadership in enabling and industrial technologies - Information and Communication Technologies (ICT)
+
+SESAME project
+Grant agreement ID: 101017258
+DOI 10.3030/101017258

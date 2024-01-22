@@ -1,0 +1,28 @@
+server {
+    listen ${NGINX_PORT};
+    server_name ${NET_IP};
+
+    location / {
+        proxy_pass ${WEB_URL};
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        # proxy_set_header X-CSRFToken $http_csrf_token;
+        # proxy_redirect off;
+        proxy_pass_header X-CSRFToken;
+    }
+
+    location /static/ {
+        alias /app/aiders/static/;
+    }
+
+    location /media/ {
+        alias /app/aiders/media/;
+    }
+
+    error_page 500 502 503 504 /50x.html;
+    location = /50x.html {
+        root /usr/share/nginx/html;
+    }
+}

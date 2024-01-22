@@ -1,0 +1,2 @@
+string title
+OutcomeOutput[] outcomes

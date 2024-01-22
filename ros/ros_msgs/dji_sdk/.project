@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<projectDescription>
+	<name>dji_sdk</name>
+	<comment></comment>
+	<projects>
+	</projects>
+	<buildSpec>
+	</buildSpec>
+	<natures>
+	</natures>
+	<variableList>
+		<variable>
+			<name>PATH</name>
+			<value>file:/opt/ros/melodic/bin:/home/jetson/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin</value>
+		</variable>
+		<variable>
+			<name>PYTHONPATH</name>
+			<value>file:/home/jetson/catkin_ws/devel/lib/python2.7/dist-packages:/opt/ros/melodic/lib/python2.7/dist-packages</value>
+		</variable>
+		<variable>
+			<name>ROS_PACKAGE_PATH</name>
+			<value>file:/home/jetson/catkin_ws/src:/opt/ros/melodic/share</value>
+		</variable>
+		<variable>
+			<name>ROS_ROOT</name>
+			<value>file:/opt/ros/melodic/share/ros</value>
+		</variable>
+	</variableList>
+</projectDescription>

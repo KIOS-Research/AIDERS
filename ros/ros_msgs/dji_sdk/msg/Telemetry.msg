@@ -1,0 +1,15 @@
+uint32 rostime_secs
+uint32 rostime_nsecs
+uint32 flightTimeSecs
+uint32 batteryThreashold
+uint32 batteryPercentage
+uint32 gpsSignal
+uint32 satelliteNumber
+float32 altitude
+float32 heading
+float64 velocity
+float64 longitude
+float64 latitude
+float64 homeLatitude
+float64 homeLongitude
+uint64 serialVersionUID

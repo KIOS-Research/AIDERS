@@ -1,0 +1,197 @@
+{% extends "base.html" %}
+
+{% load static %}
+{% load guardian_tags %}
+
+{% block title %}
+Aiders - MAVLink
+{% endblock %}
+
+
+{% block head_block %}
+    <script src="{% static 'aiders/javascripts/drone_change_operation/drone_change_operation.js' %}" type="text/javascript"></script>
+    <script src="{% static 'aiders/javascripts/popups/popups.js' %}" type="text/javascript"></script>
+    <script src="{% static 'aiders/javascripts/dutils/dutils.js' %}" type="text/javascript"></script>
+    <script src="{% static 'aiders/javascripts/dutils/dutils_conf_urls.js' %}" type="text/javascript"></script>
+
+    
+
+    <link href="{% static 'libs/jquery-ui/http_ajax.googleapis.com_ajax_libs_jqueryui_1.12.1_themes_smoothness_jquery-ui.css' %}" rel="stylesheet">
+
+    <script src="{% static 'libs/jquery-ui/http_ajax.googleapis.com_ajax_libs_jqueryui_1.12.1_jquery-ui.js' %}"></script>
+
+    <link href="{% static 'libs/jquery.mCustomScrollbar/__malihu.github.io_custom-scrollbar_jquery.mCustomScrollbar.min.css' %}" rel="stylesheet">
+
+    <link href="{% static 'libs/jquery-ui/__code.jquery.com_ui_1.12.1_themes_base_jquery-ui.css' %}" rel="stylesheet">
+    <script src="{% static 'libs/hls/http_cdn.jsdelivr.net_npm_hls.js@1.2.0.js' %}"></script>
+
+{% endblock %}
+
+
+{% block body_block %}
+
+<div class="justify-content-center ms-5 me-5 footer-margin header-margin">
+    <div class="row pt-5">
+        <h3 class="col float-start">Manage MAVLink UAV</h3>
+    </div>
+    
+    <div class="pt-2 pb-2">
+        <div>Name: <span id="mavlink-name">{{ drone.drone_name }}</span></div>
+        <div>IP Address: <span id="mavlink-ip">{{ drone.ip }}</span></div>
+        <div>Port: <span id="mavlink-port">{{ drone.port }}</span></div>
+        <div>Stream: <span id="mavlink-stream">{{ drone.live_stream_url }}</span></div>
+    </div>  
+    <div class="pb-2">
+        Connected: <span id="mavlink-connection-status">{% if drone.is_connected_with_platform == True %}<i class="fa-solid fa-check"></i>{% else %}<i class="fa-solid fa-xmark"></i>{% endif %}</span>
+    </div>
+    {% if drone.is_connected_with_platform == True %}
+        <button id="mavlink-disconnect-btn" type="button" class="btn btn-danger"><i class="fa fa-link-slash "></i> Disconnect</button>
+    {% else %}
+        <button id="mavlink-connect-btn" type="button" class="btn btn-success"><i class="fa fa-link "></i> Connect</button>
+    {% endif %}
+
+    <div id="spinner" style="display: none"><img src="{% static 'aiders/imgs/spinner.gif' %}" width="50" /> Please wait...</div>
+
+</div>
+
+
+
+
+
+<div id="csrf">
+    {% csrf_token %}
+</div>
+
+
+
+{% endblock %}
+
+{% block script_block %}
+
+  $(document).ready(function () {
+    let checkCounter = 0;
+    var checkConnectionInterval; // Variable to store the interval ID
+
+    // Function to make a POST request
+    function checkConnectionPolling() {
+        checkCounter++;
+        $.ajax({
+            url: '/mavlinkCheckConnection/{{drone.id}}',
+            type: 'POST',
+            data: { csrfmiddlewaretoken: '{{ csrf_token }}' },      
+            success: function (response) {
+                console.log('POST request successful:', response);
+
+                // Check the 'connected' attribute in the JSON response
+                {% if drone.is_connected_with_platform == True %}
+                    if (response.connected === false) {
+                        alert('UAV disconnected!');
+                        {% comment %} window.location.reload(); {% endcomment %}
+                        window.location.href = '/drones/';
+                    }
+                {% else %}
+                    if (response.connected === true) {
+                        alert('UAV connected successfully!');
+                        {% comment %} window.location.reload(); {% endcomment %}
+                        window.location.href = '/drones/';
+                    }                
+                {% endif %}
+            },
+            error: function (error) {
+                console.error('Error making POST request:', error);
+            }
+        });
+        if(checkCounter >= 10) {
+            stopInterval();
+        }
+    }
+
+    // Function to start the interval
+    function startInterval() {
+        checkCounter = 0;
+        checkConnectionInterval = setInterval(function () {
+            checkConnectionPolling();
+        }, 2000);
+    }
+
+    // Function to stop the interval
+    function stopInterval() {
+        clearInterval(checkConnectionInterval);
+        $('#spinner').hide();
+        {% if drone.is_connected_with_platform == True %}
+            $('#mavlink-disconnect-btn').show();
+        {% else %}
+            $('#mavlink-connect-btn').show();
+        {% endif %}
+        alert('Timed out. Please try again.');
+    }
+
+
+    function postMavlinkConnectRequest() {
+        console.log('Connecting to UAV...');
+        let requestData = {
+            name: '{{ drone.drone_name }}',
+            model: '{{ drone.model }}',
+            ip: '{{ drone.ip }}',
+            port: '{{ drone.port }}',
+            operationId: '{{ drone.operation_id }}'
+        }
+        $.ajax({
+            url: '/mavlinkConnect',
+            type: 'POST',
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": document.getElementById("csrf").querySelector("input").value,
+            },
+            data: JSON.stringify(requestData),      
+            success: function (response) {
+                console.log('Connection POST request successful:', response);
+            },
+            error: function (error) {
+                console.error('Error making POST request:', error);
+            }
+        });
+    }    
+
+
+    function postMavlinkDisConnectRequest() {
+        console.log('Disconnecting from UAV...');
+        let requestData = {
+            name: '{{ drone.drone_name }}'
+        }
+        $.ajax({
+            url: '/mavlinkDisconnect',
+            type: 'POST',
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": document.getElementById("csrf").querySelector("input").value,
+            },
+            data: JSON.stringify(requestData),      
+            success: function (response) {
+                console.log('Disconnection POST request successful:', response);
+            },
+            error: function (error) {
+                console.error('Error making POST request:', error);
+            }
+        });
+    }    
+
+
+    // Attach click event to the button
+    $('#mavlink-connect-btn').click(function () {
+        postMavlinkConnectRequest();
+        startInterval();
+        console.log('POST requests started.');
+        $('#mavlink-connect-btn').hide();
+        $('#spinner').show();
+    });
+    $('#mavlink-disconnect-btn').click(function () {
+        postMavlinkDisConnectRequest();
+        startInterval();
+        console.log('POST requests started.');
+        $('#mavlink-disconnect-btn').hide();
+        $('#spinner').show();        
+    });    
+  });
+
+{% endblock %}

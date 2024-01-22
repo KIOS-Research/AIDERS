@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        {% load static %}
+        <!-- Required meta tags -->
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta
+            name="description"
+            content="Creating a Employee table with Twitter Bootstrap. Learn with example of a Employee Table with Twitter Bootstrap." />
+        <script src="{% static 'libs/jquery/http_ajax.googleapis.com_ajax_libs_jquery_3.5.1_jquery.js' %}"></script>
+        <link href="{% static 'libs/bootstrap/bootstrap_v5.css' %}" rel="stylesheet" />
+        <link href="{% static 'libs/font-awesome/css/all.css' %}" rel="stylesheet" />
+        <link href="{% static 'aiders/css/ui_platform/ui_platform.css' %}" rel="stylesheet" type="text/css" />
+        <title>{% block title %}AIDERS{% endblock %}</title>
+        <link rel="shortcut icon" type="image/png" href="{% static 'aiders/imgs/aiders_logo_no_background.png' %}" />
+        {% block head_block %}{% endblock %}
+    </head>
+    <style>
+        {% block style_block %}
+        {% endblock %}
+    </style>
+    <nav class="header navbar navbar-expand-md fixed-top navbar-light bg-white border-bottom border-2 px-5" style="height: 50px">
+        <div class="navbar-brand">
+            <a class="text-decoration-none text-dark" href="{% url 'login' %}">
+                <img src="{% static 'aiders/imgs/aiders_logo_with_text.png' %}" alt="logo" height="40px;" />
+            </a>
+        </div>
+        {% if user.is_authenticated %}
+        <div class="navbar-nav d-flex flex-grow-1">
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'manage_operations' %}">Operations</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'users' %}">Users</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'drones_list' %}">Drones</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'devices_list' %}">Devices</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'baloras_list' %}">Balora</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'settings' %}">Settings</a>
+            </li>
+        </div>
+        {% endif %}
+        <div class="collapse navbar-collapse flex-grow-1 text-right" id="myNavbar">
+            <ul class="navbar-nav ms-auto flex-nowrap">
+                {% if user.is_superuser %}
+                <div class="me-4">
+                    <a title="Shortcut(Ctrl + Shift + Enter)" class="nav-link" href="{% url 'platform_monitoring' %}">Monitoring</a>
+                </div>
+                {% endif %} {% if user.is_authenticated %}
+                <div class="p-2 me-4">
+                    <i class="fas fa-user me-1"></i>
+                    {{ user.username }}
+                </div>
+                <a href="{% url 'logout' %}" class="p-2">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Logout
+                </a>
+                {% else %}
+                <a href="{% url 'login' %}" class="p-2">
+                    <i class="fa-solid fa-user"></i>
+                    Login
+                </a>
+                {% endif %}
+            </ul>
+        </div>
+    </nav>
+    <body>
+        {% block body_block %}{% endblock %}
+    </body>
+    {% block footer_block %}
+    <footer class="footer fixed-bottom border-top bg-white">
+        <div class="container-fluid" style="padding-left: 100px; padding-right: 25px">
+            <table class="table">
+                <tbody>
+                    <tr>
+                        <td scope="col" class="float-end">
+                            <img src="{% static 'aiders/imgs/kios_logo.png' %}" alt="KIOS logo" height="40" style="float: left" />
+                        </td>
+                        <td scope="col" class="text-muted align-middle">&#169; {% now "Y" %} KIOS Research and Innovation Center of Excellence</td>
+                        <td scope="col" class="float-end">
+                            <img src="{% static 'aiders/imgs/eu_logo.png' %}" alt="EU logo" height="40" style="float: left" />
+                        </td>
+                        <td scope="col" class="text-muted align-middle">Funded by European Union Civil Protection</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </footer>
+    {% endblock %}
+    <script>
+        {% if user.is_superuser %}
+            document.addEventListener ("keydown", function (zEvent) {
+                if (zEvent.ctrlKey && zEvent.shiftKey && zEvent.key ==="Enter") {
+                    window.open("{% url 'platform_monitoring' %}", 'Monitoring', "height=max,width=max");
+                }
+            } );
+        {% endif %}
+        {% block script_block %}
+
+        {% endblock %}
+    </script>
+</html>

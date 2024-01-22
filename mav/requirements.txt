@@ -1,0 +1,7 @@
+mysql-connector-python
+flask
+requests
+aiohttp
+pytz
+# pymavlink
+mavsdk

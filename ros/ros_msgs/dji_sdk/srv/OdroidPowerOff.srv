@@ -1,0 +1,11 @@
+#constant for arm
+uint8 POWER_OFF = 1
+
+#request
+uint8 command  #see constants
+---
+bool result
+# for debugging usage
+uint8 cmd_set
+uint8 cmd_id
+uint32 ack_data

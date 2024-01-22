@@ -1,0 +1,16 @@
+Header header
+float32 speed
+float32 speed2d
+float32 direction
+float32 northsouth
+float32 westeast
+float32 updown
+float32 temperature
+float64 pitch
+float64 roll
+float32 pressure
+float32 humidity
+float32 heading
+float32 levelx
+float32 levely
+float32 levelz

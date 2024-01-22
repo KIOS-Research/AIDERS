@@ -1,0 +1,3 @@
+string componentName
+string componentPort
+bool componentActive

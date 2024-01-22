@@ -1,0 +1,6 @@
+# Use the official Nginx image
+FROM nginx:latest
+
+# Remove the default Nginx configuration
+RUN rm /etc/nginx/conf.d/default.conf
+
