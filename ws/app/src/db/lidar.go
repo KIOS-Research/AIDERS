@@ -36,7 +36,7 @@ func GetLidarPointBySessionIdAndLatestId(_sessionId int, _latestId int, _numberO
 	// Use NamedQuery to execute the query
 	rows, err := Conn.NamedQuery(query, queryParams)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 	defer rows.Close()
 
@@ -44,14 +44,14 @@ func GetLidarPointBySessionIdAndLatestId(_sessionId int, _latestId int, _numberO
 	for rows.Next() {
 		var lidarPoint LidarPoint
 		if err := rows.StructScan(&lidarPoint); err != nil {
-			log.Fatal(err)
+			log.Println(err)
 		}
 		lidarPoints = append(lidarPoints, lidarPoint)
 	}
 
 	// check for errors from iterating over rows
 	if err := rows.Err(); err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 
 	return lidarPoints
@@ -78,7 +78,7 @@ func GetAllDataLidarOriginCoordinatesByLidarSessionId(_sessionId int) LidarCoord
 	// Use NamedQuery to execute the query
 	rows, err := Conn.NamedQuery(query, queryParams)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 	defer rows.Close()
 	var coordinates LidarCoordinates
@@ -86,7 +86,7 @@ func GetAllDataLidarOriginCoordinatesByLidarSessionId(_sessionId int) LidarCoord
 	if rows.Next() {
 		err := rows.Scan(&coordinates.Latitude, &coordinates.Longitude)
 		if err != nil {
-			log.Fatal(err)
+			log.Println(err)
 		}
 	}
 

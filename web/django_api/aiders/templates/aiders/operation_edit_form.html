@@ -84,31 +84,9 @@ form.media }}
                     <td><input type="number" name="disaster_epicenter_latitude" id="id_disaster_epicenter_latitude" value="{{operation.disaster_epicenter_latitude}}" step="any" ></td>
                 </tr>
                 <tr>
-                    <th>Disaster epicenter longtitude:</th>
-                    <td><input type="number" name="disaster_epicenter_longtitude" id="id_disaster_epicenter_longtitude" value="{{operation.disaster_epicenter_longtitude}}" step="any" ></td>
+                    <th>Disaster epicenter longitude:</th>
+                    <td><input type="number" name="disaster_epicenter_longitude" id="id_disaster_epicenter_longitude" value="{{operation.disaster_epicenter_longitude}}" step="any" ></td>
                 </tr>                
-                <tr>
-                    <th>Dense area of buildings:</th>
-                    <td><select name="dense_area_of_buildings" id="id_dense_area_of_buildings">
-                            <option value="unknown" selected="">Unknown</option>
-                            <option value="true">Yes</option>
-                            <option value="false">No</option>
-                        </select>
-                    </td>
-                </tr>
-                <tr>
-                    <th>Max extreme temperature:</th>
-                    <td><input type="number" name="max_extreme_temperature" step="any" id="id_max_extreme_temperature" value="{{operation.max_extreme_temperature}}"></td>
-                </tr>
-                <tr>
-                    <th>Risk of explosion and fire:</th>
-                    <td><select name="risk_of_explosion_and_fire" id="id_risk_of_explosion_and_fire">
-                            <option value="unknown" selected="">Unknown</option>
-                            <option value="true">Yes</option>
-                            <option value="false">No</option>
-                        </select>
-                    </td>
-                </tr>
             </table>
             <label id="select_users" hidden>
                 <h4 class="form-titles">Users</h4>

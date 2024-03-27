@@ -24,16 +24,19 @@ class Drone:
         self.frequency = frequency
         self.netIp = netIp
 
-        self.homeLatitude = random.uniform(35.14888839, 35.15622871)
-        self.homeLongitude = random.uniform(33.38157353, 33.39072217)
+        self.homeLatitude = 35.15698271920874
+        self.homeLongitude = 33.37830189376086 + (index * 0.0005)
+        # self.homeLatitude = random.uniform(35.14888839, 35.15622871)
+        # self.homeLongitude = random.uniform(33.38157353, 33.39072217)
         self.latitude = self.homeLatitude
         self.longitude = self.homeLongitude
-        self.heading = random.randint(0,359)
-        self.altitude = 30 + (index * 10)
+        # self.heading = random.randint(0,359)
+        self.heading = 1
+        self.altitude = 20 + (index * 10)
+        self.velocity = 0
         self.connected = False
         self.isInMission = False
         self.mission = None
-        self.previousDirection = "n"
         self.liveStreamActive = liveStreamActive
 
         self.batteryPercentage = 100
@@ -44,8 +47,18 @@ class Drone:
         if self.satelliteNumber > 28:
             self.satelliteNumber = 28
 
+        self.gimbalAngle = -90 + (index * 10)
+
+        self.cpuUsage = random.randint(20,80)
+        self.cpuTemperature = random.randint(40,80)
+
         self.index = index
         self.i = 0
+
+        self.demoAltitude = False
+        self.demoHeading = False
+        self.demoGimbalAngle = False
+        self.demoDirection = 1
 
         # publishers
         self.droneIdsPublisher = rospy.Publisher("/droneIds", String, queue_size=10)
@@ -60,7 +73,7 @@ class Drone:
         rospy.Subscriber(f"/{self.name}/BuildMapRequest", BuildMap, self.buildMapRequestReceived)
         rospy.Subscriber(f"/{self.name}/StartOrStopPointCloud", String , self.lidarRequestReceived)
 
-
+   
     def start(self):
         utils.myPrint(f"Simulating drone: {self.name}")
         self.loop()
@@ -98,13 +111,26 @@ class Drone:
     def move(self):
         if self.isInMission:
             if not self.mission.is_over:
-                new_lat, new_lon, new_altitude, new_heading = self.mission.update()
+                new_lat, new_lon, new_altitude, new_heading, new_speed = self.mission.update()
                 self.latitude = new_lat
                 self.longitude = new_lon
                 self.altitude = new_altitude
                 self.heading = new_heading
+                self.velocity = new_speed
             else:
                 self.isInMission = False
+        else:
+            self.velocity = 0
+            if self.demoHeading:
+                self.heading = (self.heading + 10) % 360 # spin around
+            if self.demoGimbalAngle:
+                self.gimbalAngle = self.gimbalAngle + (2 * self.demoDirection) # move gimbal up
+                if self.gimbalAngle > -45 or self.gimbalAngle < -89:
+                    self.demoDirection = -self.demoDirection
+            if self.demoAltitude:
+                self.altitude = self.altitude + (1 * self.demoDirection) # move up and down
+                if self.altitude >= 30 or self.altitude <= 10:
+                    self.demoDirection = -self.demoDirection
 
 
     def publishTelemetry(self):
@@ -113,7 +139,7 @@ class Drone:
         telemetryMessage.longitude = self.longitude
         telemetryMessage.altitude = self.altitude
         telemetryMessage.heading = self.heading
-        telemetryMessage.velocity = 45.0
+        telemetryMessage.velocity = self.velocity
         telemetryMessage.gpsSignal = 1
         telemetryMessage.satelliteNumber = self.satelliteNumber
         telemetryMessage.homeLatitude = self.homeLatitude
@@ -125,7 +151,7 @@ class Drone:
         telemetryMessage.droneState = state
         
         telemetryMessage.batteryPercentage = self.batteryPercentage
-        telemetryMessage.gimbalAngle = 90
+        telemetryMessage.gimbalAngle = self.gimbalAngle
         self.telemetryPublisher.publish(telemetryMessage)
 
 
@@ -144,9 +170,25 @@ class Drone:
         monitoringMessage.emc_usage = 0
 
         monitoringMessage.cpu_core_count = 6
-        monitoringMessage.cpu_core_usage = [100, 23, 19, 23, 20, 21]
+
+        self.cpuUsage = self.cpuUsage + random.randint(-5, 5)
+        self.cpuUsage = 90 if self.cpuUsage > 90 else self.cpuUsage
+        self.cpuUsage = 20 if self.cpuUsage < 20 else self.cpuUsage
+
+        monitoringMessage.cpu_core_usage = [
+            self.cpuUsage + random.randint(-10, 10),
+            self.cpuUsage + random.randint(-10, 10),
+            self.cpuUsage + random.randint(-10, 10),
+            self.cpuUsage + random.randint(-10, 10),
+            self.cpuUsage + random.randint(-10, 10),
+            self.cpuUsage + random.randint(-10, 10)
+        ]
         monitoringMessage.cpu_core_freq = [1420, 1420, 1420, 1420, 1420, 1420]
-        monitoringMessage.cpuTemp = 36000
+
+        self.cpuTemperature = self.cpuTemperature + random.randint(-5, 5)
+        self.cpuTemperature = 20 if self.cpuTemperature < 20 else self.cpuTemperature
+        monitoringMessage.cpuTemp = self.cpuTemperature * 1000
+
         monitoringMessage.cpuFanRPM = 3398
 
         monitoringMessage.gr3d_usage = random.randint(10,100)

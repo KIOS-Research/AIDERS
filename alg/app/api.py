@@ -1,19 +1,21 @@
-import threading
-from flask import Flask, request, jsonify
+import asyncio
 
-# custom libs
+import requestHandler
+from aiohttp import web
 
+app = web.Application()
 
-app = Flask(__name__)
 
 # start the http server, called on launch
 def start(_port):
-    app.run(port=_port)   
-    
+    web.run_app(app, port=int(_port))
 
-# returns the active threads in this app
-@app.route('/threads', methods=['GET'])
-def getThreads():
-    threadList = [{'name': t.name} for t in threading.enumerate() if not t.name.startswith(('Thread-', 'Dummy-'))]
-    return jsonify(threadList)
 
+async def processLidarPointCloudToMeshBySessionId(request):
+    data = await request.json()
+    sessionId = data.get("sessionId")
+    response_data = requestHandler.processPointCloud(sessionId)
+    return web.json_response(response_data)
+
+
+app.router.add_post("/processPointCloud", processLidarPointCloudToMeshBySessionId)

@@ -91,7 +91,7 @@ m2 {
     /*display: inline-block;*/
 }
 
-.object-detection-input {
+.vehicle-and-person-tracker-visual-option {
     margin-right: 40px;
 }
 
@@ -135,7 +135,10 @@ m2 {
 .tools-option-title {
     width: 70%;
 }
-
+.tools-option-content {
+	width: 70%;
+	padding-left: 20px !important;
+}
 .toggle-handle {
     border-width: 0 0px;
 }

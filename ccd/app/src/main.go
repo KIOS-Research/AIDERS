@@ -55,7 +55,7 @@ func checkForDisconnectedClients(_clientsTable, _telemetryTable, _telemetryField
 				// TODO: publish a message to ROS /droneIds or /deviceIds (?)
 				if secondsSinceLastTelemetry > disconnectThreshold {
 					if !clientPreviousConnectedState[id] { // if the client has been disconnected twice
-						fmt.Print("Disconnect")
+						fmt.Print("*** ")
 						err := markClientAsDisconnected(id, _clientsTable) // mark client as disconnected
 						if err != nil {
 							log.Printf("Error updating is_connected for ID %d: %v", id, err)

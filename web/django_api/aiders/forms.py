@@ -11,7 +11,7 @@ from .models import Drone, FlyingReport, Operation, User
 class NewOperationFormForm(forms.Form, ModelForm):
     class Meta:
         model = Operation
-        fields = ("operation_name", "location", "description", "disaster_epicenter_latitude", "disaster_epicenter_longtitude", "dense_area_of_buildings", "max_extreme_temperature", "risk_of_explosion_and_fire")
+        fields = ("operation_name", "location", "description", "disaster_epicenter_latitude", "disaster_epicenter_longitude")
         widgets = {
             "operation_name": forms.TextInput(attrs={"placeholder": "e.g Exercise_02Aug"}),
             "location": forms.TextInput(attrs={"placeholder": "e.g Aglantzia"}),

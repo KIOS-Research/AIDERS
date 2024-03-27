@@ -48,10 +48,14 @@
      * Updates lineLayer Data for the specified drone. It takes the values until this point and appends to them the new values
      * */
     function updateDroneLineLayer(currentDrone, currentLineData) {
+        // dont update the drone's trajectory if the source or destination is 0 (GPS position is not locked)
+        if(currentLineData.source[0] == 0 || currentLineData.dest[0] == 0){
+            return currentDrone;
+        }
         //At first, we don't have a previous coordinate so we need to check until we get one
         if (currentDrone.droneInfo.previousCoordinate[0] !== undefined) {
             currentDrone.droneLineData = currentDrone.droneLineData.concat(currentLineData);
-
+            // console.log(currentLineData);
             currentDrone.droneLineLayer.setProps({
                 data: currentDrone.droneLineData,
             });
@@ -60,6 +64,10 @@
     }
 
     function updateDeviceLineLayer(currentDevice, currentLineData) {
+        // dont update the device's trajectory if the source or destination is 0 (GPS position is not locked)
+        if (currentLineData.source[0] == 0 || currentLineData.dest[0] == 0) {
+            return currentDevice;
+        }        
         //At first, we don't have a previous coordinate so we need to check until we get one
         if (currentDevice.deviceInfo.previousCoordinate[0] !== undefined) {
             currentDevice.deviceLineData = currentDevice.deviceLineData.concat(currentLineData);
@@ -72,6 +80,10 @@
     }
 
     function updateBaloraLineLayer(currentBalora, currentLineData) {
+        // dont update the balora's trajectory if the source or destination is 0 (GPS position is not locked)
+        if (currentLineData.source[0] == 0 || currentLineData.dest[0] == 0) {
+            return currentBalora;
+        }          
         //At first, we don't have a previous coordinate so we need to check until we get one
         if (currentBalora.baloraInfo.previousCoordinate[0] !== undefined) {
             currentBalora.baloraLineData = currentBalora.baloraLineData.concat(currentLineData);

@@ -5,6 +5,22 @@
 {
     let allDeviceInfo = [];
 
+
+
+    function get_device_index(deviceID) {
+        for (let i = 0; i < allDeviceInfo.length; i++) {
+            if (deviceID === allDeviceInfo[i].deviceID) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    function getDeviceAttributeValue(_deviceName, _attrName) {
+        let index = get_device_index(_deviceName);
+        return allDeviceInfo[index][_attrName];
+    }
+
     function add_Device(deviceID, devicePK) {
         allDeviceInfo.push({
             deviceLineData: [],

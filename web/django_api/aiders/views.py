@@ -1,18 +1,14 @@
 import csv
 import json
 import logging
-import math
 import os
 import shutil
-import sys
 import threading
-import time
 import zipfile
 from datetime import datetime
 from decimal import Decimal
 
-import numpy as np
-import open3d as o3d
+from django import forms
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import authenticate, get_user_model, login, logout
@@ -23,14 +19,16 @@ from django.contrib.gis.geos import point
 from django.core import serializers as core_serializers
 from django.core.exceptions import PermissionDenied
 from django.core.files.storage import default_storage
-from django.core.paginator import Paginator
-from django.db.models import Avg
 from django.forms.models import model_to_dict
-from django.http import (FileResponse, Http404, HttpResponse,
-                         HttpResponseNotFound, HttpResponseRedirect,
-                         JsonResponse)
-from django.shortcuts import (get_list_or_404, get_object_or_404, redirect,
-                              render)
+from django.http import (
+    FileResponse,
+    Http404,
+    HttpResponse,
+    HttpResponseNotFound,
+    HttpResponseRedirect,
+    JsonResponse,
+)
+from django.shortcuts import get_list_or_404, get_object_or_404, redirect, render
 from django.urls import resolve, reverse, reverse_lazy
 from django.utils import timezone
 from django.utils.decorators import method_decorator
@@ -39,8 +37,7 @@ from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from guardian.shortcuts import assign_perm
 from json2html import *
 from logic import utils
-from logic.algorithms.build_map import (build_map_request_handler,
-                                        img_georeference)
+from logic.algorithms.build_map import build_map_request_handler, img_georeference
 from logic.algorithms.external_request import patho_request
 from logic.algorithms.flying_report import flying_report
 from logic.algorithms.mission import mission_request_handler
@@ -54,15 +51,15 @@ from rest_framework.views import APIView
 
 from .factories import *
 from .forms import *
-from .httpRequests import (postDetectionStartToCv, postDetectionStopToCv,
-                           postRequestForLidarStartOrStop,
-                           postRequestForOpenWaterSamplingValve, 
-                           postDetectionStartToSafeML, postDetectionStopToSafeML)
+from .httpRequests import (
+    postDetectionStartToCv,
+    postDetectionStopToCv,
+    postRequestForLidarStartOrStop,
+    postRequestForOpenWaterSamplingValve,
+)
 from .models import ManuallySetObject, ManuallySetObjectLocation, Operation
 from .permissions import IsOwnerOrReadOnly
 from .serializers import *
-
-from django import forms
 
 logger = logging.getLogger(__name__)
 
@@ -814,6 +811,15 @@ def index(request):
 
         use_online_map = UserPreferences.objects.get(user=request.user).use_online_map
         # context = {'auth_form': AuthenticationForm,'use_online_map':use_online_map}
+
+        # retrieve key for interacting with APIs
+        from rest_framework.authtoken.models import Token
+        try:
+            token = Token.objects.get(user=user)
+        except Token.DoesNotExist:
+            token = Token.objects.create(user=user)
+        context["token"] = token.key
+
         context["use_online_map"] = use_online_map
         return render(request, "aiders/platform.html", context)
 
@@ -1237,6 +1243,11 @@ def login_view(request):
                 )
                 terminal.save()
 
+                # generate key for interacting with APIs
+                from rest_framework.authtoken.models import Token
+                Token.objects.filter(user=user).delete()
+                token = Token.objects.create(user=user)
+
                 if not UserPreferences.objects.filter(user=user).exists():
                     UserPreferences.objects.create(use_online_map=True, user=user)
 
@@ -1251,9 +1262,30 @@ def login_view(request):
 
 
 def logout_view(request):
+    from rest_framework.authtoken.models import Token
+    Token.objects.filter(user=request.user).delete()
+  
     logout(request)
     # Redirect to a success page
     return redirect("login")
+
+
+# # check if a token exists in the database
+# def validate_token(request):
+#     from rest_framework.authtoken.models import Token
+#     # Get token from query parameters
+#     token_key = request.GET.get('token')
+#     if not token_key:
+#         return JsonResponse({"error": "Token parameter is required."})
+
+#     # Check if token exists
+#     try:
+#         token = Token.objects.get(key=token_key)
+#     except Token.DoesNotExist:
+#         return JsonResponse({'valid': False})
+
+#     # If token exists, return valid
+#     return JsonResponse({'valid': True})
 
 
 def new_operation_form_view(request):
@@ -1283,45 +1315,22 @@ def new_operation_form_view(request):
 
 
 def new_operation_form_save(request):
-    # Sinadra
-    if(request.POST.get("dense_area_of_buildings")) == "true":
-        dense_area_of_buildings_value= True
-    elif (request.POST.get("dense_area_of_buildings")) == "false":
-        dense_area_of_buildings_value= False
-    else:
-        dense_area_of_buildings_value= None
-
-    if(request.POST.get("risk_of_explosion_and_fire")) == "true":
-        risk_of_explosion_and_fire_value= True
-    elif (request.POST.get("risk_of_explosion_and_fire")) == "false":
-        risk_of_explosion_and_fire_value= False
-    else:
-        risk_of_explosion_and_fire_value= None
     if request.POST.get("disaster_epicenter_latitude") == '':
         disasterEpicenterLatitudeValue = None
     else:
         disasterEpicenterLatitudeValue = request.POST.get("disaster_epicenter_latitude")
-    if request.POST.get("disaster_epicenter_longtitude") == '':
-        disasterEpicenterLongtitudeValue = None
+    if request.POST.get("disaster_epicenter_longitude") == '':
+        disasterEpicenterLongitudeValue = None
     else:
-        disasterEpicenterLongtitudeValue = request.POST.get("disaster_epicenter_longtitude")
-    if request.POST.get("max_extreme_temperature") == '':
-        maxExtremeTemperatureValue = None
-    else:
-        maxExtremeTemperatureValue = request.POST.get("max_extreme_temperature")
+        disasterEpicenterLongitudeValue = request.POST.get("disaster_epicenter_longitude")
 
     operation_instance = Operation.objects.create(
         operation_name=request.POST.get("operation_name"),
         location=request.POST.get("location"),
         description=request.POST.get("description"),
         operator=request.user,
-
-        # Sinadra
         disaster_epicenter_latitude = disasterEpicenterLatitudeValue,
-        disaster_epicenter_longtitude = disasterEpicenterLongtitudeValue,
-        dense_area_of_buildings = dense_area_of_buildings_value,
-        max_extreme_temperature = maxExtremeTemperatureValue,
-        risk_of_explosion_and_fire = risk_of_explosion_and_fire_value,
+        disaster_epicenter_longitude = disasterEpicenterLongitudeValue,
     )
     # Save Operation Drones
     drone_allow_list = Drone.objects.none()
@@ -1421,39 +1430,16 @@ def edit_operation_form_save(operation_name, request):
     operation_instance = Operation.objects.get(operation_name=operation_name)
     operation_instance.location = request.POST.get("location")
     operation_instance.description = request.POST.get("description")
-        
-    # Sinadra
-    if(request.POST.get("dense_area_of_buildings")) == "true":
-        dense_area_of_buildings_value= True
-    elif (request.POST.get("dense_area_of_buildings")) == "false":
-        dense_area_of_buildings_value= False
-    else:
-        dense_area_of_buildings_value= None
-
-    if(request.POST.get("risk_of_explosion_and_fire")) == "true":
-        risk_of_explosion_and_fire_value= True
-    elif (request.POST.get("risk_of_explosion_and_fire")) == "false":
-        risk_of_explosion_and_fire_value= False
-    else:
-        risk_of_explosion_and_fire_value= None
     if request.POST.get("disaster_epicenter_latitude") == '':
         disasterEpicenterLatitudeValue = None
     else:
         disasterEpicenterLatitudeValue = request.POST.get("disaster_epicenter_latitude")
-    if request.POST.get("disaster_epicenter_longtitude") == '':
-        disasterEpicenterLongtitudeValue = None
+    if request.POST.get("disaster_epicenter_longitude") == '':
+        disasterEpicenterLongitudeValue = None
     else:
-        disasterEpicenterLongtitudeValue = request.POST.get("disaster_epicenter_longtitude")
-    if request.POST.get("max_extreme_temperature") == '':
-        maxExtremeTemperatureValue = None
-    else:
-        maxExtremeTemperatureValue = request.POST.get("max_extreme_temperature")
-
+        disasterEpicenterLongitudeValue = request.POST.get("disaster_epicenter_longitude")
     operation_instance.disaster_epicenter_latitude = disasterEpicenterLatitudeValue
-    operation_instance.disaster_epicenter_longtitude = disasterEpicenterLongtitudeValue
-    operation_instance.dense_area_of_buildings = dense_area_of_buildings_value
-    operation_instance.max_extreme_temperature = maxExtremeTemperatureValue
-    operation_instance.risk_of_explosion_and_fire = risk_of_explosion_and_fire_value
+    operation_instance.disaster_epicenter_longitude = disasterEpicenterLongitudeValue
 
     operation_instance.save()
     Group.objects.get(name=f"{operation_instance.operation_name} operation join").delete()
@@ -1794,8 +1780,7 @@ def last_raw_frame_api_view(request, operation_name, drone_name):
 @api_view(["GET"])
 def detection_types_api_view(request, operation_name):
     if request.method == "GET":
-        from logic.algorithms.object_detection.src.models.label import \
-            get_labels_all
+        from logic.algorithms.object_detection.src.models.label import get_labels_all
 
         return Response({"detection_types": list(get_labels_all())})
 
@@ -2130,46 +2115,13 @@ def getLidarSessionOfPointsThatAreNotProcessed(request, *args, **kwargs):
         return HttpResponse(json.dumps(result))
 
 def processLidarSessionPointsBySessionId(request, *args, **kwargs):
+    from .httpRequests import postRequestForLidarProcess
     if request.method == 'POST':
         data = json.loads(request.body)
-        lidarSessionId = data.get("sessionId")
-        if utils.threadStarted("processPointCloudDataSession"+lidarSessionId):
-            return JsonResponse({"message": "Session "+lidarSessionId+" is already processing."})
-        thread = threading.Thread(target=processPointsByOpen3d, args=(lidarSessionId,))
-        thread.name = "processPointCloudDataSession"+lidarSessionId
-        thread.start()
-        return JsonResponse({"message": "Session " + lidarSessionId + " is starting processing."})
+        result=postRequestForLidarProcess(data.get("sessionId"))
+        print(result, flush=True)
+        return JsonResponse(result)
 
-def processPointsByOpen3d(_lidarSessionId):
-    # Process Points
-    lidarListOfPoints = LidarPoint.getAllLidarPointsBySessionId(_lidarSessionId)
-    pointsValues = [(d['x'], d['y'], d['z']) for d in lidarListOfPoints]
-    pointsColors = [(d['red']/255, d['green']/255, d['blue']/255) for d in lidarListOfPoints]  # normalize color values
-
-    pcd = o3d.geometry.PointCloud()
-    pcd.points = o3d.utility.Vector3dVector(pointsValues)
-    pcd.colors = o3d.utility.Vector3dVector(pointsColors)
-    alpha = 0.08
-    tetra_mesh, pt_map = o3d.geometry.TetraMesh.create_from_point_cloud(pcd)
-    mesh = o3d.geometry.TriangleMesh.create_from_point_cloud_alpha_shape(pcd, alpha, tetra_mesh, pt_map)
-
-    # For Visualization
-    # Create a coordinate frame (which includes arrows)
-    # coordinate_frame = o3d.geometry.TriangleMesh.create_coordinate_frame(size=10.0, origin=[0, 0, 0])
-
-    if not mesh.has_vertex_normals():
-        mesh.compute_vertex_normals()
-    if not mesh.has_triangle_normals():
-        mesh.compute_triangle_normals()
-
-    directory = default_storage.path("lidarPointCloudMesh")
-    if not os.path.exists(directory):
-        os.makedirs(directory) 
-    fullPath = directory+f"/lidarSession_{str(_lidarSessionId)}.glb"
-    if os.path.exists(fullPath):
-        os.remove(fullPath)
-    o3d.io.write_triangle_mesh(fullPath, mesh)
-    LidarPointSession.updateProcessedSessionBySessionIdAndPath(_lidarSessionId, f"lidarPointCloudMesh/lidarSession_{str(_lidarSessionId)}.glb")
 
 def getLidarSessionWithProcessMesh(request, *args, **kwargs):
     if request.method == 'GET':
@@ -2384,6 +2336,18 @@ def mavlinkCheckConnection(request, pk):
     return JsonResponse({'error': "not supported"}, status=500)
 
 
+def mavlinkGetLogs(request, operation_id, last_log_id=0):
+    if int(last_log_id) == 0:
+        logs = MavlinkLog.objects.select_related('drone').filter(operation_id=operation_id).order_by('-id')[:20]
+    else:
+        logs = MavlinkLog.objects.select_related('drone').filter(id__gt=last_log_id, operation_id=operation_id)
+
+    logs_list = list(logs.values('id', 'message', 'time', 'drone__drone_name'))
+    if int(last_log_id) == 0:
+        logs_list.reverse()
+    return JsonResponse(logs_list, safe=False)
+
+
 #####################
 # MAVLINK API CALLS #
 #####################
@@ -2399,6 +2363,8 @@ def mavlinkConnect(request):
             "port": data.get('port'),
             "model": data.get('model'),
             "operationId": data.get('operationId'),
+            "protocol": data.get('protocol'),
+            "library": data.get('library'),
         }
         result=postRequestForMavlink("connectToUav", payload)
         return HttpResponse(result)
@@ -2566,7 +2532,7 @@ def operation_coverage_points(request, operation_name):
                     droneTelemetryTuple = [(d[0], d[1]) for d in s]
                     try:
                         shaper = Alpha_Shaper(droneTelemetryTuple)
-                        alpha_shape = shaper.get_shape(alpha=5)
+                        alpha_shape = shaper.get_shape(alpha=2)
                         shapeMapping = mapping(alpha_shape)
                         for i in range(len(shapeMapping['coordinates'])):
                             dronePolygon = json.dumps(shapeMapping['coordinates'][i])
@@ -2701,12 +2667,12 @@ def operation_coverage_points(request, operation_name):
 
 
 
-##################################
-######### STREAM REPLAY ##########
-##################################
+####################################
+######### SESSION REPLAYS ##########
+####################################
 
 
-def getAvailableStreams(request, *args, **kwargs):
+def getAvailableDroneSessions(request, *args, **kwargs):
     if request.method == 'GET':
         operation = Operation.objects.get(operation_name=kwargs["operation_name"])
         stream_type = kwargs["stream_type"]
@@ -2747,9 +2713,11 @@ def getAvailableStreams(request, *args, **kwargs):
         return HttpResponse(json.dumps(result))
 
 
-def stream_replay(request, stream_type, session_id):
+def drone_session_replay(request, stream_type, session_id):
+    if not request.user.is_authenticated:
+        return render(request, "aiders/login.html", {"auth_form": AuthenticationForm, "next": "/home"})
+
     print(stream_type, flush=True) 
-    # TODO: check user permissions
 
     if stream_type == "raw":
         session = LiveStreamSession.objects.get(id=session_id)
@@ -2759,41 +2727,180 @@ def stream_replay(request, stream_type, session_id):
         frames = list(DetectionFrame.objects.filter(detection_session_id=session_id).values('frame', 'time'))
 
     drone_id = session.drone_id
-    drone = Drone.objects.get(id=drone_id)    
+    drone = Drone.objects.get(id=drone_id)
+     
+    sessionStart = frames[0]["time"]
+    sessionEnd = frames[-1]["time"]
 
-    # Convert datetime to string
+    telemetry = list(Telemetry.objects.filter(drone_id=drone_id, time__gte=sessionStart, time__lt=sessionEnd).values('time', 'lat', 'lon', 'heading', 'alt', 'velocity', 'battery_percentage', 'gimbal_angle', 'drone_state'))
+    monitoring_data = list(ControlDevice.objects.filter(drone_id=drone_id, time__gte=sessionStart, time__lt=sessionEnd).values('time', 'cpu_usage', 'cpu_temp'))
+    has_monitoring_data = len(monitoring_data) > 0
+
+    # retrieve build map images
+    build_map_session = list(BuildMapSession.objects.filter(drone_id=drone_id, start_time__gte=sessionStart, end_time__lt=sessionEnd).order_by('-start_time').values())
+    if(len(build_map_session) == 0):
+        build_map_images = []
+    else:
+        build_map_images = list(BuildMapImage.objects.filter(session_id=build_map_session[0]["id"]).order_by('time').values("path", "top_left", "top_right", "bottom_left", "bottom_right", "centre", "time"))
+        for image in build_map_images:
+            image["time"] = str(image["time"].astimezone(pytz.timezone(settings.TIME_ZONE)).strftime("%H:%M:%S "))
+            image["top_left"] = [float(image["top_left"].coords[0]), float(image["top_left"].coords[1])]
+            image["top_right"] = [float(image["top_right"].coords[0]), float(image["top_right"].coords[1])]
+            image["bottom_left"] = [float(image["bottom_left"].coords[0]), float(image["bottom_left"].coords[1])]
+            image["bottom_right"] = [float(image["bottom_right"].coords[0]), float(image["bottom_right"].coords[1])]
+            image["centre"] = [float(image["centre"].coords[0]), float(image["centre"].coords[1])]    
+
+    # Sync the frames with telemetry
+    frames_with_telemetry = []
     for frame in frames:
+        # Add the telemetry data to the frame
+        closest_telemetry = find_closest_telemetry(frame['time'], telemetry)
+        frame.update(closest_telemetry)
+        if has_monitoring_data:
+            closest_monitor_data = find_closest_telemetry(frame['time'], monitoring_data)
+            frame['cpu_usage'] = closest_monitor_data['cpu_usage']
+            frame['cpu_temp'] = closest_monitor_data['cpu_temp']
         frame['time'] = frame['time'].strftime('%Y-%m-%dT%H:%M:%S.%fZ')
-    # print(frames, flush=True)
-    return render(request, 'aiders/stream_replay.html', {'frames': frames, 'drone': drone, 'session_id': session_id, 'stream_type': stream_type})
+        frames_with_telemetry.append(frame)
+
+
+    distance = round(get_total_path_distance(telemetry, 'lat', 'lon'), 2)
+    max_altitude = round(max(telemetry, key=lambda x: x['alt'])['alt'], 2)
+    max_velocity = round(max(telemetry, key=lambda x: x['velocity'])['velocity'], 2)
+    battery_used = round(telemetry[0]['battery_percentage'] - telemetry[-1]['battery_percentage'], 2)
+
+    if has_monitoring_data:
+        max_cpu_usage = round(max(monitoring_data, key=lambda x: x['cpu_usage'])['cpu_usage'], 2)
+        max_cpu_temp = round(max(monitoring_data, key=lambda x: x['cpu_temp'])['cpu_temp'], 2)
+    else:
+        max_cpu_usage = 0
+        max_cpu_temp = 0
+
+    time_difference = sessionEnd - sessionStart
+    time_difference_seconds = int(time_difference.total_seconds())
+
+    # calculate the duration of the session
+    hours, remainder = divmod(time_difference_seconds, 3600)
+    minutes, seconds = divmod(remainder, 60)
+    duration = "{:02}:{:02}:{:02}".format(hours, minutes, seconds)
+
+    # calculate battery % per minute
+    battery_used_per_minute = round(battery_used / (time_difference_seconds / 60), 2)
+
+    session_data = {
+        'drone': drone,
+        'session_id': session_id,
+        'stream_type': stream_type,
+        'distance': distance,
+        'duration': duration,
+        'max_altitude': max_altitude,
+        'max_velocity': max_velocity,
+        'battery_used': battery_used,
+        'battery_used_per_minute': battery_used_per_minute,
+        'has_monitoring_data': has_monitoring_data,
+        'max_cpu_usage': max_cpu_usage,
+        'max_cpu_temp': max_cpu_temp,
+        'build_map_images': json.dumps(build_map_images),
+    }
+
+    return render(request, 'aiders/drone_session_replay.html', {'frames_with_telemetry': frames_with_telemetry, 'session_data': session_data})
 
 
 
-#############################################################################################################
-# SafeML
 
-class DetectionSafeMLStartOrStopAPIView(LoginRequiredMixin,APIView):
-    def post(self, request, *args, **kwargs):
-        data = request.data
-        detectionStatus = data.get("detectionStatus")
-        userId = request.user.pk
-        droneName = data.get("droneName")
-        droneId = Drone.getDroneIdByName(droneName)
-        operationName = data.get("operationName")
-        operationId = Operation.getOperationIdByName(operationName)
-        detectionType = data.get("detectionType")
-        if detectionStatus == 'Start':
-            apiResponse = postDetectionStartToSafeML(userId, operationId, droneId, droneName, detectionType)
-        elif detectionStatus == 'Stop':
-            apiResponse = postDetectionStopToSafeML(operationId, droneId, droneName, detectionType)
-        else:
-            # Handle other cases or provide an error response
-            return HttpResponse("Invalid detectionStatus", status=status.HTTP_400_BAD_REQUEST)
-        return HttpResponse(apiResponse, status=status.HTTP_200_OK)
+# DEVICES
+
+def getAvailableDeviceSessions(request, *args, **kwargs):
+    if request.method == 'GET':
+        operation = Operation.objects.get(operation_name=kwargs["operation_name"])
+
+        result = []
+        devices = Device.objects.filter(operation_id=operation.id)
+        for device in devices:
+
+
+            sessions = DeviceSession.objects.filter(device_id=device.id)
+            for session in sessions:
+                frame_count = DeviceImage.objects.filter(session_id=session.id).count()
+                if frame_count == 0:
+                    continue
+                session_end = session.end_time.strftime('%Y-%m-%d %H:%M:%S') if session.end_time else ""
+                result.append({
+                    'sessionId': session.id,
+                    'name': session.device.name,
+                    'startTime': session.start_time.strftime('%Y-%m-%d %H:%M:%S'),
+                    'endTime': session_end,
+                    'count': frame_count
+                })
+
+        return HttpResponse(json.dumps(result))
     
 
-#############################################################################################################
+def device_session_replay(request, session_id):
+    if not request.user.is_authenticated:
+        return render(request, "aiders/login.html", {"auth_form": AuthenticationForm, "next": "/home"})
 
+    session = DeviceSession.objects.get(id=session_id)
+    frames = list(DeviceImage.objects.filter(session_id=session_id).values())
+
+    device_id = session.device_id
+    device = Device.objects.get(id=device_id)
+     
+    sessionStart = frames[0]["time"]
+    sessionEnd = frames[-1]["time"]
+
+    for frame in frames:
+        frame['time'] = frame['time'].strftime('%Y-%m-%dT%H:%M:%S.%fZ')
+
+    distance = round(get_total_path_distance(frames, 'latitude', 'longitude'), 2)
+
+    time_difference = sessionEnd - sessionStart
+    time_difference_seconds = int(time_difference.total_seconds())
+
+    # calculate the duration of the session
+    hours, remainder = divmod(time_difference_seconds, 3600)
+    minutes, seconds = divmod(remainder, 60)
+    duration = "{:02}:{:02}:{:02}".format(hours, minutes, seconds)
+
+    session_data = {
+        'device': device,
+        'session_id': session_id,
+        'distance': distance,
+        'duration': duration,
+    }
+
+    return render(request, 'aiders/device_session_replay.html', {'frames': frames, 'session_data': session_data})
+
+
+
+def find_closest_telemetry(time, telemetry):
+    # Initialize the closest telemetry and minimum difference with the first telemetry data
+    closest_telemetry = telemetry[0]
+    min_diff = abs(time - telemetry[0]['time'])
+
+    # Iterate over the telemetry data
+    for data in telemetry:
+        diff = abs(time - data['time'])
+        # If the current difference is less than the minimum difference, update the closest telemetry and minimum difference
+        if diff < min_diff:
+            closest_telemetry = data
+            min_diff = diff
+
+    return closest_telemetry
+
+
+def get_total_path_distance(telemetry_data, latKey, lonKey):
+    from haversine import haversine
+    total = 0
+    for i in range(1, len(telemetry_data)):
+        lat1, lon1 = telemetry_data[i-1][latKey], telemetry_data[i-1][lonKey]
+        lat2, lon2 = telemetry_data[i][latKey], telemetry_data[i][lonKey]
+        total += haversine([lat1, lon1], [lat2, lon2])
+    return total
+
+
+#############################################################################################################
+#  Safe drones
 
 def safeDronesResults(request):
     calculations_safe_drones.start()
@@ -2801,7 +2908,7 @@ def safeDronesResults(request):
     # print(datetime.datetime.now().strftime("%H:%M:%S")+" * SAFE DRONES RESULTS REQUESTED", flush=True)
 
     
-    from django.db.models import Subquery, OuterRef
+    from django.db.models import OuterRef, Subquery
 
     # Subquery to get the latest DateTime for each drone
     latest_datetimes = SafeDroneResults.objects.filter(
@@ -2819,201 +2926,6 @@ def safeDronesResults(request):
     # Return the JSON response
     return JsonResponse(data, safe=False)
 
-def sinadraStartOrStop(request):
-    from .httpRequests import postRequestForSinadraStartOrStop
-    if request.method == 'POST':
-        data = json.loads(request.body)
-        operationId = data.get('operationId')
-        command = data.get('command')
-        result=postRequestForSinadraStartOrStop(operationId, command)
-        return HttpResponse(result)
-    else:
-        return JsonResponse({'message': 'Invalid request method. Only POST requests are accepted.'}, status=400)
-
-def sinadraResults(request):
-    if request.method == 'POST':
-        data = json.loads(request.body)
-        operationId = data.get('operationId')
-        operation = Operation.objects.get(pk=operationId)
-        if not operation.sinadra_active:
-            return JsonResponse({'error': 'Operation is not active.'}, status=400)
-        try:
-            latestData = SinadraData.objects.filter(operation_id=operationId).latest('time')
-        except Exception:
-            return JsonResponse({'error': 'No data found.'}, status=400)
-        responseData = {
-            'operation_name': operation.id,
-            'disaster_epicenter_latitude': operation.disaster_epicenter_latitude,
-            'disaster_epicenter_longtitude': operation.disaster_epicenter_longtitude,
-            'dense_area_of_buildings': operation.dense_area_of_buildings,
-            'max_extreme_temperature': operation.max_extreme_temperature,
-            'risk_of_explosion_and_fire': operation.risk_of_explosion_and_fire,
-            'latest_human_injury_risk_prediction': latestData.human_injury_risk_prediction,
-            'time': latestData.time.strftime('%Y-%m-%dT%H:%M:%S')
-        }
-
-        # get the scue value of SafeML (if available)
-        try:
-            latest_safeml_output = SafemlOutput.objects.filter(
-                detection_session__is_active=True,
-                detection_session__operation_id=operationId
-            ).latest('time')
-            responseData["safeml_scue"] = latest_safeml_output.scue
-        except Exception as e:
-            responseData["safeml_scue"] = None
-
-        # print(responseData, flush=True)
-        return JsonResponse(responseData)
-    else:
-        return JsonResponse({'message': 'Invalid request method. Only POST requests are accepted.'}, status=400)
-
-
-from django.db.models import Avg, Max, Min
-
-
-# Delete later
-class TestingBuildMap(LoginRequiredMixin, View):
-    def get(self, request, *args, **kwargs):
-        # write data and save lidar to db
-        # with open("lidarPoints.txt", "r") as file:
-        #     self = file.read()
-        #     lidar_session = LidarPointSession.objects.all().last()
-        #     drone_name = "drone1"
-        #     batch_size = 5000
-        #     batch_list = []
-        #     telemetry = Telemetry.objects.filter(drone__drone_name=drone_name).last()
-
-        #     for single_point in self.split("|"):
-        #         single_point_list = single_point.split(",")
-        #         if len(single_point_list) < 6:  # Check if single_point_list has enough elements
-        #             continue  # Skip this point if it doesn't
-        #         point = LidarPoint(
-        #             x=single_point_list[2],
-        #             y=single_point_list[0],
-        #             z=single_point_list[1],
-        #             r=single_point_list[3],
-        #             g=single_point_list[4],
-        #             b=single_point_list[5],
-        #             lidar_point_session=lidar_session,
-        #             telemetry=telemetry,
-        #         )
-        #         batch_list.append(point)
-        #         if len(batch_list) >= batch_size:
-        #             LidarPoint.objects.bulk_create(batch_list)
-        #             batch_list.clear()
-        #     if batch_list:
-        #         LidarPoint.objects.bulk_create(batch_list)
-        # with open("live_custom_data_lidar_tel.csv", "r") as csvfile:
-        #     print("before")
-        #     reader = csv.reader(csvfile)
-        #     rows = list(reader)
-        #     print("after")
-        #     Drone.objects.filter(pk=1).update(is_connected_with_platform=True)
-        #     lidar_session = LidarPointSession.objects.create(
-        #         user=User.objects.all().last(), operation=Operation.objects.all().last(), drone=Drone.objects.all().last()
-        #     )
-        #     print("after Lidar")
-        #     batch_list = []
-        #     for row in rows:
-        #         if len(row) == 18:
-        #             if batch_list is not None:
-        #                 LidarPoint.objects.bulk_create(batch_list)
-        #             Telemetry.objects.create(
-        #                 drone=Drone.objects.all().last(),
-        #                 battery_percentage=row[2],
-        #                 gps_signal=row[3],
-        #                 satellites=row[4],
-        #                 heading=row[5],
-        #                 velocity=row[6],
-        #                 homeLat=row[7],
-        #                 homeLon=row[8],
-        #                 lat=row[9],
-        #                 lon=row[10],
-        #                 alt=row[11],
-        #                 drone_state=row[12],
-        #                 secondsOn=row[13],
-        #                 gimbal_angle=row[14],
-        #                 water_sampler_in_water=row[15],
-        #                 operation=Operation.objects.all().last(),
-        #                 mission_log=None,
-        #             )
-        #             batch_list = []
-        #         else:
-        #             point = LidarPoint(
-        #                 x=float(row[1]),
-        #                 y=float(row[2]),
-        #                 z=float(row[3]),
-        #                 intensity=float(row[4]),
-        #                 red=float(row[5]),
-        #                 green=float(row[6]),
-        #                 blue=float(row[7]),
-        #                 lidar_point_session=lidar_session,
-        #                 telemetry=Telemetry.objects.get(pk=row[8]),
-        #             )
-        #             batch_list.append(point)
-        #             if len(batch_list) > 50000:
-        #                 LidarPoint.objects.bulk_create(batch_list)
-        #                 batch_list = []
-        # with open("droneTelemetry_17_5.json", "r") as json_file:
-        #     data = json.load(json_file)
-        # for d in data:
-        #     Telemetry.objects.create(
-        #         drone=Drone.objects.all()[0],
-        #         lat=d["fields"]["lat"],
-        #         lon=d["fields"]["lon"],
-        #         alt=d["fields"]["alt"],
-        #         heading=d["fields"]["heading"],
-        #         battery_percentage=d["fields"]["battery_percentage"],
-        #         gps_signal=d["fields"]["gps_signal"],
-        #         satellites=d["fields"]["satellites"],
-        #         velocity=d["fields"]["velocity"],
-        #         homeLat=d["fields"]["homeLat"],
-        #         homeLon=d["fields"]["homeLon"],
-        #         drone_state=d["fields"]["drone_state"],
-        #         secondsOn=d["fields"]["secondsOn"],
-        #         gimbal_angle=d["fields"]["gimbal_angle"],
-        #     )
-        # my_list = []
-        # with open("B3_receiver.csv", "r") as file:
-        #     csv_reader = csv.reader(file)
-        #     next(csv_reader)
-        #     for row in csv_reader:
-        #         BaloraTelemetry.objects.create(
-        #             baloraMaster=BaloraMaster.objects.get(name="BALORA_MASTER"),
-        #             balora=Balora.objects.get(name="balora_1"),
-        #             latitude=row[3],
-        #             longitude=row[4],
-        #             pm1=random.randint(1, 12),
-        #             pm25=random.randint(1, 250),
-        #             received_signal_strength_indication=row[6],
-        #             SignalToNoiseRatio=row[7],
-        #             operation=Operation.objects.all().last(),
-        #             secondsOn=0,
-        #         )
-        #         my_list.append([row[3], row[4]])
-        #         time.sleep(0.1)
-        # with open("B4_receiver.csv", "r") as file:
-        #     csv_reader = csv.reader(file)
-        #     next(csv_reader)
-        #     for row in csv_reader:
-        #         BaloraTelemetry.objects.create(
-        #             balora=BaloraMaster.objects.get(name="Balora2"),
-        #             baloraNetwork=Balora.objects.get(name=row[2]),
-        #             latitude=row[3],
-        #             longitude=row[4],
-        #             pm1=random.randint(1, 150),
-        #             pm25=random.randint(1, 150),
-        #             received_signal_strength_indication=row[6],
-        #             SignalToNoiseRatio=row[7],
-        #             operation=Operation.objects.all().last(),
-        #             secondsOn=0,
-        #         )
-        #         my_list.append([row[3], row[4]])
-        #         time.sleep(0.1)
-        return render(
-            request,
-            "aiders/testing.html",
-        )
 
 @method_decorator(csrf_exempt, name='dispatch')
 class DetectedObjectDescriptionSetPIView(LoginRequiredMixin, View):

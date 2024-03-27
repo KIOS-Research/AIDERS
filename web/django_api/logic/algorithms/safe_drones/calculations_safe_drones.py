@@ -1,19 +1,13 @@
-import time
-from datetime import datetime
-import sys
-import requests
-import json
-from sys import platform
 import inspect
 import os
-from aiders import models,serializers
-from inspect import getsourcefile
-from os.path import abspath
-
+import sys
 import threading
+import time
+from datetime import datetime
+from sys import platform
 
 import logic.algorithms.safe_drones.SafeDrones as SafeDrones
-from aiders.httpRequests import postRequestForReliableNavigationValue
+from aiders import models
 
 if platform == "linux" or platform == "linux2":
     currentdir = os.path.dirname(os.path.realpath(inspect.getfile(inspect.currentframe())))
@@ -90,8 +84,6 @@ def startCalculatingMotorFailureRisk(frequency):
                 DateTime=dt
             )
             result.save()
-            reliableNavigation = False if gpsPfail > 0.6 else True
-            postRequestForReliableNavigationValue(droneID, droneName, reliableNavigation)
                 
         end_time = time.time()
         elapsed_time = end_time - start_time

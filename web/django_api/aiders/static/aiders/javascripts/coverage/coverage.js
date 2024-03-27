@@ -24,9 +24,9 @@ function showOperationCoverage(fromDate, fromTime, toDate, toTime, getDrones, ge
             // console.log(response.dronePolygons);
             // console.log(response.droneData);
 
-            renderPoints('drone', response.droneAllTelemetryPoints, "#F00", 1.5, 'lat', 'lon');
-            renderPoints('device', response.deviceAllTelemetryPoints, "#D33", 1.5, 'latitude', 'longitude');
-            renderPoints('balora', response.baloraAllTelemetryPoints, "#D33", 1.5, 'latitude', 'longitude');
+            renderPoints('drone', response.droneAllTelemetryPoints, "#F00", 2.5, 'lat', 'lon');
+            renderPoints('device', response.deviceAllTelemetryPoints, "#D33", 2.5, 'latitude', 'longitude');
+            renderPoints('balora', response.baloraAllTelemetryPoints, "#D33", 2.5, 'latitude', 'longitude');
 
             renderPolygons('drone', response.dronePolygons, response.droneData, "#FF0000", 0.2);
             renderPolygons('device', response.devicePolygons, response.deviceData, "#FF00FF", 0.2);
@@ -45,6 +45,7 @@ function showOperationCoverage(fromDate, fromTime, toDate, toTime, getDrones, ge
 function renderPolygons(clientType, allPolygons, allData, color, opacity) {
 
     allPolygons.forEach(function (currentPolygon, i) {
+        
         let polygonPoints = [];
         let firstPoint = [0, 0]
         let polygon = JSON.parse(currentPolygon);
@@ -55,7 +56,10 @@ function renderPolygons(clientType, allPolygons, allData, color, opacity) {
         // if (polygon.length < 3) {
         //     polygon = polygon[0];
         // }
+        // console.log("polygon: " + polygon.length);
         polygon.forEach(function (point, j) {
+            // console.log(point);
+
             if (firstPoint[0] == 0 && firstPoint[1] == 0) {
                 firstPoint = [point[1], point[0]];
             }
@@ -100,23 +104,34 @@ function renderPolygons(clientType, allPolygons, allData, color, opacity) {
         });
 
         // add a popup on click
-        // calculate the centroid of the polygon
-        let xSum = 0, ySum = 0;
-        polygonPoints.forEach(function (point) {
-            xSum += point[0];
-            ySum += point[1];
-        });
-        let centroid = [xSum / polygonPoints.length, ySum / polygonPoints.length];
-
-        // create the popup
-        let popup = new maplibregl.Popup()
-            .setLngLat(centroid)
-            .setText(allData[i][0] + "\n" + allData[i][1])
-
-        // add the 'click' event listener
-        map.on('click', clientType + "-coverage-" + i + "-" + rand, function (e) {
-            popup.addTo(map);
-        });            
+        if (polygonPoints.length > 0) {
+            // calculate the centroid of the polygon
+            let xSum = 0, ySum = 0;
+            polygonPoints.forEach(function (point) {
+                xSum += parseFloat(point[0]);
+                ySum += parseFloat(point[1]);
+            });
+            let centroid = [xSum / polygonPoints.length, ySum / polygonPoints.length];
+    
+            // console.log("xSum: " + xSum);
+            // console.log("ySum: " + ySum);
+            // console.log("centroid: " + centroid);
+    
+            // create the popup
+            var date = new Date(allData[i][1]);
+            var formattedTime = date.toLocaleString();
+            let popup = new maplibregl.Popup()
+                .setLngLat(centroid)
+                .setHTML(allData[i][0] + "<br />" + formattedTime)
+    
+            // add the 'click' event listener
+            map.on('click', clientType + "-coverage-" + i + "-" + rand, function (e) {
+                popup.addTo(map);
+            });            
+        }
+        else {
+            console.log("polygonPoints.length = 0");
+        }
 
     });
 

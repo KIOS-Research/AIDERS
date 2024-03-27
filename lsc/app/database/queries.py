@@ -25,6 +25,15 @@ def getDroneStreamURL(_droneId):
     return result
 
 
+def getDroneConnectionState(_droneId):
+    query = f"SELECT is_connected_with_platform FROM aiders_drone WHERE id = %s LIMIT 1"
+    params = (_droneId, )
+    connector = MySQLConnector()
+    result = connector.executeQuery(query, params, True)
+    connector.close()
+    return result
+
+
 def deactivateSessionsAndCreateNew(_droneId):
     updateQuery = f"UPDATE aiders_livestreamsession SET is_active = 0 WHERE drone_id = %s"
     updateParams = (_droneId, )

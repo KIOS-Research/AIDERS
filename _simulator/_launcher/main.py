@@ -5,6 +5,8 @@ import subprocess
 import time
 import threading
 import os
+import requests
+import json
 
 def read_env_values():
     env_values = {}
@@ -17,6 +19,23 @@ def read_env_values():
     except FileNotFoundError:
         pass
     return env_values
+
+def set_drone_parameter(drone_index, parameter, value):
+    url = 'http://localhost/setDroneParameter'
+    # ip_var.get()
+    data = {
+        "droneIndex": drone_index,
+        "parameter": parameter,
+        "value": value
+    }
+    headers = {'Content-Type': 'application/json'}
+
+    response = requests.post(url, data=json.dumps(data), headers=headers)
+
+    if response.status_code == 200:
+        print('POST request successful')
+    else:
+        print('POST request failed with status code:', response.status_code)
 
 def container_is_running(container_name):
     command = f"docker ps --format '{{{{.Names}}}}' | grep {container_name}"

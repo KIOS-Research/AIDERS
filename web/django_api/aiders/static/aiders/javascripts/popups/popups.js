@@ -134,14 +134,16 @@
         return iDiv;
     }
 
-    function createPopupDialogForLoadClearProcess(_sessionDataList, _title) {
+    function createPopupDialogForLoadClearProcess(_sessionDataList, _title, _isDrone=true) {
         return new Promise((resolve, reject) => {
+            let nameLabel = (_isDrone) ? "Drone Name" : "Name";
             let sessionTable = $("<table class='popupSessionTableSelection'>").append(
-                "<tr><th>Select</th><th>ID</th><th>Count</th><th>Drone Name</th><th>Start Time</th><th>End Time</th></tr>"
+                "<tr><th>Select</th><th>ID</th><th>Count</th><th>" + nameLabel + "</th><th>Start Time</th><th>End Time</th></tr>"
             );
             $.each(_sessionDataList, function (_i, _rowData) {
+                let nameValue = (_isDrone) ? _rowData.droneName : _rowData.name;
                 sessionTable.append(
-                    `<tr><td><input type='checkbox' class='record-select'></td><td>${_rowData.sessionId}</td><td>${_rowData.count}</td><td>${_rowData.droneName}</td><td>${_rowData.startTime}</td><td>${_rowData.endTime}</td></tr>`
+                    `<tr><td><input type='checkbox' class='record-select'></td><td>${_rowData.sessionId}</td><td>${_rowData.count}</td><td>${nameValue}</td><td>${_rowData.startTime}</td><td>${_rowData.endTime}</td></tr>`
                 );
             });
             $("<div>")
@@ -215,9 +217,9 @@
     }
 
 
-    function create_confirmation_dialog_with_textfield(okButton, cancelButton, message, dialogTitle, label, subtext) {
+    function create_confirmation_dialog_with_input(inputType, okButton, cancelButton, message, dialogTitle, label, subtext, initialValue) {
         let defer = $.Deferred();
-        let inputField = $('<input type="text" size="4" class="form-control">');
+        let inputField = $('<input type="' + inputType + '" value="' + initialValue + '" class="form-control">');
         let labelElement = $('<label>' + label + '</label>');
         let helpElement = $('<small class="form-text text-muted">'+subtext+'</small > ');
 
@@ -264,8 +266,7 @@
         return defer.promise();
     }
     
-    
-    // Safeml Remove button defer.resolve second value
+
     function create_detection_confirmation_dialog(detTypes, message, title) {
         let defer = $.Deferred();
         let dialog = $('<div></div>')
@@ -282,7 +283,7 @@
                         id: DETECTION_TYPES.VEHICLE_DETECTOR.refName,
                         text: DETECTION_TYPES.VEHICLE_DETECTOR.refName,
                         click: function () {
-                            defer.resolve(DETECTION_TYPES.VEHICLE_DETECTOR.name, null, null);
+                            defer.resolve(DETECTION_TYPES.VEHICLE_DETECTOR.name);
                             $(this).remove();
                         },
                         width: '130',
@@ -292,7 +293,7 @@
                         id: DETECTION_TYPES.VEHICLE_PERSON_DETECTOR.refName,
                         text: DETECTION_TYPES.VEHICLE_PERSON_DETECTOR.refName,
                         click: function () {
-                            defer.resolve(DETECTION_TYPES.VEHICLE_PERSON_DETECTOR.name, document.getElementById('safemlCheckbox').checked, document.getElementById('deepKnowledgeCheckbox').checked);
+                            defer.resolve(DETECTION_TYPES.VEHICLE_PERSON_DETECTOR.name);
                             $(this).remove();
                         },
                         width: '130',
@@ -301,7 +302,7 @@
                         id: DETECTION_TYPES.DISASTER_CLASSIFICATION.refName,
                         text: DETECTION_TYPES.DISASTER_CLASSIFICATION.refName,
                         click: function () {
-                            defer.resolve(DETECTION_TYPES.DISASTER_CLASSIFICATION.name, null, null);
+                            defer.resolve(DETECTION_TYPES.DISASTER_CLASSIFICATION.name);
                             $(this).remove();
                         },
                         width: '130',

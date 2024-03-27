@@ -34,7 +34,16 @@ function addNewDronesToSidePanel(_droneNames) {
         let droneNameHeader = document.createElement('div');
         droneNameHeader.id = 'sidepanel-drone-name-' + droneName;
         $(droneNameHeader).addClass('col-md-6');
-        droneNameHeader.innerHTML = droneName;        
+
+        let brandLogo = "";
+        if (getDroneAttributeValue(droneName, "droneType") == "MAVLINK") {
+            brandLogo = "<img src='/static/aiders/imgs/mavlink-logo.png' width='22' style='margin-right:6px;' title='MAVLink' />";
+        }
+        else {
+            brandLogo = "<img src='/static/aiders/imgs/dji-logo.png' width='22' style='margin-right:6px;' title='DJI' />";
+        }
+
+        droneNameHeader.innerHTML = "<a href='#' style='padding: 0px; opacity: 1;' onclick='zoomToClient(\"drone\", \""+droneName+"\")'>" + brandLogo + droneName + "</a>";
 
         let droneAltitudeHeader = document.createElement('div');
         droneAltitudeHeader.id = 'sidepanel-drone-altitude-' + droneName;
@@ -160,6 +169,13 @@ function addNewDronesToSidePanel(_droneNames) {
 
 
 
+
+
+
+
+
+
+
 function handleMavlinkTakeoffLand(_droneName) {
     droneState = getDroneAttributeValue(_droneName, "droneState");
     if (droneState == "Landed") {
@@ -178,7 +194,7 @@ function handleMavlinkTakeoff(_droneName) {
     let label = 'Take-Off Altitude:';
     let subtext = 'Enter a value between 10 and 120 meters.'
 
-    create_confirmation_dialog_with_textfield(confirmButton, 'Cancel', msg, title, label, subtext).then(function (inputValue) {
+    create_confirmation_dialog_with_input('number', confirmButton, 'Cancel', msg, title, label, subtext, "50").then(function (inputValue) {
         if (inputValue !== null) {
             if (parseInt(inputValue) >= 10 && parseInt(inputValue) <= 120) { // validate takeoff altitude
                 console.log("Taking off to " + inputValue + "m.");
@@ -254,32 +270,26 @@ function handleMavlinkReturn(_droneName) {
 
 function handleMavlinkTransition(_droneName) {
     let title = _droneName + ' Transition';
-    let msg = 'Transition between Fixed-wing and Multicopter modes. Only applicaple for Vertical Take-Off and Landing (VTOL) UAVs.';
-    let confirmButton = 'Transition';
-    let label = 'Transition to:';
-    let subtext = 'Accepted values are FW and MC.'
+    let msg = '';
+    let transitionTo = '';
 
-    create_confirmation_dialog_with_textfield(confirmButton, 'Cancel', msg, title, label, subtext).then(function (inputValue) {
-        if (inputValue !== null) {
-            if (inputValue == "FW" || inputValue == "MC") {
-                console.log("Transition " + _droneName + " to " + inputValue);
-                showPopupForALittle('#successBox', "Sending transition command to " + _droneName, 5000);
-                url = "mavlinkTransition"
-                data = {
-                    droneName: _droneName,
-                    mode: inputValue,
-                }
-                postMavlinkRequest(url, data);                 
-            }           
-            else {
-                console.log("Invalid transition mode!");
-                showPopupForALittle('#failureBox', "Take-Off aborted: invalid transition mode!", 5000);
+    getDroneAttributeValue(_droneName, "vtolState") == "MC" ? msg = 'Transition to Fixed-wing?' : msg = 'Transition to Multicopter?';
+    getDroneAttributeValue(_droneName, "vtolState") == "MC" ? transitionTo = 'FW' : transitionTo = 'MC';
+
+    create_confirmation_dialog('Transition', 'Cancel', msg, title).then(function (canProceed) {
+        if (canProceed) {
+            console.log("Transition " + _droneName + " to " + transitionTo);
+            showPopupForALittle('#successBox', "Sending transition command to " + _droneName, 5000);
+            url = "mavlinkTransition"
+            data = {
+                droneName: _droneName,
+                mode: transitionTo,
             }
+            postMavlinkRequest(url, data);
         }
         else {
             console.log("Transition cancelled!");
             showPopupForALittle('#failureBox', "Transition cancelled.", 2000);
-
         }
     });
 }
@@ -290,11 +300,10 @@ function handleMavlinkTransition(_droneName) {
 function handleMavlinkSetSpeed(_droneName) {
     let title = _droneName + ' Set Speed';
     let msg = '';
-    let confirmButton = 'Set Speed';
     let label = 'Speed:';
     let subtext = 'Enter speed in meters per second (m/s).'
 
-    create_confirmation_dialog_with_textfield(confirmButton, 'Cancel', msg, title, label, subtext).then(function (inputValue) {
+    create_confirmation_dialog_with_input('number', 'Set Speed', 'Cancel', msg, title, label, subtext, "15").then(function (inputValue) {
         if (inputValue !== null) {
             if (parseInt(inputValue) >= 2) { // validate speed
                 console.log("Setting speed to " + inputValue + "m/s.");
@@ -324,11 +333,10 @@ function handleMavlinkSetSpeed(_droneName) {
 function handleMavlinkKill(_droneName) {
     let title = _droneName + ' Kill';
     let msg = '<b>DANGER:</b> This will disarm a drone irrespective of whether it is landed or flying. Note that the drone will fall out of the sky if this command is used while flying.';
-    let confirmButton = 'Kill';
     let label = 'Type "KILL" to confirm:';
     let subtext = ''
 
-    create_confirmation_dialog_with_textfield(confirmButton, 'Cancel', msg, title, label, subtext).then(function (inputValue) {
+    create_confirmation_dialog_with_input('text', 'Kill', 'Cancel', msg, title, label, subtext, "").then(function (inputValue) {
         if (inputValue !== null) {
             if (inputValue == "KILL") {
                 console.log("Kill " + _droneName);
@@ -418,7 +426,7 @@ function addNewDevicesToSidePanel(_deviceNames) {
         let deviceNameHeader = document.createElement('div');
         deviceNameHeader.id = 'mobile-device-name-' + deviceName;
         $(deviceNameHeader).addClass('col-md-6');
-        deviceNameHeader.innerHTML = deviceName;            
+        deviceNameHeader.innerHTML = "<a href='#' style='padding: 0px; opacity: 1;' onclick='zoomToClient(\"device\", \"" + deviceName + "\")'>" + deviceName + "</a>";            
 
         let deviceBatteryHeader = document.createElement('div');
         deviceBatteryHeader.id = 'mobile-device-battery-' + deviceName;
@@ -498,7 +506,7 @@ function addNewBalorasToSidePanel(_baloraNames) {
         let baloraNameHeader = document.createElement('div');
         baloraNameHeader.id = 'lora-tracker-name-' + baloraName;
         $(baloraNameHeader).addClass('col-md-6');
-        baloraNameHeader.innerHTML = baloraName;
+        baloraNameHeader.innerHTML = "<a href='#' style='padding: 0px; opacity: 1;' onclick='zoomToClient(\"balora\", \"" + baloraName + "\")'>" + baloraName + "</a>";
 
         let baloraBatteryHeader = document.createElement('div');
         baloraBatteryHeader.id = 'lora-tracker-battery-' + baloraName;
@@ -1195,139 +1203,6 @@ function remove_no_baloras_text_from_panel_sections(section_element_ids) {
     });
 }
 
-function add_list_items_to_enable_detections_list(drone_ids) {
-    let allDrones = get_all_drone_info_array();
-    for (let i = 0; i < drone_ids.length; i++) {
-        let droneID = drone_ids[i];
-        let ul = document.getElementById('enable-detections-list');
-        let li = document.createElement('li');
-        let div = document.createElement('div');
-        let toggle = document.createElement('input');
-        let linkText = document.createTextNode(droneID);
-        let PText = document.createElement('p');
-        PText.innerHTML = ul.appendChild(li);
-
-        $(div).addClass('d-flex justify-content-between');
-        div.appendChild(linkText);
-        div.style.fontSize = '13px';
-        div.style.color = '#ffffff';
-        div.style.lineHeight = '2';
-        div.style.background = 'inherit';
-
-        toggle.id = 'detection-toggle-' + droneID;
-        toggle.type = 'checkbox';
-        div.appendChild(toggle);
-
-        li.append(div);
-        li.style.width = '270px';
-        li.id = 'list-item-detection-' + droneID;
-
-        $(toggle).bootstrapToggle('off');
-        get_drone_detection_state(droneID).then(function (detection_drone_state) {
-            if (detection_drone_state === DETECTION_CONNECTED) {
-                $(toggle).bootstrapToggle('on');
-                // start_detection_vid(droneID);
-                for (let i = 0; i < allDrones.length; i++) {
-                    if (droneID === allDrones[i].droneID) {
-                        // update_drone_detection_status_locally(i, DETECTION_CONNECTED);
-                        setDroneAttributeValueByIndex(i, "droneDetectionStatus", DETECTION_CONNECTED);
-                        break;
-                    }
-                }
-            } else {
-                $(toggle).bootstrapToggle('off');
-            }
-
-            $(toggle).on('change', function (event) {
-                toggleDetectionFunctionality(this.id, droneID);
-            });
-        });
-    }
-}
-
-function add_list_items_to_detection_types() {
-    let prototypeModels = get_prototype_models();
-
-    create_first_checkbox();
-    for (let i = 0; i < prototypeModels.length; i++) {
-        let protModel = prototypeModels[i];
-
-        let ul = document.getElementById('detection-types-list');
-        let li = document.createElement('li');
-        let div = document.createElement('div');
-        let toggle = document.createElement('input');
-        let linkText = document.createTextNode(protModel.type);
-
-        // ul.style.background="#3d3e3f"
-        ul.appendChild(li);
-        ul.style.width = '270px';
-        $(div).addClass('d-flex justify-content-between');
-        div.appendChild(linkText);
-        div.style.fontSize = '13px';
-        div.style.color = '#ffffff';
-        div.style.padding = '.15rem 0.55rem';
-        div.style.lineHeight = '2';
-        div.style.background = 'inherit';
-
-        toggle.id = protModel.checkboxID;
-        toggle.type = 'checkbox';
-        toggle.classList.add('object-detection-input');
-        toggle.disabled = true;
-        div.appendChild(toggle);
-
-        li.append(div);
-        li.id = 'list-item-detection-types-' + protModel.type;
-        // li.style.background="inherit"
-
-        // $(toggle).bootstrapToggle('on');
-        $(toggle).on('change', function (event) {
-            toggleDetObject();
-        });
-    }
-
-    function create_first_checkbox() {
-        let protModel = {
-            type: 'All',
-            checkboxID: SHOW_ALL_DETECTIONS_CHECKBOX_ID,
-        };
-
-        let ul = document.getElementById('detection-types-list');
-        let li = document.createElement('li');
-        let div = document.createElement('div');
-        let toggle = document.createElement('input');
-        let linkText = document.createTextNode(protModel.type);
-        ul.appendChild(li);
-        $(div).addClass('d-flex justify-content-between');
-        div.appendChild(linkText);
-        div.style.fontSize = '13px';
-        div.style.color = '#ffffff';
-        div.style.padding = '.15rem 0.55rem';
-        div.style.lineHeight = '2';
-        div.style.background = 'inherit';
-
-        toggle.id = protModel.checkboxID;
-        toggle.type = 'checkbox';
-        toggle.classList.add('object-detection-input');
-        toggle.disabled = true;
-        div.appendChild(toggle);
-
-        li.append(div);
-        li.id = 'list-item-detection-types-' + protModel.type;
-        // li.style.background="inherit"
-
-        // $(toggle).bootstrapToggle('on');
-        $(toggle).on('change', function (event) {
-            toggleDetObject();
-        });
-    }
-}
-
-function remove_list_items_from_enable_detections(deleted_drones_ids) {
-    for (let i = 0; i < deleted_drones_ids.length; i++) {
-        $('#list-item-detection-' + deleted_drones_ids[i]).remove();
-    }
-}
-
 function remove_list_items_to_map_tools(deleted_ids, element_id) {
     for (let i = 0; i < deleted_ids.length; i++) {
         $('#list-item-' + element_id + deleted_ids[i]).remove();
@@ -1425,19 +1300,38 @@ function changeMapStyle(layerid, layer_type) {
 }
 
 
-
-function showAvailableStreams(type) {
+// load a list of available drone sessions in a popup dialog
+function showAvailableDroneSessions(type) {
     let settings = {
-        url: "/api/operations/" + CURRENT_OP + "/getAvailableStreams/" + type,
+        url: "/api/operations/" + CURRENT_OP + "/getAvailableDroneSessions/" + type,
         method: "GET",
     };
     $.ajax(settings).done(function (_response) {
         createPopupDialogForLoadClearProcess(
             JSON.parse(_response),
-            "Select stream to view"
+            "Select Session to view"
         ).then(function (selectedSessions) {
-            console.log(selectedSessions[0].sessionId);
-            window.open('/stream_replay/' + type + '/' + selectedSessions[0].sessionId, '_blank');
+            let sessionId = selectedSessions[selectedSessions.length - 1].sessionId;
+            window.open('/drone_session_replay/' + type + '/' + sessionId, '_blank');
+        });
+    });
+}
+
+
+// load a list of available device sessions in a popup dialog
+function showAvailableDeviceSessions() {
+    let settings = {
+        url: "/api/operations/" + CURRENT_OP + "/getAvailableDeviceSessions",
+        method: "GET",
+    };
+    $.ajax(settings).done(function (_response) {
+        createPopupDialogForLoadClearProcess(
+            JSON.parse(_response),
+            "Select Session to view",
+            false
+        ).then(function (selectedSessions) {
+            let sessionId = selectedSessions[selectedSessions.length - 1].sessionId;
+            window.open('/device_session_replay/' + sessionId, '_blank');
         });
     });
 }
@@ -1881,82 +1775,81 @@ function checkPrototypeCheckbox(toggleID) {
     }
 }
 
-function toggleDetObject() {
-    let show_dets_toggle_pressed = $('#' + SHOW_DETS_TOGGLE_ID).is(':checked');
-    postElementId('Detection Objects' + show_dets_toggle_pressed, show_dets_toggle_pressed);
-    let prototypeModels = get_prototype_models();
-    let detection_arrays = get_detected_objs();
-
-    let show_all_dets_CB_checked = $('#' + SHOW_ALL_DETECTIONS_CHECKBOX_ID).is(':checked');
-
-    let detected_models = detection_arrays[0];
-    let detected_api_objs = detection_arrays[1];
-    console.log('LENGTH OF CARS: ', detected_api_objs.length);
-    if (show_dets_toggle_pressed) {
-        enable_all_detection_checkboxes(prototypeModels);
-
-        for (let i = 0; i < detected_models.length; i++) {
-            let objType = detected_api_objs[i].label;
-            let checkboxID = getCheckboxID(objType, prototypeModels);
-            // console.log("CHECKBOX ID: " + checkboxID)
-            let isCBchecked = $('#' + checkboxID).is(':checked');
-            postElementId(SHOW_ALL_DETECTIONS_CHECKBOX_ID, show_all_dets_CB_checked);
-            if (show_all_dets_CB_checked) {
-                detected_models[i].visibility = true;
-            } else if (isCBchecked) {
-                detected_models[i].visibility = true;
-            } else {
-                detected_models[i].visibility = false;
-            }
-        }
-    } else {
-        disable_all_detection_checkboxes(prototypeModels);
-
-        for (let i = 0; i < detected_models.length; i++) {
-            detected_models[i].visibility = false;
-        }
-    }
-
-    function getCheckboxID(objType, protModels) {
-        for (let i = 0; i < protModels.length; i++) {
-            if (objType === protModels[i].type) {
-                return protModels[i].checkboxID;
-            }
-        }
-
-        return 'NO CHECKBOX ID FOUND';
-    }
-
-    function enable_all_detection_checkboxes(protModels) {
-        for (let i = 0; i < protModels.length; i++) {
-            document.getElementById(protModels[i].checkboxID).disabled = false;
-        }
-
-        document.getElementById(SHOW_ALL_DETECTIONS_CHECKBOX_ID).disabled = false;
-    }
-
-    function disable_all_detection_checkboxes(protModels) {
-        for (let i = 0; i < protModels.length; i++) {
-            document.getElementById(protModels[i].checkboxID).disabled = true;
-        }
-
-        document.getElementById(SHOW_ALL_DETECTIONS_CHECKBOX_ID).disabled = true;
-    }
+function toggleCrowdLocalization(_checked) {
+	showOrHideCrowdLocalizationResultsLayer(_checked);
+	manageWebsocketForCrowdLocalization(_checked);
+}
+function toggleDissasterClassification(_checked) {
+	showOrHideDisasterClassificationResultsLayer(_checked);
+	manageWebsocketForDisasterClassification(_checked);
+}
+function toggleVechicleAndPersonTracker(_checked) {
+	// vehicle-and-person-tracker-visual-option class allow selected
+	var elements = document.getElementsByClassName("vehicle-and-person-tracker-visual-option");
+	// Loop through each element
+	for (var i = 0; i < elements.length; i++) {
+		// If the element is a checkbox
+		if (elements[i].type === "checkbox") {
+			elements[i].disabled = !_checked;
+		}
+	}
+	if (!_checked) {
+		let options = Array.from(document.getElementsByClassName("vehicle-and-person-tracker-visual-option"));
+		for (let i = 0; i < options.length; i++) {
+			let option = options[i];
+			option.checked = false;
+			vechicleAndPersonTrackerOptionClick();
+		}
+	}
+	manageWebsocketForVehicleAndPersonTracker(_checked);
 }
 
+function vechicleAndPersonTrackerOptionClick() {
+	let detection_arrays = get_detected_objs()[0];
+	let detected_api_objs = get_detected_objs()[1];
+	let prototypeModels = get_prototype_models();
 
+	if (detection_arrays) {
+		let options = Array.from(document.getElementsByClassName("vehicle-and-person-tracker-visual-option"));
+		let isAnyOptionChecked = false;
 
-function add_available_detector_types_on_panel() {
-    $.ajax({
-        type: 'GET',
-        url: dutils.urls.resolve('detection_types', { operation_name: CURRENT_OP }),
-        headers: {},
-        success: function (response) {
-            let available_detection_types = response['detection_types'];
-            create_prototype_models(available_detection_types);
-            add_list_items_to_detection_types();
-            let protModelsLayer = get_prot_models_layer(available_detection_types); //get the layer that will host all the detected objects found by drone
-            map.addLayer(protModelsLayer);
-        },
-    });
+		for (let i = 0; i < options.length; i++) {
+			let option = options[i];
+
+			if (option.checked) {
+				isAnyOptionChecked = true;
+
+				if (option.value == "all") {
+					detection_arrays.forEach((detectedObject) => {
+						detectedObject.visibility = true;
+					});
+					break;
+				} else {
+					for (let j = 0; j < detected_api_objs.length; j++) {
+						let objType = detected_api_objs[j].label;
+						let checkboxID = getCheckboxID(objType, prototypeModels);
+						let isCBchecked = $("#" + checkboxID).is(":checked");
+						detection_arrays[j].visibility = isCBchecked;
+					}
+				}
+			}
+		}
+
+		if (!isAnyOptionChecked) {
+			detection_arrays.forEach((detectedObject) => {
+				detectedObject.visibility = false;
+			});
+		}
+	} else {
+		console.error("No detected objects found.");
+	}
+}
+
+function getCheckboxID(objType, protModels) {
+	for (let i = 0; i < protModels.length; i++) {
+		if (objType === protModels[i].type) {
+			return protModels[i].checkboxID;
+		}
+	}
+	return "NO CHECKBOX ID FOUND";
 }

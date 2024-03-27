@@ -1,7 +1,7 @@
 {
 	const LIDAR_POINT_TIMER = 1000;
 	const LIDAR_POINTS_PER_REQUEST = 50000;
-	const LIDAR_WEB_SOCKET_ADDRESS = "ws://localhost:8772/getLidarPointsBySessionId";
+	const LIDAR_WEB_SOCKET_ADDRESS = "ws://" + window.location.hostname + ":" + WS_PORT + "/getLidarPointsBySessionId";
 	const LIDAR_POINTS_LAYER = "lidar_points_session_";
 
 	let LIDAR_WEB_SOCKET;
@@ -10,7 +10,7 @@
 
 	function initWebsocketForLidar(_address) {
 		console.log(_address);
-		let ws = new WebSocket(_address);
+		let ws = new WebSocket(_address + '?token=' + encodeURIComponent(TOKEN));
 		ws.addEventListener("open", function (event) {
 			console.log("Lidar WebSocket connection established.");
 		});
@@ -125,7 +125,7 @@
 		}
 	}
 
-	function createMapLayer(_lidarPoints, _lidarSessionId, _coordinates, maxZ, minZ){
+	function createMapLayer(_lidarPoints, _lidarSessionId, _coordinates, maxZ, minZ) {
 		const { MapboxLayer, PointCloudLayer, COORDINATE_SYSTEM } = deck;
 		return new MapboxLayer({
 			id: LIDAR_POINTS_LAYER + _lidarSessionId,
@@ -139,7 +139,7 @@
 				let min_z = minZ;
 				let max_z = maxZ;
 				let normalized_z = (d.z - min_z) / (max_z - min_z);
-			
+
 				// Calculate R, G, B values
 				let r, g, b;
 				if (normalized_z < 0.3) {
@@ -153,7 +153,7 @@
 					g = (2 - 2 * normalized_z) * 255;
 					b = (2 * normalized_z - 1) * 255;
 				}
-			
+
 				// Return color as [R, G, B]
 				return [r, g, b];
 			},
@@ -179,13 +179,19 @@
 			}
 		}
 		if (!map.getLayer(LIDAR_POINTS_LAYER + _lidarSessionId)) {
-			pointCloudLayer = createMapLayer(_lidarPoints, _lidarSessionId, _coordinates, maxZ, minZ)
+			pointCloudLayer = createMapLayer(_lidarPoints, _lidarSessionId, _coordinates, maxZ, minZ);
 			map.flyTo({
 				center: _coordinates,
 				zoom: 20,
 			});
 		} else {
-			pointCloudLayer = createMapLayer([...map.getLayer(LIDAR_POINTS_LAYER + _lidarSessionId).implementation.props.data, ..._lidarPoints], _lidarSessionId, _coordinates, maxZ, minZ)
+			pointCloudLayer = createMapLayer(
+				[...map.getLayer(LIDAR_POINTS_LAYER + _lidarSessionId).implementation.props.data, ..._lidarPoints],
+				_lidarSessionId,
+				_coordinates,
+				maxZ,
+				minZ
+			);
 			map.removeLayer(LIDAR_POINTS_LAYER + _lidarSessionId);
 		}
 		map.addLayer(pointCloudLayer);
@@ -217,7 +223,7 @@
 				updateLidarPointSessionOnLoadedLidarPointSessionList(_session);
 			}
 			loadLidarPointOnMap(lidarPoints[0], _session.sessionId, _coordinates);
-			_latestLoadedPointId = lidarPoints[0][lidarPoints[0].length-1].id
+			_latestLoadedPointId = lidarPoints[0][lidarPoints[0].length - 1].id;
 			getLidarPointsByUsingSessionId(_session, _latestLoadedPointId, _coordinates);
 		});
 	}
@@ -379,7 +385,7 @@
 			data: JSON.stringify({ sessionId: _sessionId }),
 		};
 		$.ajax(settings).done(function (_response) {
-			console.log(_response);
+			create_popup_for_a_little(SUCCESS_ALERT, _response.message, 3000);
 		});
 	}
 }

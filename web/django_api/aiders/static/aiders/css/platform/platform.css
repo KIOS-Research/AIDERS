@@ -23,7 +23,7 @@
     position: absolute;
     top: 10px;
     left: 310px;
-    z-index: 100;
+    z-index: 999;
     color: white;
     font-weight: bold;
 }
@@ -31,13 +31,31 @@
 #point-selection-message {
     background-color: rgb(15, 88, 27);
     padding: 5px;
-    font-size: 12px;
+    font-size: 13px;
     text-align: center;
     display: none;
     /* white-space: normal; */
-    border: 3px solid #999;
+    border: 3px solid #fff;
     position: absolute;
-    top: 40px;
+    top: 50px;
+    left: 350px;
+    z-index: 100;
+    color: white;
+    font-weight: bold;
+    border-radius: 6px;
+}
+
+#selected-drones-list {
+    background-color: rgb(11, 64, 166);
+    padding: 5px;
+    padding-right: 8px;
+    font-size: 12px;
+    text-align: left;
+    display: none;
+    /* white-space: normal; */
+    border: 3px solid #fff;
+    position: absolute;
+    top: 90px;
     left: 350px;
     z-index: 100;
     color: white;
@@ -197,7 +215,7 @@
 }
 .sidebar .nav-links li .sub-menu a {
     color: #fff;
-    font-size: 15px;
+    /* font-size: 15px; */
     padding: 5px 0;
     white-space: nowrap;
     opacity: 0.6;
@@ -631,21 +649,6 @@ m4 {
     min-width: 220px;
     font-size: 10px;
 }
-
-.sinadraBox {
-    position: relative;
-    display: block;
-    font-family: sans-serif;
-    /* margin-left: 100px; */
-    /* margin-top: 150px; */
-    padding: 10px;
-    width: fit-content;
-    border: 2px solid black;
-    color: #222;
-    min-width: 220px;
-    font-size: 10px;
-}
-
 
 .photo_container {
     width: 320px;

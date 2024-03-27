@@ -1,5 +1,0 @@
-
-<launch>
-  <node pkg="kios_sinadra_scenario_2" name="kios_sinadra_scenario_2" type="RosNode.py" output="screen" required="true"/>
-</launch>
-        

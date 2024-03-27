@@ -4,10 +4,11 @@ import threading
 import time
 
 import pytz
-from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
+from channels.generic.websocket import AsyncWebsocketConsumer
 from django.conf import settings
 from django.shortcuts import get_object_or_404
+
 # from logic.algorithms.lidar_point_cloud import lidar_points
 from logic.Constants import Constants
 
@@ -81,26 +82,6 @@ class ws_platform(AsyncWebsocketConsumer):
             return detected_objects
         except Exception as e:
             return []
-
-    # SafeML
-    @database_sync_to_async
-    def get_detection_frame_safeml_from_db(self, _operationName, _droneName):
-        try:
-            active_detection_session = SafemlDetectionSession.objects.get(
-                is_active=True, operation__operation_name=_operationName, drone__drone_name=_droneName
-            )
-            return active_detection_session.latest_frame_url
-        except Exception as e:
-            return Constants.NO_ACTIVE_DETECTION_SESSION_ERROR_MESSAGE
-    @database_sync_to_async
-    def get_detection_frame_deepknowledge_from_db(self, _operationName, _droneName):
-        try:
-            active_detection_session = DeepKnowledgeDetectionSession.objects.get(
-                is_active=True, operation__operation_name=_operationName, drone__drone_name=_droneName
-            )
-            return active_detection_session.latest_frame_url
-        except Exception as e:
-            return Constants.NO_ACTIVE_DETECTION_SESSION_ERROR_MESSAGE
 
     @database_sync_to_async
     def get_detection_frame_url_from_db(self, drone_name):
@@ -339,9 +320,6 @@ class ws_platform(AsyncWebsocketConsumer):
             drone.update({"video_frame_url": await self.get_video_frame_url_from_db(drone["drone_name"])})
             drone.update({"detected_frame_url": await self.get_detection_frame_url_from_db(drone["drone_name"])})
             drone["detected_objects"] =  await self.get_detection_frame_from_db(operation_name, drone["drone_name"])
-            # SafeML
-            drone["detected_frame_safeml_url"] = await self.get_detection_frame_safeml_from_db(operation_name, drone["drone_name"])
-            drone["detected_frame_deepknowledge_url"] = await self.get_detection_frame_deepknowledge_from_db(operation_name, drone["drone_name"])
             drone.update({"detection": await self.get_detection_from_db(drone["drone_name"])})
         await self.send(json.dumps(data))
 

@@ -10,9 +10,11 @@ def myPrint(_msg):
 
 
 def randomDirection(_stepSize, _previousDirection):
-    directions = ['n', 'e', 's', 'w', 'ne', 'se', 'sw', 'nw']
-    directions.remove(oppositeDirection(_previousDirection)) # avoid backtracking
-    direction = random.choice(directions)
+    directions = ['n', 'ne', 'e', 'se', 's', 'sw', 'w', 'nw']
+    index = directions.index(_previousDirection)
+    # filter the directions that are not more than 90 degrees from the previous direction
+    possible_directions = directions[max(0, index - 1):min(len(directions), index + 2)]
+    direction = random.choice(possible_directions)
     if direction == 'n':
         return 0, _stepSize, direction
     elif direction == 'e':
@@ -31,9 +33,9 @@ def randomDirection(_stepSize, _previousDirection):
         return -_stepSize, _stepSize, direction
 
 
-def oppositeDirection(_direction):
-    opposites = {'n': 's', 'e': 'w', 's': 'n', 'w': 'e', 'ne': 'sw', 'se': 'nw', 'sw': 'ne', 'nw': 'se'}
-    return opposites.get(_direction)
+# def oppositeDirection(_direction):
+#     opposites = {'n': 's', 'e': 'w', 's': 'n', 'w': 'e', 'ne': 'sw', 'se': 'nw', 'sw': 'ne', 'nw': 'se'}
+#     return opposites.get(_direction)
 
 
 def randomHeadingIncrement(_heading, _incrementRange):

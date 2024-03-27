@@ -1,20 +1,20 @@
 #!/usr/bin/env python3
-import os
-import cv2
 import json
-import time
 import logging
+import os
 import threading
+import time
 from datetime import datetime
-import pytz
 from pathlib import Path
 from types import SimpleNamespace
 
-from object_detection.src import mot
-from object_detection.src.utils import (decoder, file_handler, profiler, rect)
+import cv2
 
 # from libs import videoio
 import database.queries
+import pytz
+from object_detection.src import mot
+from object_detection.src.utils import decoder, file_handler, profiler, rect
 
 timezone = pytz.utc # timezone = pytz.timezone(os.environ.get("TZ"))
 
@@ -31,8 +31,8 @@ class Tracker(object):
     instances = []
     def __init__(self, input_file,
                  output_file=None,
-                 drone=None,
-                 operation=None,
+                 droneId=None,
+                 operationId=None,
                  user = None,
                  verbose=0,
                  detection_type_str=None,
@@ -42,8 +42,8 @@ class Tracker(object):
 
         # draw  = 1 or output_file is not None
         draw=True
-        self.drone = drone
-        self.operation = operation
+        self.droneId = droneId
+        self.operationId = operationId
         self.gpuAvailable = True if os.environ.get("NVIDIA_AVAILABLE", "0") == "1" else False
         self.user = user
         self.mot_stop = 0
@@ -135,7 +135,7 @@ class Tracker(object):
                             frameCounter+=1
                             nextDetectionTime += detectionInterval
 
-                            latestLiveStreamFrame = database.queries.getLatestLiveStreamFrame(self.drone)
+                            latestLiveStreamFrame = database.queries.getLatestLiveStreamFrame(self.droneId)
                             currentFrame = cv2.imread(latestLiveStreamFrame[0])
                             # currentFrame = self.stream.read()
 
@@ -169,7 +169,7 @@ class Tracker(object):
 
                                 # run only if frame has detected objects
                                 if self.mot.frame_has_detected_object:
-                                    telemetry = database.queries.getDroneLatestTelemetry(self.drone) # get latest drone telemetry
+                                    telemetry = database.queries.getDroneLatestTelemetry(self.droneId) # get latest drone telemetry
                                     # exporting results
                                     for track in self.mot.visible_tracks():
 
@@ -178,12 +178,13 @@ class Tracker(object):
                                         x,y,w,h = rect.get_center_wh(track.tlbr)
 
                                         # calculate detected object position
+                                        # telemetry - lat, lon, alt, heading, gimbal_angle
                                         dist_gps, lat2, long2 = track.calc_dist_gps_coords(
                                             (x, y, w, h), telemetry[2], (telemetry[0], telemetry[1]), telemetry[3], telemetry[4], imH, imW
                                         )
-                                        
+
                                         # save the detected object
-                                        database.queries.saveDetectedObject(lat2, long2, track.lbl_str, track.trk_id, dist_gps, self.session, frameId)
+                                        database.queries.saveDetectedObject(lat2, long2, track.lbl_str, track.trk_id, dist_gps, self.operationId, self.droneId, self.session, frameId)
 
                                         # check if it is the first detection
                                         # csv export for new tracks

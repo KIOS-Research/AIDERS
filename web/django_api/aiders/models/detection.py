@@ -133,6 +133,8 @@ class DetectedObject(models.Model):
     track_id = models.IntegerField()
     distance_from_drone = models.FloatField()
     frame = models.ForeignKey(DetectionFrame, on_delete=models.CASCADE)
+    operation = models.ForeignKey("Operation", on_delete=models.CASCADE)
+    drone = models.ForeignKey("Drone", on_delete=models.CASCADE)
 
     def getAllDetectionObjectsOfDroneBetweenTwoTimes(_droneName, _startTime, _endTime):
         return DetectedObject.objects.filter(
@@ -170,9 +172,28 @@ class DetectedDisaster(models.Model):
     time = models.DateTimeField(auto_now_add=True)
     detection_session = models.ForeignKey(
         DetectionSession, on_delete=models.CASCADE)
+    operation = models.ForeignKey("Operation", on_delete=models.CASCADE)
+    drone = models.ForeignKey("Drone", on_delete=models.CASCADE)
     lat = models.FloatField()
     lon = models.FloatField()
     earthquake_probability = models.FloatField()
     fire_probability = models.FloatField()
     flood_probability = models.FloatField()
     frame = models.ForeignKey(DetectionFrame, on_delete=models.CASCADE)
+
+
+# Crowd Localization detections
+class DetectionCrowdLocalizationResults(models.Model):
+    time = models.DateTimeField(auto_now_add=True)
+    detection_session = models.ForeignKey(
+        DetectionSession, on_delete=models.CASCADE)
+    operation = models.ForeignKey("Operation", on_delete=models.CASCADE)
+    drone = models.ForeignKey("Drone", on_delete=models.CASCADE)
+    frame = models.ForeignKey(DetectionFrame, on_delete=models.CASCADE)
+    coordinates = models.TextField()
+
+    # lat = models.FloatField()
+    # lon = models.FloatField()
+    # label = models.CharField(max_length=100)
+    # track_id = models.IntegerField()
+    # distance_from_drone = models.FloatField()

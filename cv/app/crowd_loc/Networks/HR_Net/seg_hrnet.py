@@ -16,6 +16,7 @@ import torch
 import torch._utils
 import torch.nn as nn
 import torch.nn.functional as F
+from crowd_loc.Networks.HR_Net.ESPCN import ESPCN
 
 InstanceNorm2d = nn.InstanceNorm2d
 BN_MOMENTUM = 0.01
@@ -49,7 +50,7 @@ class BasicBlock(nn.Module):
 
         self.conv1 = conv3x3(inplanes, planes, stride)
         self.in1 = InstanceNorm2d(planes, momentum=BN_MOMENTUM, affine=True)
-        self.relu = nn.LeakyReLU(0.1)  # nn.ReLU(inplace=True)
+        self.activation = nn.LeakyReLU(0.1)
 
         self.conv2 = conv3x3(planes, planes)
         self.in2 = InstanceNorm2d(planes, momentum=BN_MOMENTUM, affine=True)
@@ -62,7 +63,7 @@ class BasicBlock(nn.Module):
 
         out = self.conv1(x)
         out = self.in1(out)
-        out = self.relu(out)
+        out = self.activation(out)
         out = self.conv2(out)
         out = self.in2(out)
 
@@ -70,7 +71,7 @@ class BasicBlock(nn.Module):
             residual = self.downsample(x)
 
         out += residual
-        out = self.relu(out)
+        out = self.activation(out)
 
         return out
 
@@ -96,7 +97,7 @@ class Bottleneck(nn.Module):
             planes * self.expansion, momentum=BN_MOMENTUM, affine=True
         )
 
-        self.relu = nn.LeakyReLU(0.1)  # nn.ReLU(inplace=True)
+        self.activation = nn.LeakyReLU(0.1)
         self.downsample = downsample
         self.stride = stride
 
@@ -105,11 +106,11 @@ class Bottleneck(nn.Module):
 
         out = self.conv1(x)
         out = self.in1(out)
-        out = self.relu(out)
+        out = self.activation(out)
 
         out = self.conv2(out)
         out = self.in2(out)
-        out = self.relu(out)
+        out = self.activation(out)
 
         out = self.conv3(out)
         out = self.in3(out)
@@ -118,7 +119,7 @@ class Bottleneck(nn.Module):
             residual = self.downsample(x)
 
         out += residual
-        out = self.relu(out)
+        out = self.activation(out)
 
         return out
 
@@ -149,7 +150,7 @@ class HighResolutionModule(nn.Module):
             num_branches, blocks, num_blocks, num_channels
         )
         self.fuse_layers = self._make_fuse_layers()
-        self.relu = nn.LeakyReLU(0.1)  # nn.LeakyReLU(0.1)  # nn.ReLU(inplace=True)
+        self.activation = nn.LeakyReLU(0.1)
 
     def _check_branches(
         self, num_branches, blocks, num_blocks, num_inchannels, num_channels
@@ -222,7 +223,7 @@ class HighResolutionModule(nn.Module):
 
         return nn.ModuleList(branches)
 
-    def _make_fuse_layers(self):
+    def _make_fuse_layers(self) -> nn.ModuleList:
         if self.num_branches == 1:
             return None
 
@@ -291,7 +292,7 @@ class HighResolutionModule(nn.Module):
                                         momentum=BN_MOMENTUM,
                                         affine=True,
                                     ),
-                                    nn.LeakyReLU(0.1),  # nn.ReLU(inplace=True),
+                                    nn.LeakyReLU(0.1),
                                 )
                             )
                     fuse_layer.append(nn.Sequential(*conv3x3s))
@@ -325,7 +326,7 @@ class HighResolutionModule(nn.Module):
                     )
                 else:
                     y = y + self.fuse_layers[i][j](x[j])
-            x_fuse.append(self.relu(y))
+            x_fuse.append(self.activation(y))
 
         return x_fuse
 
@@ -342,7 +343,7 @@ class HighResolutionNet(nn.Module):
         self.in1 = InstanceNorm2d(64, momentum=BN_MOMENTUM, affine=True)
         self.conv2 = nn.Conv2d(64, 64, kernel_size=3, stride=2, padding=1, bias=False)
         self.in2 = InstanceNorm2d(64, momentum=BN_MOMENTUM, affine=True)
-        self.relu = nn.LeakyReLU(0.1)  # nn.ReLU(inplace=True)
+        self.activation = nn.LeakyReLU(0.1)
 
         # STAGE 1
         self.stage1_cfg = extra["STAGE1"]
@@ -380,9 +381,7 @@ class HighResolutionNet(nn.Module):
         num_channels = [
             num_channels[i] * block.expansion for i in range(len(num_channels))
         ]
-        self.transition2 = self._make_transition_layer(
-            pre_stage_channels, num_channels
-        )  # ([48,96],[48,96,192])
+        self.transition2 = self._make_transition_layer(pre_stage_channels, num_channels)
         self.stage3, pre_stage_channels = self._make_stage(
             self.stage3_cfg, num_channels
         )
@@ -401,33 +400,27 @@ class HighResolutionNet(nn.Module):
         last_inp_channels = int(np.sum(pre_stage_channels))
 
         # HEAD
-        self.last_layer = nn.Sequential(
-            # CONV -> BN -> RELU -> CONV_TRANS -> RELU -> CONV_TRANS
-            nn.Conv2d(
-                in_channels=last_inp_channels,
-                out_channels=last_inp_channels,
-                kernel_size=1,
-                stride=1,
-                padding=0,
-            ),
-            InstanceNorm2d(last_inp_channels, momentum=BN_MOMENTUM, affine=True),
-            nn.LeakyReLU(0.1),  # nn.ReLU(inplace=True),
-            nn.ConvTranspose2d(
-                last_inp_channels, 64, 4, stride=2, padding=1, output_padding=0, bias=True
-            ),
-            nn.LeakyReLU(0.1),  # nn.ReLU(inplace=True),
-            nn.ConvTranspose2d(
-                64, 1, 4, stride=2, padding=1, output_padding=0, bias=True
-            ),
-        )
+        self.last_layer = ESPCN(input_channels=last_inp_channels, upscale_factor=4)
 
-    def _make_transition_layer(self, num_channels_pre_layer, num_channels_cur_layer):
+    def _make_transition_layer(
+        self, num_channels_pre_layer: list, num_channels_cur_layer: list
+    ) -> nn.ModuleList:
+        """Create the transition layers between stages
+
+        Args:
+            num_channels_pre_layer (list): It's a list of numbers for the channels of the previews stage. E.g. [24,48] for stage 2
+            num_channels_cur_layer (list): It's a list of numbers for the channels of the current stage. E.g. [24,48,96] for stage 3
+
+        Returns:
+            nn.ModuleList: A sequential module wrapped in a module list containing all the layers of the transition phase
+        """
         num_branches_cur = len(num_channels_cur_layer)
         num_branches_pre = len(num_channels_pre_layer)
 
         transition_layers = []
         for i in range(num_branches_cur):
             if i < num_branches_pre:
+
                 if num_channels_cur_layer[i] != num_channels_pre_layer[i]:
                     transition_layers.append(
                         nn.Sequential(
@@ -444,7 +437,7 @@ class HighResolutionNet(nn.Module):
                                 momentum=BN_MOMENTUM,
                                 affine=True,
                             ),
-                            nn.LeakyReLU(0.1),  # nn.ReLU(inplace=True),
+                            nn.LeakyReLU(0.1),
                         )
                     )
                 else:
@@ -453,18 +446,20 @@ class HighResolutionNet(nn.Module):
                 conv3x3s = []
                 for j in range(i + 1 - num_branches_pre):
                     inchannels = num_channels_pre_layer[-1]
+
                     outchannels = (
                         num_channels_cur_layer[i]
                         if j == i - num_branches_pre
                         else inchannels
                     )
+
                     conv3x3s.append(
                         nn.Sequential(
                             nn.Conv2d(inchannels, outchannels, 3, 2, 1, bias=False),
                             InstanceNorm2d(
                                 outchannels, momentum=BN_MOMENTUM, affine=True
                             ),
-                            nn.LeakyReLU(0.1),  # nn.ReLU(inplace=True),
+                            nn.LeakyReLU(0.1),
                         )
                     )
                 transition_layers.append(nn.Sequential(*conv3x3s))
@@ -531,10 +526,10 @@ class HighResolutionNet(nn.Module):
         ####### STEM #######
         x = self.conv1(x)
         x = self.in1(x)
-        x = self.relu(x)
+        x = self.activation(x)
         x = self.conv2(x)
         x = self.in2(x)
-        x = self.relu(x)
+        x = self.activation(x)
         #####################
 
         # Stage 1
@@ -561,10 +556,11 @@ class HighResolutionNet(nn.Module):
         # Stage 4
         x_list = []
         for i in range(self.stage4_cfg["NUM_BRANCHES"]):
-            if self.transition3[i] is not None:
+            if self.transition3[i] is not None:  # and i < 3
+                # x_list.append(self.transition3[i](y_list[i]))
                 x_list.append(self.transition3[i](y_list[-1]))
             else:
-                x_list.append(y_list[i])
+                x_list.append((y_list[i]))  # self.transition3[i](y_list[-1])
         x = self.stage4(x_list)
 
         # Upsampling
@@ -612,7 +608,7 @@ class HighResolutionNet(nn.Module):
                 exit()
 
 
-def get_seg_model(pre_train=False):
+def get_seg_model(pre_train=False) -> HighResolutionNet:
     from crowd_loc.Networks.HR_Net.default import _C as hr_config
     from crowd_loc.Networks.HR_Net.default import update_config
 

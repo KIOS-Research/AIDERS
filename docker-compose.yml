@@ -228,46 +228,6 @@ services:
             - ./geo/osm-data:/data/database/
             - ./geo/osm-data:/data/tiles/
 
-
-    # ssm:
-    #     container_name: ssm
-    #     build:
-    #         context: .
-    #         dockerfile: ssm/Dockerfile.ssm
-    #     volumes:
-    #         - ./ssm/app:/app
-    #         - ./_shared_code/database/connection.py:/app/database/connection.py
-    #         - ./db_states.txt:/db_states.txt
-    #     network_mode: host
-    #     env_file:
-    #         - ./.env
-    #     depends_on:
-    #         - db
-
-    # safeml:
-    #     container_name: safeml
-    #     runtime: nvidia                       # nvidia-runtime
-    #     deploy:                               # nvidia-runtime
-    #       resources:                          # nvidia-runtime
-    #         reservations:                     # nvidia-runtime
-    #           devices:                        # nvidia-runtime
-    #             - driver: nvidia              # nvidia-runtime
-    #               device_ids: ['0']           # nvidia-runtime
-    #               capabilities: [gpu,video]   # nvidia-runtime
-    #     build:
-    #         context: .
-    #         dockerfile: safeml/Dockerfile.safeml
-    #     volumes:
-    #         - ./safeml/app:/app
-    #         - ./_shared_code/database/connection.py:/app/database/connection.py
-    #         - ./db_states.txt:/db_states.txt
-    #         - ./web/django_api/aiders/media:/media:rw # django's media folder
-    #     network_mode: 'host'
-    #     env_file:
-    #         - ./.env
-    #     depends_on:
-    #         - db
-
 volumes:
     mysql-data:
         driver: local

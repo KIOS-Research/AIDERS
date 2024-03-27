@@ -10,16 +10,20 @@ from database.connection import MySQLConnector
 import database.queries
 import utils
 from uav import Uav
+from uav2 import Uav2
 
 uavs = {}
 
 
 # instantiate a new Uav object connect to the drone
 # async def connectToUav(_name, _ip, _port, _type, _model, _operationId):
-async def connectToUav(_name, _ip, _port, _model, _operationId):
+async def connectToUav(_name, _ip, _port, _model, _operationId, _protocol, _library):
     if _name not in uavs:
-        print(f"'{_name}' CONNECTING...", flush=True)
-        uav = Uav(_name, _ip, _port, _model, _operationId)
+        print(f"'{_name}' CONNECTING using {_library}... ", flush=True)
+        if _library == "mavsdk":
+            uav = Uav(_name, _ip, _port, _model, _operationId, _protocol) # mavsdk
+        else:
+            uav = Uav2(_name, _ip, _port, _model, _operationId, _protocol) # pymavlink
         uavs[_name] = uav
     else:
         print(f"'{_name}' RECONNECTING...", flush=True)
@@ -28,6 +32,7 @@ async def connectToUav(_name, _ip, _port, _model, _operationId):
         uav.port = _port
         uav.model = _model
         uav.operationId = _operationId
+        uav.protocol = _protocol
 
     await uav.connect()
 

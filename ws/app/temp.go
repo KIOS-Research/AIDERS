@@ -63,7 +63,7 @@ func main() {
 	// Database connection
 	db, err := sqlx.Connect("mysql", "a:a@tcp(127.0.0.1:3306)/aiders")
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 	defer db.Close()
 
@@ -122,13 +122,13 @@ func main() {
 
 	var drones []Drone
 	if err := db.Select(&drones, query); err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 
 	// Convert the result to JSON
 	resultJSON, err := json.MarshalIndent(drones, "", "    ")
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 
 	fmt.Println(string(resultJSON))

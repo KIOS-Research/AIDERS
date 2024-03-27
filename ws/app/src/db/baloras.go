@@ -62,7 +62,7 @@ func GetBaloras(_operationId int) []Balora {
 	// Use NamedQuery to execute the query
 	rows, err := Conn.NamedQuery(query, queryParams)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 	defer rows.Close()
 	// Iterate over the result set and scan into the 'baloras' slice
@@ -70,7 +70,7 @@ func GetBaloras(_operationId int) []Balora {
 	for rows.Next() {
 		var balora Balora
 		if err := rows.StructScan(&balora); err != nil {
-			log.Fatal(err)
+			log.Println(err)
 		}
 
 		baloras = append(baloras, balora)
@@ -78,7 +78,7 @@ func GetBaloras(_operationId int) []Balora {
 
 	// Check for errors from iterating over rows
 	if err := rows.Err(); err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 
 	return baloras

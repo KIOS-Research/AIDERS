@@ -13,6 +13,10 @@ from device import Device
 from lora import LoraMaster
 from constants import droneNames, droneModels, deviceNames, deviceModels, loraMasterNames
 
+from api import app
+from drones_manager import DronesManager
+
+
 
 def signal_handler(signal, frame):
     print("Ctrl+C pressed. Exiting...")
@@ -43,6 +47,7 @@ def main():
     spawnDelay = 0.25
     
     #drones
+    app.drones_manager = DronesManager()
     if numberOfDrones > 0:
         utils.myPrint("\n")
         for i, _ in enumerate(range(numberOfDrones)):
@@ -52,6 +57,7 @@ def main():
             thread.daemon = False  # set the thread as non-daemonic
             thread.start()
             threads.append(thread)
+            app.drones_manager.add_drone(drone)
             time.sleep(spawnDelay)
 
     # devices
@@ -83,9 +89,7 @@ def main():
     utils.myPrint(f"  Devices: {numberOfDevices} ({deviceFrequency}Hz)")
     utils.myPrint(f"     Lora: {numberOfLoraMasters} x {numberOfLoraClients} ({loraFrequency}Hz)")
 
-    
-    rospy.spin() # keep the app running
-
+    app.run(port=8889)   # start the http server
 
 
 if __name__ == '__main__':

@@ -40,8 +40,8 @@ def trackerThread(_data, _sessionId):
     rtmp_url = f"rtmp://{os.environ['NET_IP']}/live/{_data['droneName']}"
     tracker = object_detection.aiders_tracker.Tracker(
         rtmp_url,
-        drone = _data['droneId'],
-        operation = _data['operationId'],
+        droneId = _data['droneId'],
+        operationId = _data['operationId'],
         detection_type_str = _data['detectionType'],
         user = _data['userId'],
         session = _sessionId,

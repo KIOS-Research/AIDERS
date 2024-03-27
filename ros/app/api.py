@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, jsonify, request
 import threading
 
 # custom libs
@@ -62,10 +62,3 @@ def test(droneName):
     ros.subscribers.stopDroneSubscribers(droneName)
     return "200"
 
-
-# Safedrone Post data of GPS reliability
-@app.route('/droneReliableNavigationValue', methods=['POST'])
-def handleReliableNavigation():
-    data = request.get_json()
-    ros.publishers.safeDroneReliableNavigation(data["droneName"], data["reliableNavigation"])
-    return "200"

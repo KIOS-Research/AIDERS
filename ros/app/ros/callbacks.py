@@ -1,15 +1,13 @@
 import json
-import math
 import re
 import time
-from haversine import haversine, Unit
+import math
 
 # custom libs
 import database.queries
-import ros.subscribers
-import ros.publishers
 import httpRequests
-
+import ros.publishers
+import ros.subscribers
 
 #####################################
 ############## DRONES ###############
@@ -84,7 +82,23 @@ def droneTelemetryReceived(_rosMsg, _args):
         missionLogId = mission[0]
     operation = database.queries.getDroneOperationId(droneId)
     operationId = operation[0]
-    database.queries.saveDroneTelemetry(droneId, connectionDuration, _rosMsg, missionLogId, operationId) # save telemetry data to the database    
+
+    fov_polygon = []
+    if _rosMsg.altitude > 1:
+        from camera_footprint_calculator import CameraFootprintCalculator
+        c = CameraFootprintCalculator()
+        fov_polygon = c.getBoundingPolygon(
+            _rosMsg.latitude, 
+            _rosMsg.longitude,   
+            math.radians(68),
+            math.radians(40),
+            _rosMsg.altitude, 
+            math.radians(0),
+            math.radians(_rosMsg.gimbalAngle+90),
+            math.radians(_rosMsg.heading+180 % 360))    
+
+    database.queries.saveDroneTelemetry(droneId, connectionDuration, _rosMsg, missionLogId, operationId, fov_polygon) # save telemetry data to the database    
+
 
 
 # runs when a new drone error message is received

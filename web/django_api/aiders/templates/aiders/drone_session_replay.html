@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+{% load static %}
+<html>
+<head>
+    <link href="{% static 'libs/bootstrap/bootstrap_v4.css' %}" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+
+    <script src="{% static 'libs/maplibre-gl/http_unpkg.com_maplibre-gl@1.15.2_dist_maplibre-gl.js' %}"></script>
+    <link href="{% static 'libs/maplibre-gl/http_unpkg.com_maplibre-gl@1.15.2_dist_maplibre-gl.css' %}" rel="stylesheet" />
+    <script src="{% static 'libs/deck.gl/http_unpkg.com_deck.gl@8.7.11_dist.min.js' %}"></script>
+    <script src="{% static 'libs/mapbox-geocoder-v5/mapbox-gl-geocoder.min.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'libs/mapbox-geocoder-v5/mapbox-gl-geocoder.css' %}" type="text/css" />
+    <script src="{% static 'aiders/javascripts/constants/constants.js' %}" type="text/javascript"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation"></script>
+</head>
+<body style="background-color: #222;">
+ 
+    
+    <div class="geocoder" id="geocoder"></div>
+    {% comment %} <br /> {% endcomment %}
+    <br />
+    <div class="row">
+        <div class="col-md-9" style="padding-left: 75px;">
+            {% comment %} <br /> {% endcomment %}
+            <div style="width: 1280px; text-align: center;">
+                <h1 style="color: white; font-size: 22px;">{{session_data.drone.drone_name}} (Session #{{session_data.session_id}})</h1>
+                <canvas id="canvas" width="1280" height="720"></canvas>
+                <table style="width: 100%; color: white; font-size: 12px;">
+                    <tr>
+                        <td width="33%" style="text-align: left">Frame: <span id="filename"></span></td>
+                        <td width="33%" style="text-align: center">Timestamp: <span id="datetime"></span></td>
+                        <td style="text-align: right"><span id="currentFrameIndex"></span> / {{ frames_with_telemetry|length|add:"-1" }}</td>
+                    </tr>
+                </table>
+                
+                <div id="slider" style="margin: 15px 8px; background-color: orange;"></div>
+                <div style="width: 100%; text-align: center;">
+                    <button class="btn btn-sm btn-light" id="previousFrame" title="Previous frame"><i class="fas fa-step-backward"></i></button>
+                    <button class="btn btn-sm btn-success" id="play" title="Play"><i class="fas fa-play"></i></button>
+                    <button class="btn btn-sm btn-danger" id="pause" title="Stop" disabled><i class="fas fa-stop"></i></button>
+                    <button class="btn btn-sm btn-light" id="nextFrame" title="Next frame"><i class="fas fa-step-forward"></i></button>
+                    <button class="btn btn-sm btn-light" id="flyToClientLocation" title="Re-centre Map" style="float: right; margin-right: 10px;"><i class="fas fa-map-marked-alt"></i></button>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3" style="padding-right: 32px;margin-top: 34px; margin-bottom: 0px;margin-left: -40px;">
+            <div id="map" style="height: 90%;"></div>
+            <div style="width: 88%; border: 2px solid black; border-radius: 3px; background-color: #353535; margin: 5px; padding: 0px 5px; position: absolute; top:0px; left: 15px;">
+                <table style="width: 100%; color: white; font-size: 14px;">
+                    <tr>
+                        <td width="22%" style="text-align: left; font-weight: bold;">Latitude:</td>
+                        <td width="28%"><span id="latitude"></span></td>
+                        <td width="22%" style="text-align: left; font-weight: bold;">Gimbal:</td>
+                        <td><span id="gimbal"></span>&deg;</td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: left; font-weight: bold;">Longitude:</td>
+                        <td><span id="longitude"></span></td>
+                        <td style="text-align: left; font-weight: bold;">Battery:</td>
+                        <td><span id="battery"></span>%</td>
+                    </tr>
+                    <tr>                        
+                        <td style="text-align: left; font-weight: bold;">Altitude:</td>
+                        <td><span id="altitude"></span>m</td>
+                        <td style="text-align: left; font-weight: bold;">CPU Usage:</td>
+                        <td>
+                          {% if session_data.has_monitoring_data %}
+                                <span id="cpu-usage"></span>%
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </td>                        
+                    </tr>
+                    <tr>                        
+                        <td style="text-align: left; font-weight: bold;">Velocity:</td>
+                        <td><span id="velocity"></span>m/s</td>
+                        <td style="text-align: left; font-weight: bold;">CPU Temp:</td>
+                        <td>
+                          {% if session_data.has_monitoring_data %}
+                                <span id="cpu-temp"></span>&deg;C
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </td>                          
+                    </tr>
+                    <tr>                        
+                        <td style="text-align: left; font-weight: bold;">Bearing:</td>
+                        <td><span id="bearing"></span>&deg;</td>
+                        <td style="text-align: left; font-weight: bold;">State:</td>
+                        <td><span id="drone-state"></span></td>
+                    </tr>
+                   
+                </table>
+            </div>
+            
+            <div style="width: 98%; border: 2px solid black; border-radius: 3px; text-align: center; margin-bottom: 25px; padding: 5px; background-color: #333; margin-top: -192px; margin-left: 4px; z-index: 999; position: relative;">
+                <canvas id="altitudeChart"></canvas>
+            </div>
+                        
+            <div style="width: 100%; border: 2px solid white; border-radius: 3px; background-color: #054f05; margin: -10px 0px; padding: 0px 5px; position: relative;">
+                <table style="width: 100%; color: white; font-size: 13px;">
+                    <tr>
+                        <td width="30%" style="text-align: left; font-weight: bold;">Session Duration:</td>
+                        <td><span id="duration"></span>{{session_data.duration}}s</td>
+                        <td width="30%" style="text-align: left; font-weight: bold;">Max Altitude:</td>
+                        <td><span id="max_altitude">{{session_data.max_altitude}}</span>m</td>
+                    </tr>
+                    <tr>
+                        <td width="30%" style="text-align: left; font-weight: bold;">Distance Covered:</td>
+                        <td><span id="distance">{{session_data.distance}}km</span></td>
+                        <td width="30%" style="text-align: left; font-weight: bold;">Max Velocity:</td>
+                        <td><span id="max_velocity">{{session_data.max_velocity}}</span>m/s</td>
+                    </tr>
+                    <tr>
+                        <td width="30%" style="text-align: left; font-weight: bold;">Battery Used:</td>
+                        <td><span id="battery_used">{{session_data.battery_used}}%</span></td>
+                        <td width="30%" style="text-align: left; font-weight: bold;">Max CPU Usage:</td>
+                        <td>
+                            {% if session_data.has_monitoring_data %}
+                                <span id="max_cpu_usage">{{session_data.max_cpu_usage}}</span>%
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </td>                        
+                    </tr>
+                    <tr>
+                        <td width="30%" style="text-align: left; font-weight: bold;">Battery per Min.:</td>
+                        <td><span id="max_velocity">{{session_data.battery_used_per_minute}}</span>%</td>
+                        <td width="30%" style="text-align: left; font-weight: bold;">Max CPU Temp:</td>
+                        <td>
+                            {% if session_data.has_monitoring_data %}
+                                <span id="max_cpu_temp">{{session_data.max_cpu_temp}}</span>&deg;C
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </td>
+                    </tr>                   
+                </table>
+            </div>
+
+        </div>
+    </div>
+
+
+    <script>
+        var USE_ONLINE_MAPS = true;
+    </script>
+
+    <link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.3.0/mapbox-gl-draw.css" type="text/css" />
+    <script src="{% static 'aiders/javascripts/search_bar/geocoder_lat_lng.js' %}" type="text/javascript"></script>
+
+    <script src="{% static 'aiders/javascripts/map/map.js' %}" type="text/javascript"></script>
+
+
+    <script>
+        map.on('load', function () {
+            map.dragRotate.disable();
+            map.touchZoomRotate.disableRotation();
+            $("#geocoder").hide();
+            $(".maplibregl-ctrl").hide();
+
+            var telemetryFramesFromDjango = [{{ frames_with_telemetry|safe }}];
+            telemetryFramesFromDjango = telemetryFramesFromDjango[0]
+            var hasMonitoringData = {{session_data.has_monitoring_data}};
+            var buildMapImages = JSON.parse('{{session_data.build_map_images|escapejs}}');
+            var imagePaths = [];
+            var chartTimes = [];
+            var formattedTimes = [];
+            var coordinates = [];
+            var headings = [];
+            var altitudes = [];
+            var velocities = [];
+            var cpuUsages = [];
+            var cpuTemps = [];
+            var battery_percentages = [];
+            var canvas = document.getElementById('canvas');
+            var ctx = canvas.getContext('2d');
+            var interval;
+            var isPlaying = false;
+
+            console.log(buildMapImages);
+
+            // loop images and create array of image paths and timestamps
+            for (var i = 0; i < telemetryFramesFromDjango.length; i++) {
+                imagePaths.push(telemetryFramesFromDjango[i].frame);
+                coordinates.push([telemetryFramesFromDjango[i].lon, telemetryFramesFromDjango[i].lat]);
+                headings.push(telemetryFramesFromDjango[i].heading);         
+                altitudes.push(telemetryFramesFromDjango[i].alt);         
+                velocities.push(telemetryFramesFromDjango[i].velocity); 
+                battery_percentages.push(telemetryFramesFromDjango[i].battery_percentage);
+                
+                cpuUsages.push(telemetryFramesFromDjango[i].cpu_usage);
+                cpuTemps.push(telemetryFramesFromDjango[i].cpu_temp);
+
+                var jsDate = new Date(telemetryFramesFromDjango[i].time);
+                var hours = jsDate.getHours();
+                var minutes = jsDate.getMinutes();
+                var seconds = jsDate.getSeconds();
+                hours = hours < 10 ? '0' + hours : hours;                
+                minutes = minutes < 10 ? '0' + minutes : minutes;                
+                seconds = seconds < 10 ? '0' + seconds : seconds;                
+                chartTimes.push(hours + ":" + minutes + ":" + seconds + "." + i);
+                var formattedTime = jsDate.toLocaleString();
+                formattedTimes.push(formattedTime);
+            }            
+
+            renderBuildMapImages(buildMapImages);
+
+            // add the image layer
+            map.loadImage('/static/aiders/imgs/arrow.png', function (error, image) {
+                if (error) throw error;
+
+
+                // add the drone's path layer
+                map.addSource('telemetry-points', {
+                    "type": "geojson",
+                    "data": {
+                        "type": "Feature",
+                        "geometry": {
+                            "type": "MultiPoint",
+                            "coordinates": coordinates
+                        }
+                    }
+                });
+                map.addLayer({
+                    "id": 'telemetry-points',
+                    "type": "circle",
+                    "source": 'telemetry-points',
+                    "paint": {
+                        "circle-radius": 3,
+                        "circle-color": "#c33"
+                    }
+                });
+                
+                
+
+                // add the drone's location image
+                map.addImage('drone-position-pin', image);
+
+                // Add the source with initial data
+                map.addSource('drone-position', {
+                    "type": "geojson",
+                    "data": {
+                        "type": "Feature",
+                        "geometry": {
+                            "type": "Point",
+                            "coordinates": [0, 0] // initial coordinates
+                        }
+                    }
+                });
+                map.addLayer({
+                    "id": 'drone-position',
+                    "type": "symbol",
+                    "source": 'drone-position',
+                    "layout": {
+                        'icon-image': 'drone-position-pin',
+                        'icon-size': 1,
+                        "icon-allow-overlap": true, // avoid fading effect
+                    },
+                });
+            
+
+
+                drawImage(0); // load first image
+                map.flyTo({
+                    center: coordinates[0],
+                    zoom: 16,
+                    speed: 2,
+                });                  
+            });
+
+
+
+            // Draw image function
+            function drawImage(index) {
+                var img = new Image();
+                img.onload = function() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    $('#datetime').html(formattedTimes[index]);
+                    $('#filename').html("<a href='" + imagePaths[index] + "' target='_blank'>" + imagePaths[index] + "</a>");
+                    $('#currentFrameIndex').html(index);
+                    updateMapImagePosition(coordinates[index], headings[index]);
+                    updateTelemetryData(index);
+
+                    chart.options.plugins.annotation.annotations.line1.value = chartTimes[index];
+                    chart.update();                    
+                }
+                img.src = imagePaths[index];
+            }
+
+
+            // Function to update the image's position and rotation on the map
+            function updateMapImagePosition(coordinates, rotation) {
+                if (map.getSource('drone-position')) {
+                    map.getSource('drone-position').setData({
+                        "type": "Feature",
+                        "geometry": {
+                            "type": "Point",
+                            "coordinates": coordinates
+                        }
+                    });
+                    
+                    map.setLayoutProperty('drone-position', 'icon-rotate', rotation);
+                }
+            }
+
+            function updateTelemetryData(index) {
+                $('#latitude').html(telemetryFramesFromDjango[index].lat.toFixed(8));
+                $('#longitude').html(telemetryFramesFromDjango[index].lon.toFixed(8));
+                $('#altitude').html(telemetryFramesFromDjango[index].alt.toFixed(2));
+                $('#velocity').html(telemetryFramesFromDjango[index].velocity.toFixed(2));
+                $('#drone-state').html(telemetryFramesFromDjango[index].drone_state);
+                $('#bearing').html(Math.round(telemetryFramesFromDjango[index].heading));
+                $('#gimbal').html(Math.round(telemetryFramesFromDjango[index].gimbal_angle));
+                $('#battery').html(Math.round(telemetryFramesFromDjango[index].battery_percentage));
+
+                if (hasMonitoringData) {
+                    $('#cpu-usage').html(Math.round(telemetryFramesFromDjango[index].cpu_usage));
+                    $('#cpu-temp').html(Math.round(telemetryFramesFromDjango[index].cpu_temp));
+                }
+            }
+
+
+            function renderBuildMapImages(buildMapImages) {
+                for (var i = 0; i < buildMapImages.length; i++) {
+                    map.addSource("build-map-images-source-"+i, {
+                        type: "image",
+                        url: "/media/" + buildMapImages[i]["path"],
+                        coordinates: [
+                            [buildMapImages[i]["top_right"][0], buildMapImages[i]["top_right"][1]],
+                            [buildMapImages[i]["bottom_right"][0], buildMapImages[i]["bottom_right"][1]],
+                            [buildMapImages[i]["bottom_left"][0], buildMapImages[i]["bottom_left"][1]],
+                            [buildMapImages[i]["top_left"][0], buildMapImages[i]["top_left"][1]],
+                        ],
+                    });
+                    map.addLayer({
+                        id: "build-map-images-layer-"+i,
+                        type: "raster",
+                        source: "build-map-images-source-"+i,
+                        paint: { "raster-opacity": 0.8 },
+                    });
+                }
+            }
+
+
+            // Initialize slider
+            $("#slider").slider({
+                min: 0,
+                max: telemetryFramesFromDjango.length - 1,
+                slide: function(event, ui) {
+                    drawImage(ui.value);
+                    clearInterval(interval);
+                    isPlaying = false;                
+                    handleButtonStates(isPlaying);
+                }
+            });
+
+            // Play button
+            $('#play').click(function() {
+                if (isPlaying) {
+                    console.log('Already playing');
+                    return;
+                }
+                isPlaying = true;
+                handleButtonStates(isPlaying);
+                interval = setInterval(function() {
+                    var val = $('#slider').slider("value");
+                    $('#slider').slider("value", val + 1);
+                    drawImage(val); // Draw the image after changing the slider value
+                    if (val >= telemetryFramesFromDjango.length - 1) {
+                        clearInterval(interval);
+                        isPlaying = false;
+                        handleButtonStates(isPlaying);
+                    }
+                }, 250);
+            });
+
+            // Pause button
+            $('#pause').click(function() {
+                clearInterval(interval);
+                isPlaying = false;
+                handleButtonStates(isPlaying);
+            });
+
+            $('#nextFrame').click(function() {
+                var val = $('#slider').slider("value");
+                if (val < telemetryFramesFromDjango.length) {
+                    clearInterval(interval);
+                    isPlaying = false;                
+                    handleButtonStates(isPlaying);
+                    var newVal = val + 1;
+                    $('#slider').slider("value", newVal);
+                    drawImage(newVal); // Draw the image after changing the slider value
+                }
+            });
+
+            $('#previousFrame').click(function() {
+                var val = $('#slider').slider("value");
+                if (val > 0) {
+                    clearInterval(interval);
+                    isPlaying = false;                
+                    handleButtonStates(isPlaying);
+                    var newVal = val - 1;
+                    $('#slider').slider("value", newVal);
+                    drawImage(newVal); // Draw the image after changing the slider value
+                }
+            });
+
+
+            $('#flyToClientLocation').click(function() {
+                var index = $('#slider').slider("value");
+                map.flyTo({
+                    center: coordinates[index],
+                    speed: 0.5,
+                });
+            });
+
+            function handleButtonStates(isPlaying) {
+                if (isPlaying) {
+                    $('#play').prop('disabled', true);
+                    $('#pause').prop('disabled', false);
+                } else {
+                    $('#play').prop('disabled', false);
+                    $('#pause').prop('disabled', true);
+                }
+            }        
+
+
+            let altitudeChartElement = document.getElementById('altitudeChart').getContext('2d');
+
+            const chart = new Chart(altitudeChartElement, {
+                type: 'line',
+                data: {
+                    labels: chartTimes, // array of timestamps
+                    datasets: [{
+                        label: 'Altitude',
+                        data: altitudes, // array of altitudes
+                        fill: false,
+                        tension: 0.1,
+                        pointRadius: 0,
+                        borderColor: 'rgb(75, 75, 192)',
+                        borderWidth: 2,
+                    },
+                    {
+                        label: 'Velocity',
+                        data: velocities,
+                        fill: false,
+                        tension: 0.1,
+                        pointRadius: 0,
+                        borderColor: 'rgb(75, 192, 75)',
+                        borderWidth: 2,
+                    },
+                    {
+                        label: 'Battery',
+                        data: battery_percentages,
+                        fill: false,
+                        tension: 0.1,
+                        pointRadius: 0,
+                        borderColor: 'rgb(255, 50, 50)',
+                        borderWidth: 2,
+                    },
+                    {
+                        label: 'CPU Usage',
+                        data: cpuUsages,
+                        fill: false,
+                        tension: 0.1,
+                        pointRadius: 0,
+                        borderColor: '#e61ed2',
+                        borderWidth: 1,
+                        hidden: true,
+                    },
+                    {
+                        label: 'CPU Temp',
+                        data: cpuTemps,
+                        fill: false,
+                        tension: 0.1,
+                        pointRadius: 0,
+                        borderColor: '#d7e02d',
+                        borderWidth: 1,
+                        hidden: true,
+                    },                                        
+                    ]
+                },
+                options: {
+                    {% comment %} backgroundColor: 'rgba(0, 123, 255, 0.1)', {% endcomment %}
+                    responsive: true,
+                    maintainAspectRatio: false,                    
+                    animation: false,
+                    scales: {
+                        x: {
+                            ticks: {
+                                display: false
+                            }
+                        },
+                        y: {
+                            type: 'linear',
+                            min: 0,
+                            ticks: {
+                                color: 'white'
+                            }
+                        }                        
+                    },
+                    plugins: {
+                        title: {
+                            display: false,
+                            text: 'telemetry'
+                        },
+                        legend: {
+                            display: true,
+                            labels: {
+                                color: 'white'
+                            },
+                        },
+                                          
+                        annotation: {
+                            annotations: {
+                                line1: {
+                                    type: 'line',
+                                    mode: "vertical",
+                                    scaleID: 'x',
+                                    id: 'vline0',
+                                    borderColor: '#dfd427',
+                                    borderWidth: 2,
+                                    value: chartTimes[0], // timestamp of current image
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            
+
+            if (hasMonitoringData) {
+                chart.data.datasets[3].hidden = false;
+                chart.data.datasets[4].hidden = false;
+            }
+
+        });
+    </script>
+
+
+</body>
+</html>

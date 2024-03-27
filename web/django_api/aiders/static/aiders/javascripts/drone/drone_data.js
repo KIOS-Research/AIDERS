@@ -16,10 +16,12 @@
 			document.getElementsByClassName("overlay-section")[0].appendChild(div);
 			div.innerHTML =
 				`<div> <b>Drone:` + droneId + `</b></div>
+				<div><b>Comm. Type: </b> <span id='` + droneId + `_comm_type'></span></div>
 				<div><b>Time: </b> <span id='` + droneId + `_time'></span></div>
 				<div><b>State: </b> <span id='` + droneId + `_drone_state'></span></div>
+				<div id='` + droneId + `_vtol_state_wrapper'><b>VTOL State: </b> <span id='` + droneId + `_vtol_state'></span></div>
 				<div><b>Battery: </b><span id='` + droneId + `_battery_percentage'></span></div>
-				<div><b>Gps signal: </b> <span id='` + droneId + `_gps_signal'></span></div>
+				<div id='` + droneId + `_gps_signal_wrapper'><b>Gps signal: </b> <span id='` + droneId + `_gps_signal'></span></div>
 				<div><b>Satellites: </b><span id='` + droneId + `_satellites'></span></div>
 				<div><b>Latitude: </b><span id='` + droneId + `_latitude'></span></div>
 				<div><b>Longitude: </b><span id='` + droneId + `_longitude'></span></div>
@@ -27,7 +29,7 @@
 				<div><b>Speed: </b><span id='` + droneId + `_velocity'></span></div>
 				<div><b>Bearing: </b><span id='` + droneId + `_heading'></span></div>
 				<div><b>Gimbal: </b><span id='` + droneId + `_gimbal_angle'></span></div>
-				<div><b>CRPS: </b><span id='` + droneId + `_crps'></span></div>`;
+				<div id='` + droneId + `_crps_wrapper'><b>CRPS: </b><span id='` + droneId + `_crps'></span></div>`;
 			// for (let i = 0; i < g_websocketMessage['drones'].length; i++) {
 			//     if (g_websocketMessage['drones'][i]['drone_name'] === droneId) {
 			//         if (g_websocketMessage['drones'][i]['water_sampler_available'] === true) {
@@ -113,7 +115,6 @@
 		document.getElementById(droneId + "_time").textContent = formattedTime;
 		document.getElementById(droneId + "_drone_state").innerHTML = droneObj.drone_state;
 		document.getElementById(droneId + "_battery_percentage").innerHTML = parseFloat(droneObj.battery_percentage).toFixed(0) + "%";
-		document.getElementById(droneId + "_gps_signal").innerHTML = droneObj.gps_signal + "/5";
 		document.getElementById(droneId + "_satellites").innerHTML = droneObj.satellites;
 		document.getElementById(droneId + "_latitude").innerHTML = parseFloat(droneObj.latitude).toFixed(6) + "°";
 		document.getElementById(droneId + "_longitude").innerHTML = parseFloat(droneObj.longitude).toFixed(6) + "°";
@@ -121,7 +122,18 @@
 		document.getElementById(droneId + "_velocity").innerHTML = parseFloat(droneObj.velocity).toFixed(1) + " m/s";
 		document.getElementById(droneId + "_heading").innerHTML = parseFloat(droneObj.heading).toFixed(1) + "°";
 		document.getElementById(droneId + "_gimbal_angle").innerHTML = parseFloat(droneObj.gimbal_angle).toFixed(1) + "°";
-		document.getElementById(droneId + "_crps").innerHTML = droneObj.crpsStatus;
+		document.getElementById(droneId + "_comm_type").innerHTML = droneObj.droneType;
+
+		if (droneObj.droneType == "MAVLINK") {
+			document.getElementById(droneId + "_gps_signal_wrapper").style.display = "none";
+			document.getElementById(droneId + "_crps_wrapper").style.display = "none";
+			document.getElementById(droneId + "_vtol_state").innerHTML = droneObj.vtol_state;
+		}
+		else {
+			document.getElementById(droneId + "_vtol_state_wrapper").style.display = "none";
+			document.getElementById(droneId + "_gps_signal").innerHTML = droneObj.gps_signal + "/5";
+			document.getElementById(droneId + "_crps").innerHTML = droneObj.crpsStatus;
+		}		
 
 		for (let i = 0; i < g_websocketMessage["drones"].length; i++) {
 			if (g_websocketMessage["drones"][i]["drone_name"] === droneId) {

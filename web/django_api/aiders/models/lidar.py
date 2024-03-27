@@ -1,8 +1,8 @@
-from django.contrib.gis.db import models
 from django.contrib.auth import get_user_model
-from django.db.models import Count
+from django.contrib.gis.db import models
+from django.db.models import Avg, Count
 from django.utils import timezone
-from django.db.models import Avg
+from haversine import Direction, Unit, inverse_haversine
 
 
 class LidarPointSession(models.Model):
@@ -71,7 +71,9 @@ class LidarPoint(models.Model):
     lidar_point_session = models.ForeignKey(LidarPointSession, on_delete=models.CASCADE)
 
     def getLidarPointsBySessionIdLatestIdAndLimit(_sessionId, _latestPointId, _limitPoints):
-        lidarPointsFiltered = LidarPoint.objects.filter(lidar_point_session__id=_sessionId, id__gt=_latestPointId)[:_limitPoints]
+        lidarPointsFiltered = LidarPoint.objects.filter(lidar_point_session__id=_sessionId, id__gt=_latestPointId)[
+            :_limitPoints
+        ]
         lidarPointsTelemetry = lidarPointsFiltered[0] if lidarPointsFiltered else None
 
         lidarPointList = [
@@ -116,12 +118,23 @@ class LidarPoint(models.Model):
 
     def getLidarMeshDataNeedForVisualizationBySessionId(_sessionId):
         allLidarPointData = LidarPoint.objects.filter(lidar_point_session=_sessionId)
-        dataForVisualization = {}
+
         # Get the first telemetry value
-        dataForVisualization["latitude"] = allLidarPointData.first().telemetry.lat
-        dataForVisualization["longitude"] = allLidarPointData.first().telemetry.lon
-        dataForVisualization["altitude"] = allLidarPointData.first().telemetry.alt
-        dataForVisualization["path"] = allLidarPointData.first().lidar_point_session.path
-        dataForVisualization["centerX"] = allLidarPointData.aggregate(Avg("x"))
-        dataForVisualization["centerY"] = allLidarPointData.aggregate(Avg("y"))
+        first_telemetry = allLidarPointData.first().telemetry
+        first_session = allLidarPointData.first().lidar_point_session
+
+        avg_x = allLidarPointData.aggregate(Avg("x"))["x__avg"]
+        avg_y = allLidarPointData.aggregate(Avg("y"))["y__avg"]
+
+        new_lat_dy, new_lon_dy = inverse_haversine(
+            (first_telemetry.lat, first_telemetry.lon), avg_y, Direction.NORTH, unit=Unit.METERS
+        )
+        new_lat_dx, new_lon_dx = inverse_haversine((new_lat_dy, new_lon_dy), avg_x, Direction.EAST, unit=Unit.METERS)
+
+        dataForVisualization = {
+            "latitude": new_lat_dx,
+            "longitude": new_lon_dx,
+            "path": first_session.path,
+        }
+
         return dataForVisualization

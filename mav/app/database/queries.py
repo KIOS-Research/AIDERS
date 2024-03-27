@@ -1,6 +1,7 @@
 import os
 from datetime import datetime
 import pytz
+import json
 
 # custom libs
 from database.connection import MySQLConnector
@@ -60,19 +61,31 @@ def createDroneDetectionEntry(_droneId):
     return detectionId
 
 
-def saveDroneTelemetry(_droneId, _secondsOn, _telemetryData, _missionLogId, _operationId):
+def saveDroneTelemetry(_droneId, _secondsOn, _telemetryData, _missionLogId, _operationId, _fov_polygon):
     query = (
         "INSERT INTO aiders_telemetry "
         "(drone_id, lat, lon, alt, heading, velocity, "
         "gps_signal, satellites, homeLat, homeLon, drone_state, mission_log_id, "
-        "gimbal_angle, water_sampler_in_water, battery_percentage, operation_id, secondsOn, time) "
-        "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+        "gimbal_angle, water_sampler_in_water, battery_percentage, vtol_state, operation_id, secondsOn, fov_coordinates, time) "
+        "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
     )
     params = (
         _droneId, _telemetryData["latitude"], _telemetryData["longitude"], _telemetryData["altitude"], _telemetryData["heading"], _telemetryData["velocity"],
         _telemetryData["gpsSignal"], _telemetryData["satelliteNumber"], _telemetryData["homeLatitude"], _telemetryData["homeLongitude"], _telemetryData["droneState"], _missionLogId,
-        _telemetryData["gimbalAngle"], False, _telemetryData["batteryPercentage"], _operationId, _secondsOn, datetime.now(timezone)
+        _telemetryData["gimbalAngle"], False, _telemetryData["batteryPercentage"], str(_telemetryData["vtolState"]), _operationId, _secondsOn, json.dumps(_fov_polygon), datetime.now(timezone)
     )
+    connector = MySQLConnector()
+    connector.executeQuery(query, params, False)
+    connector.close()
+
+
+def saveMavlinkLog(_droneId, _operationId, _msg):
+    query = (
+        "INSERT INTO aiders_mavlinklog "
+        "(drone_id, operation_id, time, message) "
+        "VALUES (%s, %s, %s, %s)"
+    )
+    params = (_droneId, _operationId, datetime.now(timezone), _msg)
     connector = MySQLConnector()
     connector.executeQuery(query, params, False)
     connector.close()

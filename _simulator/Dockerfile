@@ -12,7 +12,11 @@ RUN apt update && apt-get install -y \
     python3-rospy \
     ffmpeg
 
-RUN pip install ffmpeg-python
+# Copy the python dependencies
+COPY requirements.txt /app/requirements.txt
+# Install Python dependencies
+RUN pip install -r /app/requirements.txt
+
 
 # Set the default Python version
 RUN ln -s /usr/bin/python3 /usr/bin/python    
