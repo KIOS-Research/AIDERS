@@ -3,67 +3,13 @@
     let added_drone_api_objs = [];
     let added_drone_models = [];
 
-    start_checking_for_detection_state();
+    create_prototype_models([CAR,PERSON, BICYCLE])
 
-    /*
-     * Check periodically if detection is active and handle it accordingly
-     * */
-    function start_checking_for_detection_state() {
-        setInterval(function () {
-            //Get the detected objects from API. They are not related to drone id
-            //Every detected object from every drone is written on the api and we visualize it.
-            if(g_websocketMessage===undefined) {
-                return;
-            }
-            g_websocketMessage['drones'].forEach(function (drone) {
-                if(!drone.hasOwnProperty("detection")) {
-                    return;
-                }
-            });
-
-            let allDronesArr = get_all_drone_info_array();
-            for (let i = 0; i < allDronesArr.length; i++) {
-                g_websocketMessage['drones'].forEach(function (drone) {
-                    if (drone['drone_name'] == allDronesArr[i].droneID) {
-                        if(drone.hasOwnProperty("detected_objects")) {
-                            objectDetected = drone['detected_objects'];
-                            if (objectDetected !==null && objectDetected.length > 0){
-                                visualize_detected_objects(objectDetected, drone['drone_name']);
-                            }
-                        }
-                    }
-                });
-                get_drone_detection_state(allDronesArr[i].droneID).then(function (
-                    detection_drone_state //Check if the detection stream is connected. We can check that from the API
-                ) {
-                    if (detection_drone_state === DETECTION_CONNECTED && !allDronesArr[i].detVideoStarted) {
-                        let toggle = document.getElementById('detection-toggle-' + allDronesArr[i].droneID);
-                        // update_drone_detection_status_locally(i, DETECTION_CONNECTED);
-                        setDroneAttributeValueByIndex(i, "droneDetectionStatus", DETECTION_CONNECTED);
-                        $(toggle).bootstrapToggle('on');
-                        // start_detection_vid(allDronesArr[i].droneID);
-                        hidePopup('#detection_loading_box');
-                        hidePopup('#detection_fail_box');
-                        let msg = 'Detection successfully started for drone ' + allDronesArr[i].droneID + '!';
-                        showPopupForALittle('#detection_success_box', msg, 3000);
-                        clear_detection_timeout();
-                        allDronesArr[i].detVideoStarted = true;
-                    } else if (detection_drone_state === DETECTION_DISCONNECTED && allDronesArr[i].detVideoStarted) {
-                        clear_detection_timeout();
-                        // update_drone_detection_status_locally(i, DETECTION_DISCONNECTED);
-                        setDroneAttributeValueByIndex(i, "droneDetectionStatus", DETECTION_DISCONNECTED);
-                        let toggleID = 'detection-toggle-' + allDronesArr[i].droneID;
-                        let toggle = document.getElementById(toggleID);
-                        $(toggle).bootstrapToggle('off');
-                        hidePopup('#detection_loading_box');
-                        let msg = 'Live stream for drone ' + allDronesArr[i].droneID + ' just disconnected!';
-                        showPopupForALittle('#detection_fail_box', msg, 4000);
-                        allDronesArr[i].detVideoStarted = false;
-                    }
-                });
-            }
-        }, 1000);
-    }
+    function updatingVehicleAndPersonTrackerResultsOnMap(detectionData) {
+			detectionData.forEach(function (data) {
+				visualize_detected_objects([data], data["drone_name"]);
+			});
+		}
 
     function toggleDetectionFunctionality(toggleID, droneID) {
         let allDrones = get_all_drone_info_array();
@@ -81,11 +27,6 @@
 
         if (pressed) {
             if (droneIndex > -1) {
-                if (allDrones[droneIndex].droneDetectionStatus === DETECTION_CONNECTED) {
-                    //Already connected. Nothing to do here
-                    return;
-                }
-                // SafeML
                 let message =
                     `${DETECTION_TYPES.VEHICLE_DETECTOR.htmlDescr}` +
                     '<br><br>' +
@@ -93,24 +34,10 @@
                     '<br><br>' +
                     `${DETECTION_TYPES.DISASTER_CLASSIFICATION.htmlDescr}` +
                     '<br><br>' +                    
-                    `${DETECTION_TYPES.CROWD_LOCALIZATION.htmlDescr}` +
-                    '<br><br>' +
-
-                    `<label for="safemlCheckbox"><input type="checkbox" id="safemlCheckbox"> SafeML (<b>ONLY WORKS</b> with <b>Vehicle-Person Detector</b>)</input></label>`+
-                    `<label for="deepKnowledgeCheckbox"><input type="checkbox" id="deepKnowledgeCheckbox"> DeepKowledge (<b>ONLY WORKS</b> with <b>Vehicle-Person Detector</b>)</input></label>`;//SafeML
+                    `${DETECTION_TYPES.CROWD_LOCALIZATION.htmlDescr}`
 
                 let title = 'Choose Detector type';
-                // SafeML remove second arg and third arg
-                create_detection_confirmation_dialog(DETECTION_TYPES, message, title).then(function (detectorType, safeMLActivate, deepKowledgeActivate) {
-                    // SafeML
-                    if (safeMLActivate == true){
-                        DetectionSafeMLStartOrStop(droneID, 'Start', 'SAFEML')
-                        create_or_show_safeml_video_elements(droneID, 'safeml')
-                    }
-                    if (deepKowledgeActivate == true){
-                        DetectionSafeMLStartOrStop(droneID, 'Start', 'DEEPKNOWLEDGE')
-                        create_or_show_safeml_video_elements(droneID, 'deepknowledge')
-                    }
+                create_detection_confirmation_dialog(DETECTION_TYPES, message, title).then(function (detectorType) {
                     proceed(detectorType);
                     postElementId('Start Detection', pressed);
                 });
@@ -118,58 +45,13 @@
                 function proceed(detectorType) {
                     // update_drone_detection_status_locally(droneIndex, DETECTION_WANT_TO_CONNECT)
                     update_drone_detection_state_on_api(allDrones[droneIndex].droneID, DETECTION_WANT_TO_CONNECT, detectorType);
-                    let msg =
-                        'Starting Detection for drone ' +
-                        droneID +
-                        '...' +
-                        '<button id="detection_loading_box_btn" type="button" class="close" data-dismiss="alert" aria-label="Close">\n' +
-                        '    <span aria-hidden="true">&times;</span>\n' +
-                        '  </button>';
-                    showPopup('#detection_loading_box', msg);
-                    let timeoutMs = 60000;
-
-                    detection_timeout = setTimeout(
-                        function () //If, even after X seconds, the loading box is still on, remove it, because drone's stream is probably disconnected
-                        {
-                            let allDrones = get_all_drone_info_array();
-                            get_drone_detection_state(droneID).then(function (detection_drone_state) {
-                                if (detection_drone_state !== DETECTION_CONNECTED) {
-                                    let toggle = document.getElementById(toggleID);
-                                    $(toggle).bootstrapToggle('off');
-                                    hidePopup('#detection_loading_box');
-                                    let msg = 'Timeout error: Drone ' + droneID + ' failed to start detection after ' + timeoutMs / 1000 + ' seconds';
-                                    showPopupForALittle('#detection_fail_box', msg, 4000);
-                                    update_drone_detection_state_on_api(allDrones[droneIndex].droneID, DETECTION_WANT_TO_DISCONNECT);
-                                }
-                            });
-                        },
-                        timeoutMs
-                    );
                 }
             } else {
                 console.log('DRONE ID NOT FOUND');
             }
         } else {
-            postElementId('Start Detection', pressed);
-            if (allDrones[droneIndex].droneDetectionStatus === DETECTION_DISCONNECTED) {
-                return;
-            }
             console.log('ABOUT TO DEACTIVATE DETECTION...');
             update_drone_detection_state_on_api(allDrones[droneIndex].droneID, DETECTION_WANT_TO_DISCONNECT);
-            let msg =
-                'Cancelling Detection for drone ' +
-                droneID +
-                '...' +
-                '<button id="detection_loading_box_btn" type="button" class="close" data-dismiss="alert" aria-label="Close">\n' +
-                '    <span aria-hidden="true">&times;</span>\n' +
-                '  </button>';
-            showPopup('#detection_loading_box', msg);
-
-            // SafeML
-            DetectionSafeMLStartOrStop(allDrones[droneIndex].droneID, 'Stop', 'SAFEML')
-            DetectionSafeMLStartOrStop(allDrones[droneIndex].droneID, 'Stop', 'DEEPKNOWLEDGE')
-            remove_det_video_elements_safeml(allDrones[droneIndex].droneID, 'safeml')
-            remove_det_video_elements_safeml(allDrones[droneIndex].droneID, 'deepknowledge')
         }
     }
 
@@ -187,10 +69,8 @@
             let objType = detected_cars[i]["label"]
             let description = ''
             let updated_by_username = ''
-
             if ( detected_cars[i]["description"] ) 
             {   
-                //console.log( detected_cars[i]["description"] )
                 description = detected_cars[i]["description"]
                 updated_by_username = detected_cars[i]['updated_by_username']
             }
@@ -205,9 +85,8 @@
                     break;
                 }
             }
-
             tooltip_html_value = detection_create_tooltip(objID,  objType, description, updated_by_username )
-            
+
             if (found)
             {
                 added_drone_models[found_index].setCoords(location)
@@ -228,7 +107,6 @@
                 if (dupModel === NOT_FOUND_STRING) {
                     continue;
                 }
-
                 dupModel.visibility = get_object_visibility(objType);
                 dupModel.setCoords(location);
                 tb.add(dupModel)
@@ -355,27 +233,40 @@
         clearTimeout(detection_timeout);
     }
 
-    function update_drone_detection_state_on_api(_droneID, _detectionStatus, _detectionType = 'None') {
-        const url = dutils.urls.resolve('detectionStartOrStop', {
-            operation_name: CURRENT_OP,
-            drone_name: _droneID,
-        })
-        const data = {
-            droneName: _droneID,
-            operationName: CURRENT_OP,
-            detectionStatus: _detectionStatus,
-            detectionType: _detectionType
-          };
-        const csrfToken = document.getElementById('csrf').querySelector('input').value
-        fetch(url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': csrfToken,
-            },
-            body: JSON.stringify(data)
-        })
-    }
+    function update_drone_detection_state_on_api(_droneID, _detectionStatus, _detectionType = "None") {
+			const url = dutils.urls.resolve("detectionStartOrStop", {
+				operation_name: CURRENT_OP,
+				drone_name: _droneID,
+			});
+			const data = {
+				droneName: _droneID,
+				operationName: CURRENT_OP,
+				detectionStatus: _detectionStatus,
+				detectionType: _detectionType,
+			};
+			const csrfToken = document.getElementById("csrf").querySelector("input").value;
+			fetch(url, {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+					"X-CSRFToken": csrfToken,
+				},
+				body: JSON.stringify(data),
+			})
+				.then((response) => {
+					if (!response.ok) {
+						throw new Error(`HTTP error! status: ${response.status}`);
+					} else {
+						return response.json();
+					}
+				})
+				.then((data) => {
+					create_popup_for_a_little(SUCCESS_ALERT, "Detector Status has change to " + _detectionStatus, 2000);
+				})
+				.catch((error) => {
+					create_popup_for_a_little(WARNING_ALERT, "There is an error on with " + _detectionType, 2000);
+				});
+		}
 
     
     function create_det_video_elements(drone_ids) {

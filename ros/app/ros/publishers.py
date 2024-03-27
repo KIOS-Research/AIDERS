@@ -1,13 +1,14 @@
-import rospy
 import threading
 import time
+import rospy
 
 # custom libs
 import database.queries
 
+
 # ROS messages
-from std_msgs.msg import String, Int32, Bool
-from kios.msg import GpsInput, MissionCommandDJI, MissionDji, BuildMap
+from kios.msg import BuildMap, GpsInput, MissionCommandDJI, MissionDji
+from std_msgs.msg import Bool, Int32, String
 
 
 # publish a message in the client's handshake topic to confirm communication
@@ -141,10 +142,3 @@ def publishMissionUntilReceived(_droneId, _publisher, _missionMsg, _action):
 
         retries = retries + 1      
         print(f"\nRetrying to send mission command to drone '{_missionMsg.name}' ({retries}).", flush=True)
-
-# Safedrone GPS reliability Publish
-def safeDroneReliableNavigation(_droneName, _command):
-    publisher = rospy.Publisher(f"/{_droneName}/safedrone/reliableNavigation", Bool, queue_size=10)
-    msg = Bool()
-    msg.data = _command
-    publisher.publish(msg)

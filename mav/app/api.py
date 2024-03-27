@@ -21,9 +21,11 @@ async def handleConnectToUav(request):
     operationId = data.get('operationId')
     # type = data.get('type')
     model = data.get('model')
+    protocol = data.get('protocol')
+    library = data.get('library')
     try:
         # await requestHandler.connectToUav(name, ip, port, type, model, operationId)
-        await requestHandler.connectToUav(name, ip, port, model, operationId)
+        await requestHandler.connectToUav(name, ip, port, model, operationId, protocol, library)
         response_data = {"status": "success", "message": "Connected to the drone"}
     except Exception as e:
         response_data = {"status": "error", "message": str(e)}

@@ -229,10 +229,8 @@ echo "Extracting large files..."
 # ${current_dir}/_scripts/extract_tar_xz.sh web/django_api/aiders/static/aiders/cyprus_geolocation
 ${current_dir}/_scripts/extract_tar_and_merge.sh web/django_api/aiders/static/aiders/cyprus_geolocation/platform_geojson_files_buildings.geojson
 ${current_dir}/_scripts/extract_tar_and_merge.sh web/django_api/aiders/static/aiders/cyprus_geolocation/platform_geojson_files_roadnetwork_original.geojson
-${current_dir}/_scripts/extract_tar_and_merge.sh cv/app/crowd_loc/weights/model_best.pth
-${current_dir}/_scripts/extract_tar_and_merge.sh cv/app/crowd_loc/weights/model_best_half_kernels_05.pth
-# SafeML
-${current_dir}/_scripts/extract_tar_and_merge.sh safeml/app/safeml/29092023_Good_Results/wasserstein/train_features.npy
+# ${current_dir}/_scripts/extract_tar_and_merge.sh cv/app/crowd_loc/weights/model_best.pth
+# ${current_dir}/_scripts/extract_tar_and_merge.sh cv/app/crowd_loc/weights/model_best_half_kernels_05.pth
 
 
 ############

@@ -37,12 +37,12 @@ if (!USE_ONLINE_MAPS) {
         ],
     };
 }
-console.log(currentStyle);
+// console.log(currentStyle);
 maplibregl.accessToken = MapBoxToken;
 var map = new maplibregl.Map({
     container: 'map',
     style: currentStyle,
-    zoom: 7,
+    zoom: 8,
     center: [33.0028145, 35.0725358],
 });
 

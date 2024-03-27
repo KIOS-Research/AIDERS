@@ -22,7 +22,7 @@ def getThreads():
 @app.route('/startDroneStreamCapture', methods=['POST'])
 def handleDroneStartStreamCaptureRequest():
     data = request.get_json()
-    print(data)
+    # print(data)
     streamCapture.startDroneStreamCapture(data["droneId"], data["droneName"]) # start capturing live feed frames
     return "200"
 

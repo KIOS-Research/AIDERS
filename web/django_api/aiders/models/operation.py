@@ -5,8 +5,8 @@ from django.contrib.gis.db import models
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.validators import RegexValidator
 from django.utils import timezone
-
 from logic.Constants import Constants
+
 from .user import User
 
 
@@ -30,11 +30,7 @@ class Operation(models.Model):
     operator = models.ForeignKey(get_user_model(), related_name="operations", on_delete=models.CASCADE)
 
     disaster_epicenter_latitude = models.FloatField(null=True, blank=True)
-    disaster_epicenter_longtitude = models.FloatField(null=True, blank=True)
-    dense_area_of_buildings = models.BooleanField(null=True, blank=True)
-    max_extreme_temperature = models.FloatField(null=True, blank=True)
-    risk_of_explosion_and_fire = models.BooleanField(null=True, blank=True)
-    sinadra_active = models.BooleanField(null=True, blank=True)
+    disaster_epicenter_longitude = models.FloatField(null=True, blank=True)
 
     def save(self, *args, **kwargs):
         just_created = False
@@ -69,8 +65,8 @@ class Operation(models.Model):
     def getDisasterEpicenterGPSByOperationId(_operationId):
         try:
             operationObject = Operation.objects.get(id=_operationId)
-            if operationObject.disaster_epicenter_latitude != None and operationObject.disaster_epicenter_longtitude != None:
-                return {"latitude":operationObject.disaster_epicenter_latitude, "longitude":operationObject.disaster_epicenter_longtitude}
+            if operationObject.disaster_epicenter_latitude != None and operationObject.disaster_epicenter_longitude != None:
+                return {"latitude":operationObject.disaster_epicenter_latitude, "longitude":operationObject.disaster_epicenter_longitude}
         except ObjectDoesNotExist:
             return None  # Return None if the operation name is not found
         return None

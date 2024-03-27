@@ -1,3 +1,0 @@
-<launch>
-  <include file="$(find kios_sinadra_scenario_2)/launch/eddi_monitor.launch" />
-</launch>

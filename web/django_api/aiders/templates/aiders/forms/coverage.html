@@ -58,10 +58,10 @@
             <label for="coveragePointsSelected">Show actual paths:</label>
         </div>
         <div class="col-md-4 text-left">            
-            <input type="checkbox" id="coveragePointsSelected" name="coveragePointsSelected">
+            <input type="checkbox" id="coveragePointsSelected" name="coveragePointsSelected" checked="checked">
         </div>
 
-    </div>    
+    </div>
 
   </form> 
 </div>
@@ -111,9 +111,8 @@ $(document).ready(function () {
     // Set the default time to now
     var now = new Date();
     var hours = ("0" + now.getHours()).slice(-2);
-    var currentTime = hours + ":00";
-    $('#coverageTimeFrom').val(currentTime);
-    $('#coverageTimeTo').val(currentTime);
+    $('#coverageTimeFrom').val(hours + ":00");
+    $('#coverageTimeTo').val(hours + ":59");
     
 });
 

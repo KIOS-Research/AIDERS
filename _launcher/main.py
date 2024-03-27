@@ -1,17 +1,15 @@
+import configparser
 import os
-import time
 import subprocess
 import threading
-import netifaces as ni
-import configparser
-import webbrowser
-import pytz
-from datetime import datetime
-
+import time
 import tkinter as tk
-from tkinter import ttk
-from tkinter import PhotoImage
-from tkinter import messagebox
+import webbrowser
+from datetime import datetime
+from tkinter import PhotoImage, messagebox, ttk
+
+import netifaces as ni
+import pytz
 
 
 def buttonStartPressed():
@@ -87,16 +85,12 @@ def buttonStartPressed():
             "CV_API_PORT": config.get("Settings", "CV_API_PORT"),
             "ALG_API_PORT": config.get("Settings", "ALG_API_PORT"),
             "MAV_API_PORT": config.get("Settings", "MAV_API_PORT"),
-            "SSM_API_PORT": config.get("Settings", "SSM_API_PORT"),
-            "SAFEML_API_PORT": config.get("Settings", "SAFEML_API_PORT"),
             "WS_PORT": config.get("Settings", "WS_PORT"),
             "ROS_MYSQL_CONNECTION_POOLS": config.get("Settings", "ROS_MYSQL_CONNECTION_POOLS"),
             "LSC_MYSQL_CONNECTION_POOLS": config.get("Settings", "LSC_MYSQL_CONNECTION_POOLS"),
             "CV_MYSQL_CONNECTION_POOLS": config.get("Settings", "CV_MYSQL_CONNECTION_POOLS"),
             "ALG_MYSQL_CONNECTION_POOLS": config.get("Settings", "ALG_MYSQL_CONNECTION_POOLS"),
             "MAV_MYSQL_CONNECTION_POOLS": config.get("Settings", "MAV_MYSQL_CONNECTION_POOLS"),
-            "SSM_MYSQL_CONNECTION_POOLS": config.get("Settings", "SSM_MYSQL_CONNECTION_POOLS"),
-            "SAFEML_MYSQL_CONNECTION_POOLS": config.get("Settings", "SAFEML_MYSQL_CONNECTION_POOLS"),
             "NVIDIA_AVAILABLE": nvidiaAvailable,
             "DEBUG": debugMode,
             "DJANGO_ALLOWED_HOSTS": "* localhost 127.0.0.1",

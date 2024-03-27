@@ -6,36 +6,35 @@ import (
 
 // represents the structure of the drones json object
 type Drone struct {
-	ID                        int               `db:"id" json:"id"`
-	DroneName                 string            `db:"drone_name" json:"drone_name"`
-	IP                        *string           `db:"ip" json:"ip"`
-	Type                      string            `db:"type" json:"type"`
-	Model                     string            `db:"model" json:"model"`
-	Port                      *string           `db:"port" json:"port"`
-	LiveStreamUrl             *string           `db:"live_stream_url" json:"live_stream_url"`
-	CameraModel               string            `db:"camera_model" json:"camera_model"`
-	OperationID               *int              `db:"operation_id" json:"operation_id"`
-	IsConnectedWithPlatform   bool              `db:"is_connected_with_platform" json:"is_connected_with_platform"`
-	MissionID                 *int              `db:"mission_id" json:"mission_id"`
-	BallisticAvailable        bool              `db:"ballistic_available" json:"ballistic_available"`
-	BuildMapActivated         bool              `db:"build_map_activated" json:"build_map_activated"`
-	DroneMovementAvailable    bool              `db:"drone_movement_available" json:"drone_movement_available"`
-	LidarAvailable            bool              `db:"lidar_available" json:"lidar_available"`
-	MultispectralAvailable    bool              `db:"multispectral_available" json:"multispectral_available"`
-	WaterSamplerAvailable     bool              `db:"water_sampler_available" json:"water_sampler_available"`
-	WeatherStationAvailable   bool              `db:"weather_station_available" json:"weather_station_available"`
-	RequestedCollaboration    *bool             `db:"requested_collaboration" json:"requested_collaboration"`
-	RespondingToCollaboration *bool             `db:"responding_to_collaboration" json:"responding_to_collaboration"`
-	Time                      string            `db:"time" json:"time"`
-	Telemetry                 Telemetry         `db:"" json:"telemetry"`
-	VideoFrameURL             *string           `db:"video_frame_url" json:"video_frame_url"`
-	DetectedObjects           *[]DetectedObject `db:"" json:"detected_objects"`
-	DetectedFrameUrl          *string           `db:"detected_frame_url" json:"detected_frame_url"`
-	Detection                 Detection         `db:"" json:"detection"`
-	DetectionSessionId        *int              `db:"detection_session_id" json:"detection_session_id"`
-	DetectionActive           *bool             `db:"detection_active" json:"detection_active"`
-	Weather                   Weather           `db:"" json:"weather"`
-	BuildMapLastImage         string            `db:"build_map_last_image" json:"build_map_last_image"`
+	ID                        int       `db:"id" json:"id"`
+	DroneName                 string    `db:"drone_name" json:"drone_name"`
+	IP                        *string   `db:"ip" json:"ip"`
+	Type                      string    `db:"type" json:"type"`
+	Model                     string    `db:"model" json:"model"`
+	Port                      *string   `db:"port" json:"port"`
+	LiveStreamUrl             *string   `db:"live_stream_url" json:"live_stream_url"`
+	CameraModel               string    `db:"camera_model" json:"camera_model"`
+	OperationID               *int      `db:"operation_id" json:"operation_id"`
+	IsConnectedWithPlatform   bool      `db:"is_connected_with_platform" json:"is_connected_with_platform"`
+	MissionID                 *int      `db:"mission_id" json:"mission_id"`
+	BallisticAvailable        bool      `db:"ballistic_available" json:"ballistic_available"`
+	BuildMapActivated         bool      `db:"build_map_activated" json:"build_map_activated"`
+	DroneMovementAvailable    bool      `db:"drone_movement_available" json:"drone_movement_available"`
+	LidarAvailable            bool      `db:"lidar_available" json:"lidar_available"`
+	MultispectralAvailable    bool      `db:"multispectral_available" json:"multispectral_available"`
+	WaterSamplerAvailable     bool      `db:"water_sampler_available" json:"water_sampler_available"`
+	WeatherStationAvailable   bool      `db:"weather_station_available" json:"weather_station_available"`
+	RequestedCollaboration    *bool     `db:"requested_collaboration" json:"requested_collaboration"`
+	RespondingToCollaboration *bool     `db:"responding_to_collaboration" json:"responding_to_collaboration"`
+	Time                      string    `db:"time" json:"time"`
+	Telemetry                 Telemetry `db:"" json:"telemetry"`
+	VideoFrameURL             *string   `db:"video_frame_url" json:"video_frame_url"`
+	DetectedFrameUrl          *string   `db:"detected_frame_url" json:"detected_frame_url"`
+	Detection                 Detection `db:"" json:"detection"`
+	DetectionSessionId        *int      `db:"detection_session_id" json:"detection_session_id"`
+	DetectionActive           *bool     `db:"detection_active" json:"detection_active"`
+	Weather                   Weather   `db:"" json:"weather"`
+	BuildMapLastImage         string    `db:"build_map_last_image" json:"build_map_last_image"`
 }
 
 // represents the structure of the drone's telemetry
@@ -54,6 +53,8 @@ type Telemetry struct {
 	Lon                 float64 `db:"lon" json:"lon"`
 	Alt                 float64 `db:"alt" json:"alt"`
 	DroneState          string  `db:"drone_state" json:"drone_state"`
+	VtolState           *string `db:"vtol_state" json:"vtol_state"`
+	FOVCoordinates      *string `db:"fov_coordinates" json:"fov_coordinates"`
 	SecondsOn           float64 `db:"secondsOn" json:"secondsOn"`
 	GimbalAngle         float64 `db:"gimbal_angle" json:"gimbal_angle"`
 	WaterSamplerInWater bool    `db:"water_sampler_in_water" json:"water_sampler_in_water"`
@@ -77,28 +78,8 @@ type Weather struct {
 	Heading       *float64 `db:"weather_heading" json:"heading"`
 }
 
-type DetectedObject struct {
-	ID                 int     `db:"id" json:"id"`
-	Time               string  `db:"time" json:"time"`
-	DetectionSessionId *int    `db:"detection_session_id" json:"detection_session_id"`
-	Lat                float64 `db:"lat" json:"lat"`
-	Lon                float64 `db:"lon" json:"lon"`
-	Label              string  `db:"label" json:"label"`
-	TrackId            int     `db:"track_id" json:"track_id"`
-	DistanceFromDrone  float64 `db:"distance_from_drone" json:"distance_from_drone"`
-	FrameId            int     `db:"frame_id" json:"frame_id"`
-	Description        *string `db:"description" json:"description"`
-	// TODO:
-	//    `db:"description"`
-	//    `db:"updated_by_username"`
-}
-
 type DroneQueryParams struct {
 	OperationID int `db:"operation_id"`
-}
-
-type DetectedObjectsQueryParams struct {
-	DetectionSessionId int `db:"detection_session_id"`
 }
 
 func GetDrones(_operationId int) []Drone {
@@ -122,11 +103,13 @@ func GetDrones(_operationId int) []Drone {
 			t.lon,
 			t.alt,
 			t.drone_state,
+			t.vtol_state,
 			t.secondsOn,
 			t.gimbal_angle,
 			t.water_sampler_in_water,
 			t.operation_id AS telemetry_operation_id,
 			t.mission_log_id,
+			t.fov_coordinates,
 
 			ls.latest_frame_url AS video_frame_url,
 
@@ -186,7 +169,7 @@ func GetDrones(_operationId int) []Drone {
 	// Use NamedQuery to execute the query
 	rows, err := Conn.NamedQuery(query, queryParams)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 	defer rows.Close()
 
@@ -195,44 +178,14 @@ func GetDrones(_operationId int) []Drone {
 	for rows.Next() {
 		var drone Drone
 		if err := rows.StructScan(&drone); err != nil {
-			log.Fatal(err)
+			log.Println(err)
 		}
-
-		// check if drone's detection is active
-		if drone.DetectionActive != nil && *drone.DetectionActive {
-			// get the detected objects form the last frame of the current session
-			detectedObjectsQuery := `
-				SELECT o.*, d.description
-				FROM aiders_detectedobject o
-				JOIN aiders_detectionframe f ON o.frame_id = f.id
-				LEFT JOIN aiders_detectedobjectdescription d ON o.track_id = d.track_id
-				WHERE f.detection_session_id = :detection_session_id
-				  AND f.id = (SELECT MAX(id) FROM aiders_detectionframe WHERE detection_session_id = :detection_session_id)
-				`
-			detectedObjectsQueryParams := DetectedObjectsQueryParams{DetectionSessionId: *drone.DetectionSessionId}
-			rows2, err2 := Conn.NamedQuery(detectedObjectsQuery, detectedObjectsQueryParams)
-			if err2 != nil {
-				log.Fatal(err2)
-			}
-			defer rows2.Close()
-
-			var detectedObjects []DetectedObject
-			for rows2.Next() {
-				var detectedObject DetectedObject
-				if err2 := rows2.StructScan(&detectedObject); err2 != nil {
-					log.Fatal(err2)
-				}
-				detectedObjects = append(detectedObjects, detectedObject)
-			}
-			drone.DetectedObjects = &detectedObjects // attach detected objects to the drone object
-		}
-
 		drones = append(drones, drone)
 	}
 
 	// check for errors from iterating over rows
 	if err := rows.Err(); err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 
 	return drones
@@ -277,7 +230,7 @@ func GetDronesVideoFrames(_operationId int) []DroneVideoFrames {
 	// Use NamedQuery to execute the query
 	rows, err := Conn.NamedQuery(query, queryParams)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 	defer rows.Close()
 
@@ -286,14 +239,14 @@ func GetDronesVideoFrames(_operationId int) []DroneVideoFrames {
 	for rows.Next() {
 		var droneVideoFrames DroneVideoFrames
 		if err := rows.StructScan(&droneVideoFrames); err != nil {
-			log.Fatal(err)
+			log.Println(err)
 		}
 		drones = append(drones, droneVideoFrames)
 	}
 
 	// check for errors from iterating over rows
 	if err := rows.Err(); err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 
 	return drones

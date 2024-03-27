@@ -72,3 +72,6 @@ gunicorn
 # for operation coverage polygons
 alpha-shapes
 shapely
+
+# Calculate gps points distance
+haversine

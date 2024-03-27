@@ -27,8 +27,6 @@ droneUrls = [
     path("detection", DetectionRetrieveAPIView.as_view(), name="detection"),
     path("detectionStartOrStop", DetectionStartOrStopAPIView.as_view(), name="detection_start_or_stop"),
     
-    # SafeML
-    path("detectionSafeMLStartOrStop",DetectionSafeMLStartOrStopAPIView.as_view(), name="detection_safeml_start_or_stop"),
     # Lidar
     path("lidarStartOrStop", LidarStartOrStopAPIView.as_view(), name="lidar_start_or_stop"),
 
@@ -88,8 +86,9 @@ operationUrls = [
     path("add_manual_object_location", ManuallySetObjectLocationAddAPIView.as_view(), name="add_manual_object_location"),
     path("update_manual_object/<id>", ManuallySetObjectUpdateAPIView.as_view(), name="update_manual_object"),
 
-    # stream replay - get available streams
-    path("getAvailableStreams/<stream_type>", getAvailableStreams, name="getAvailableStreams"),
+    # session replays - get available sessions
+    path("getAvailableDroneSessions/<stream_type>", getAvailableDroneSessions, name="getAvailableDroneSessions"),
+    path("getAvailableDeviceSessions", getAvailableDeviceSessions, name="getAvailableDeviceSessions"),
 
 ]
 
@@ -128,23 +127,24 @@ urlpatterns = [
     path("safeDronesStart", safeDronesStart, name="safeDronesStart"),
     path("safeDronesStop", safeDronesStop, name="safeDronesStop"),
     path("safeDronesResults", safeDronesResults, name="safeDronesResults"),
-    path("sinadraStartOrStop", sinadraStartOrStop, name="sinadraStartOrStop"),
-    path("sinadraResults", sinadraResults, name="sinadraResults"),
     path("users/", UserList.as_view(), name="users"),
     path("users/<int:pk>/", UserDetail.as_view(), name="user_detail"),
     path("", include("django.contrib.auth.urls")),
     path("", RedirectView.as_view(pattern_name="login", permanent=False)),
     path("api-auth/", include("rest_framework.urls"), name="api_auth"),
-    path("testing", TestingBuildMap.as_view(), name="testing"),
     re_path(r"^redoc/$", schema_view.with_ui("redoc", cache_timeout=0), name="schema-redoc"),
     re_path(r"^swagger(?P<format>\.json|\.yaml)$", schema_view.without_ui(cache_timeout=0), name="schema-json"),
     re_path(r"^swagger/$", schema_view.with_ui("swagger", cache_timeout=0), name="schema-swagger-ui"),
+
+    # TOKEN VALIDATION
+    # path('validate-token/', validate_token, name='validate-token'),
 
     # MAVLINK
     path('mavlinkAdd', mavlinkAddFormView, name='mavlinkAdd'),
     path('mavlinkEdit/<pk>', mavlinkEditFormView, name='mavlinkEdit'),
     path('mavlinkManage/<pk>', mavlinkManageView, name='mavlinkManage'),
     path('mavlinkCheckConnection/<pk>', mavlinkCheckConnection, name='mavlinkCheckConnection'),
+    path('mavlinkGetLogs/<operation_id>/<last_log_id>', mavlinkGetLogs, name='mavlinkGetLogs'),
 
     path("mavlinkConnect", mavlinkConnect, name="mavlinkConnect"),
     path("mavlinkDisconnect", mavlinkDisconnect, name="mavlinkDisconnect"),
@@ -161,8 +161,9 @@ urlpatterns = [
     # operation coverage points
     path("coverage_points/<operation_name>", operation_coverage_points, name="coverage-points"),
 
-    # stream replay
-    path("stream_replay/<stream_type>/<session_id>", stream_replay, name="stream-replay"),
+    # drone session replay
+    path("drone_session_replay/<stream_type>/<session_id>", drone_session_replay, name="drone-session-replay"),
+    path("device_session_replay/<session_id>", device_session_replay, name="device-session-replay"),
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

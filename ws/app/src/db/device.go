@@ -105,7 +105,7 @@ func GetDevices(_operationId int) []Device {
 	// Use NamedQuery to execute the query
 	rows, err := Conn.NamedQuery(query, queryParams)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 	defer rows.Close()
 	// Iterate over the result set and scan into the 'devices' slice
@@ -113,7 +113,7 @@ func GetDevices(_operationId int) []Device {
 	for rows.Next() {
 		var device Device
 		if err := rows.StructScan(&device); err != nil {
-			log.Fatal(err)
+			log.Println(err)
 		}
 
 		devices = append(devices, device)
@@ -121,7 +121,7 @@ func GetDevices(_operationId int) []Device {
 
 	// Check for errors from iterating over rows
 	if err := rows.Err(); err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 
 	return devices

@@ -1,5 +1,6 @@
-import os
+import json
 from datetime import datetime
+
 import pytz
 
 # custom libs
@@ -97,26 +98,39 @@ def getDroneLatestTelemetry(_droneId):
     return result
 
 
-def saveDetectedObject(_lat, _lon, _label, _trackId, _distance, _sessionId, _frameId):
+def saveDetectedObject(_lat, _lon, _label, _trackId, _distance, _operationId, _droneId, _sessionId, _frameId):
     query = (
         "INSERT INTO aiders_detectedobject "
-        "(lat, lon, label, track_id, distance_from_drone, detection_session_id, frame_id, time) "
-        "VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
+        "(lat, lon, label, track_id, distance_from_drone, operation_id, drone_id, detection_session_id, frame_id, time) "
+        "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
     )
-    params = (_lat, _lon, _label, _trackId, _distance, _sessionId, _frameId, datetime.now(timezone))
+    params = (_lat, _lon, _label, _trackId, _distance, _operationId, _droneId, _sessionId, _frameId, datetime.now(timezone))
 
     connector = MySQLConnector()
     connector.executeQuery(query, params, False)
     connector.close()
 
 
-def saveDetectedDisaster(_lat, _lon, _earthquake, _fire, _flood, _sessionId, _frameId):
+def saveDetectedDisaster(_lat, _lon, _earthquake, _fire, _flood, _operationId, _droneId, _sessionId, _frameId):
     query = (
         "INSERT INTO aiders_detecteddisaster "
-        "(lat, lon, earthquake_probability, fire_probability, flood_probability, detection_session_id, frame_id, time) "
-        "VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
+        "(lat, lon, earthquake_probability, fire_probability, flood_probability, operation_id, drone_id, detection_session_id, frame_id, time) "
+        "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
     )
-    params = (_lat, _lon, _earthquake, _fire, _flood, _sessionId, _frameId, datetime.now(timezone))
+    params = (_lat, _lon, _earthquake, _fire, _flood, _operationId,_droneId, _sessionId, _frameId, datetime.now(timezone))
+
+    connector = MySQLConnector()
+    connector.executeQuery(query, params, False)
+    connector.close()
+
+
+def saveCrowdLocalizationResults(_droneId, _operationId, _sessionId, _frameId, _detectedCoords):
+    query = (
+        "INSERT INTO aiders_detectioncrowdlocalizationresults "
+        "(drone_id, operation_id, detection_session_id, frame_id, coordinates, time) "
+        "VALUES (%s, %s, %s, %s, %s, %s)"
+    )
+    params = (_droneId, _operationId, _sessionId, _frameId, json.dumps(_detectedCoords), datetime.now(timezone))
 
     connector = MySQLConnector()
     connector.executeQuery(query, params, False)

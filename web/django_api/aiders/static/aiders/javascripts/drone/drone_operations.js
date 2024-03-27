@@ -126,7 +126,8 @@
             drone_MS_BuildMapStatus: BUILD_MAP_INITIAL_STATE,
             droneMissionStartDateTime: '',
             dronePK: dronePK,
-            droneType: droneType
+            droneType: droneType,
+            vtolState: undefined
         });
 
         allDroneInfo = create_new_drone_model(allDroneInfo.length - 1);

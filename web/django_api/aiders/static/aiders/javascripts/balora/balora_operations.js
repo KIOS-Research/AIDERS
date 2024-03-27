@@ -5,6 +5,21 @@
 {
     let allBaloraInfo = [];
 
+
+    function get_balora_index(baloraID) {
+        for (let i = 0; i < allBaloraInfo.length; i++) {
+            if (baloraID === allBaloraInfo[i].baloraID) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    function getBaloraAttributeValue(_baloraName, _attrName) {
+        let index = get_balora_index(_baloraName);
+        return allBaloraInfo[index][_attrName];
+    }
+
     function add_Balora(baloraID, baloraPK) {
         allBaloraInfo.push({
             baloraLineData: [],

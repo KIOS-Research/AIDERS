@@ -1,3 +1,5 @@
 mysql-connector-python
 flask
 pytz
+open3d
+aiohttp

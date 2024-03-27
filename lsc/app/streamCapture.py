@@ -26,8 +26,8 @@ def saveDroneRtmpFrames(_droneId, _droneName, _sessionId):
     else:
         return
     
-    print(f"\nStream URL: '{streamUrl}'")
-    
+    print(f"\n\U0001F3AC Connecting to stream for '{_droneName}' at '{streamUrl}'")
+
     retries = 0
     maxRetries = 5
 
@@ -62,9 +62,10 @@ def saveDroneRtmpFrames(_droneId, _droneName, _sessionId):
     while videoStream.isOpened():
         ret, frame = videoStream.read()
         if not ret:
-            print(f"\n\U0001F4A9 Stream from drone '{_droneName}' can no longer be read.")
+            print(f"\n\U0001F4A9 Failed reading stream frame from drone '{_droneName}'...")
             break
 
+        numberOfFailedReads = 0
         currentTime = time.time()
         if currentTime >= nextCaptureTime:
             currentDateTime = datetime.now(timezone).time()
@@ -79,9 +80,17 @@ def saveDroneRtmpFrames(_droneId, _droneName, _sessionId):
 
     videoStream.release()
     cv2.destroyAllWindows()
-    database.queries.updateSessionEnd(_sessionId)   # mark session end time
-    print(f"\n\U0001F480 Thread for drone '{_droneName}' has stopped.")
-    sys.stdout.flush()
+
+    # check if drone is still connected and start capturing again
+    isStillConnected = database.queries.getDroneConnectionState(_droneId)
+    if isStillConnected[0] == 1:
+        # startDroneStreamCapture(_droneId, _droneName)
+        print(f"\n\U0000267B Drone '{_droneName}' is still connected. Restarting stream capture.")
+        saveDroneRtmpFrames(_droneId, _droneName, _sessionId)
+    else:
+        database.queries.updateSessionEnd(_sessionId)   # mark session end time
+        print(f"\n\U0001F480 Drone '{_droneName}' is no longer connected. Stopping stream capture.")
+        sys.stdout.flush()
 
 
 # start the capturing loop on a new thread
@@ -90,6 +99,7 @@ def startDroneStreamCapture(_droneId, _droneName):
     session = database.queries.getActiveDroneLiveSession(_droneId)  # retrieve last ACTIVE live stream session from DB
     if session is not None:
         if utils.threadStarted(threadName):
+            print(f"\n\U0001F6A8 Stream capture thread for '{_droneName}' already running.")
             return
     sessionId = database.queries.deactivateSessionsAndCreateNew(_droneId)  # deactivate drone's sessions and create a new one
 
@@ -98,41 +108,3 @@ def startDroneStreamCapture(_droneId, _droneName):
         thread = threading.Thread(target=saveDroneRtmpFrames, args=(_droneId, _droneName, sessionId))
         thread.name = threadName
         thread.start()
-
-
-'''
-BASED ON FRAME-RATE INSTEAD OF TIME -- WORKS!
-'''
-
-# # Create the capture object
-# rtmp_url = "rtmp://192.168.0.10/live/SIM_Alpha"
-# cap = cv2.VideoCapture(rtmp_url)
-
-# # Create the folder for captured frames if it doesn't exist
-# output_folder = "test_capture_frames"
-# if not os.path.exists(output_folder):
-#     os.makedirs(output_folder)
-
-# # Set the desired capture rate (5 frames per second)
-# capture_rate = 5  # frames per second
-# frame_interval = int(cap.get(cv2.CAP_PROP_FPS) / capture_rate)
-
-# frame_count = 0
-# while cap.isOpened():
-#     ret, frame = cap.read()
-    
-#     if not ret:
-#         break
-    
-#     # Save the captured frame
-#     if frame_count % frame_interval == 0:
-#         frame_filename = os.path.join(output_folder, f"frame_{frame_count}.jpg")
-#         cv2.imwrite(frame_filename, frame)
-#         print(f"Saved frame {frame_count}")
-    
-#     frame_count += 1
-
-# # Release the capture object
-# cap.release()
-
-# print("Capture complete.")

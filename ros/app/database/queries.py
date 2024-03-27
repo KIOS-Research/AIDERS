@@ -1,6 +1,7 @@
 import os
 from datetime import datetime
 import pytz
+import json
 
 # custom libs
 from database.connection import MySQLConnector
@@ -99,18 +100,18 @@ def updateDroneDetectionSessionStatus(_droneId, _status):
     connector.executeQuery(query, params, False)
     connector.close()
 
-def saveDroneTelemetry(_droneId, _secondsOn, _rosMsg, _missionLogId, _operationId):
+def saveDroneTelemetry(_droneId, _secondsOn, _rosMsg, _missionLogId, _operationId, _fov_polygon):
     query = (
         "INSERT INTO aiders_telemetry "
         "(drone_id, lat, lon, alt, heading, velocity, "
         "gps_signal, satellites, homeLat, homeLon, drone_state, mission_log_id, "
-        "gimbal_angle, water_sampler_in_water, battery_percentage, operation_id, secondsOn, time) "
-        "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+        "gimbal_angle, water_sampler_in_water, battery_percentage, operation_id, secondsOn, fov_coordinates, time) "
+        "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
     )
     params = (
         _droneId, _rosMsg.latitude, _rosMsg.longitude, _rosMsg.altitude, _rosMsg.heading, _rosMsg.velocity,
         _rosMsg.gpsSignal, _rosMsg.satelliteNumber, _rosMsg.homeLatitude, _rosMsg.homeLongitude, _rosMsg.droneState, _missionLogId,
-        _rosMsg.gimbalAngle, False, _rosMsg.batteryPercentage, _operationId, _secondsOn, datetime.now(timezone)
+        _rosMsg.gimbalAngle, False, _rosMsg.batteryPercentage, _operationId, _secondsOn, json.dumps(_fov_polygon), datetime.now(timezone)
     )
     connector = MySQLConnector()
     connector.executeQuery(query, params, False)

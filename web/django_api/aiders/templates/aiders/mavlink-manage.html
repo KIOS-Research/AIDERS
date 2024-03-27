@@ -35,19 +35,65 @@ Aiders - MAVLink
         <h3 class="col float-start">Manage MAVLink UAV</h3>
     </div>
     
-    <div class="pt-2 pb-2">
-        <div>Name: <span id="mavlink-name">{{ drone.drone_name }}</span></div>
-        <div>IP Address: <span id="mavlink-ip">{{ drone.ip }}</span></div>
-        <div>Port: <span id="mavlink-port">{{ drone.port }}</span></div>
-        <div>Stream: <span id="mavlink-stream">{{ drone.live_stream_url }}</span></div>
-    </div>  
-    <div class="pb-2">
-        Connected: <span id="mavlink-connection-status">{% if drone.is_connected_with_platform == True %}<i class="fa-solid fa-check"></i>{% else %}<i class="fa-solid fa-xmark"></i>{% endif %}</span>
-    </div>
+
+
+    <table class="pt-2 pb-2">
+        <tr>
+            <td>Name:</td>
+            <td><span id="mavlink-name">{{ drone.drone_name }}</span></td>
+        </tr>
+        <tr>
+            <td>IP Address:</td>
+            <td><span id="mavlink-ip">{{ drone.ip }}</span></td>
+        </tr>
+        <tr>
+            <td>Port:</td>
+            <td><span id="mavlink-port">{{ drone.port }}</span></td>
+        </tr>
+        <tr>
+            <td>Stream:</td>
+            <td><span id="mavlink-stream">{{ drone.live_stream_url }}</span></td>
+        </tr>
+    </table>
+
+    <br />
+
     {% if drone.is_connected_with_platform == True %}
         <button id="mavlink-disconnect-btn" type="button" class="btn btn-danger"><i class="fa fa-link-slash "></i> Disconnect</button>
     {% else %}
-        <button id="mavlink-connect-btn" type="button" class="btn btn-success"><i class="fa fa-link "></i> Connect</button>
+        <div id="connect-elements-wrapper">
+
+            <table class="pb-2">
+                <tr id="protocol-wrapper">
+                    <td>Protocol:</td>
+                    <td>
+                        <input type="radio" id="udp" name="mavlink-protocol" value="udp" checked="checked">
+                        <label for="udp">UDP</label>
+                        <input type="radio" id="udpin" name="mavlink-protocol" value="udpin">
+                        <label for="udpin">UDPIN</label>
+                        <input type="radio" id="udpout" name="mavlink-protocol" value="udpout">
+                        <label for="udpout">UDPOUT</label>
+                        <input type="radio" id="tcp" name="mavlink-protocol" value="tcp">
+                        <label for="tcp">TCP</label>
+                        <input type="radio" id="tcpin" name="mavlink-protocol" value="tcpin">
+                        <label for="tcpin">TCPIN</label>
+                        <input type="radio" id="tcpout" name="mavlink-protocol" value="tcpout">
+                        <label for="tcpout">TCPOUT</label>                        
+                    </td>
+                </tr>
+                <tr id="library-wrapper">
+                    <td>Library:</td>
+                    <td>
+                        <input type="radio" id="mavsdk" name="mavlink-library" value="mavsdk" checked="checked">
+                        <label for="mavsdk">MAVSDK</label>
+                        <input type="radio" id="pymavlink" name="mavlink-library" value="pymavlink">
+                        <label for="pymavlink">PyMAVLink</label>
+                    </td>
+                </tr>
+            </table>            
+            <br />
+            <button id="mavlink-connect-btn" type="button" class="btn btn-success"><i class="fa fa-link "></i> Connect</button>
+        </div>
     {% endif %}
 
     <div id="spinner" style="display: none"><img src="{% static 'aiders/imgs/spinner.gif' %}" width="50" /> Please wait...</div>
@@ -56,13 +102,18 @@ Aiders - MAVLink
 
 
 
-
-
 <div id="csrf">
     {% csrf_token %}
 </div>
 
-
+<style>
+    input[type=radio] {
+        margin-left: 15px;
+    }
+    td {
+        padding: 2px 5px;
+    }
+</style>
 
 {% endblock %}
 
@@ -121,7 +172,7 @@ Aiders - MAVLink
         {% if drone.is_connected_with_platform == True %}
             $('#mavlink-disconnect-btn').show();
         {% else %}
-            $('#mavlink-connect-btn').show();
+            $('#connect-elements-wrapper').show();
         {% endif %}
         alert('Timed out. Please try again.');
     }
@@ -129,13 +180,18 @@ Aiders - MAVLink
 
     function postMavlinkConnectRequest() {
         console.log('Connecting to UAV...');
+        let selectedProtocol = document.querySelector('input[name="mavlink-protocol"]:checked').value;
+        let selectedLibrary = document.querySelector('input[name="mavlink-library"]:checked').value;
         let requestData = {
             name: '{{ drone.drone_name }}',
             model: '{{ drone.model }}',
             ip: '{{ drone.ip }}',
             port: '{{ drone.port }}',
-            operationId: '{{ drone.operation_id }}'
+            operationId: '{{ drone.operation_id }}',
+            protocol: selectedProtocol,
+            library: selectedLibrary
         }
+        console.log('Request data:', requestData);
         $.ajax({
             url: '/mavlinkConnect',
             type: 'POST',
@@ -182,7 +238,7 @@ Aiders - MAVLink
         postMavlinkConnectRequest();
         startInterval();
         console.log('POST requests started.');
-        $('#mavlink-connect-btn').hide();
+        $('#connect-elements-wrapper').hide();
         $('#spinner').show();
     });
     $('#mavlink-disconnect-btn').click(function () {

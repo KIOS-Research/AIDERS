@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+{% load static %}
+<html>
+<head>
+    <link href="{% static 'libs/bootstrap/bootstrap_v4.css' %}" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+
+    <script src="{% static 'libs/maplibre-gl/http_unpkg.com_maplibre-gl@1.15.2_dist_maplibre-gl.js' %}"></script>
+    <link href="{% static 'libs/maplibre-gl/http_unpkg.com_maplibre-gl@1.15.2_dist_maplibre-gl.css' %}" rel="stylesheet" />
+    <script src="{% static 'libs/deck.gl/http_unpkg.com_deck.gl@8.7.11_dist.min.js' %}"></script>
+    <script src="{% static 'libs/mapbox-geocoder-v5/mapbox-gl-geocoder.min.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'libs/mapbox-geocoder-v5/mapbox-gl-geocoder.css' %}" type="text/css" />
+    <script src="{% static 'aiders/javascripts/constants/constants.js' %}" type="text/javascript"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation"></script>
+</head>
+<body style="background-color: #222;">
+ 
+    
+    <div class="geocoder" id="geocoder"></div>
+    {% comment %} <br /> {% endcomment %}
+    <br />
+    <div class="row">
+        <div class="col-md-9" style="padding-left: 75px;">
+            {% comment %} <br /> {% endcomment %}
+            <div style="width: 1280px; text-align: center;">
+                <h1 style="color: white; font-size: 22px;">{{session_data.device.name}} (Session #{{session_data.session_id}})</h1>
+                <canvas id="canvas" width="1280" height="720"></canvas>
+                <table style="width: 100%; color: white; font-size: 12px;">
+                    <tr>
+                        <td width="33%" style="text-align: left"><span id="filename"></span></td>
+                        <td width="33%" style="text-align: center">Timestamp: <span id="datetime"></span></td>
+                        <td style="text-align: right"><span id="currentFrameIndex"></span> / {{ frames|length|add:"-1" }}</td>
+                    </tr>
+                </table>
+                
+                <div id="slider" style="margin: 15px 8px; background-color: orange;"></div>
+                <div style="width: 100%; text-align: center;">
+                    <button class="btn btn-sm btn-light" id="previousFrame" title="Previous frame"><i class="fas fa-step-backward"></i></button>
+                    <button class="btn btn-sm btn-success" id="play" title="Play"><i class="fas fa-play"></i></button>
+                    <button class="btn btn-sm btn-danger" id="pause" title="Stop" disabled><i class="fas fa-stop"></i></button>
+                    <button class="btn btn-sm btn-light" id="nextFrame" title="Next frame"><i class="fas fa-step-forward"></i></button>
+                    <button class="btn btn-sm btn-light" id="flyToClientLocation" title="Re-centre Map" style="float: right; margin-right: 10px;"><i class="fas fa-map-marked-alt"></i></button>
+
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3" style="padding-right: 32px;margin-top: 34px; margin-bottom: 0px;margin-left: -40px;">
+            <div id="map" style="height: 91%;"></div>
+            <div style="width: 88%; border: 2px solid black; border-radius: 3px; background-color: #353535; margin: 5px; padding: 0px 5px; position: absolute; top:0px; left: 15px;">
+                <table style="width: 100%; color: white; font-size: 14px;">
+                    <tr>
+                        <td width="22%" style="text-align: left; font-weight: bold;">Latitude:</td>
+                        <td width="28%"><span id="latitude"></span></td>
+                        <td style="text-align: left; font-weight: bold;">Longitude:</td>
+                        <td><span id="longitude"></span></td>
+                    </tr>                   
+                </table>
+            </div>
+            
+
+                        
+            <div style="width: 100%; border: 2px solid white; border-radius: 3px; background-color: #054f05; margin: -10px 0px; padding: 0px 5px; position: relative;">
+                <table style="width: 100%; color: white; font-size: 13px;">
+                    <tr>
+                        <td width="30%" style="text-align: left; font-weight: bold;">Session Duration:</td>
+                        <td><span id="duration"></span>{{session_data.duration}}s</td>
+                        <td width="30%" style="text-align: left; font-weight: bold;">Distance Covered:</td>
+                        <td><span id="distance">{{session_data.distance}}km</span></td>
+                    </tr>
+                   
+                </table>
+            </div>
+
+        </div>
+    </div>
+
+
+    <script>
+        var USE_ONLINE_MAPS = true;
+    </script>
+
+    <link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.3.0/mapbox-gl-draw.css" type="text/css" />
+    <script src="{% static 'aiders/javascripts/search_bar/geocoder_lat_lng.js' %}" type="text/javascript"></script>
+
+    <script src="{% static 'aiders/javascripts/map/map.js' %}" type="text/javascript"></script>
+
+
+    <script>
+        map.on('load', function () {
+            map.dragRotate.disable();
+            map.touchZoomRotate.disableRotation();
+            $("#geocoder").hide();
+            $(".maplibregl-ctrl").hide();
+
+            var telemetryFramesFromDjango = [{{ frames|safe }}];
+            telemetryFramesFromDjango = telemetryFramesFromDjango[0]
+            console.log(telemetryFramesFromDjango);
+
+            var imagePaths = [];
+            var chartTimes = [];
+            var formattedTimes = [];
+            var coordinates = [];
+            var headings = [];
+            var altitudes = [];
+            var velocities = [];
+            var cpuUsages = [];
+            var cpuTemps = [];
+            var battery_percentages = [];
+            var canvas = document.getElementById('canvas');
+            var ctx = canvas.getContext('2d');
+            var interval;
+            var isPlaying = false;
+
+
+
+            // loop images and create array of image paths and timestamps
+            for (var i = 0; i < telemetryFramesFromDjango.length; i++) {
+                imagePaths.push(telemetryFramesFromDjango[i].path);
+                coordinates.push([telemetryFramesFromDjango[i].longitude, telemetryFramesFromDjango[i].latitude]);
+                headings.push(telemetryFramesFromDjango[i].heading);         
+                altitudes.push(telemetryFramesFromDjango[i].alt);         
+                velocities.push(telemetryFramesFromDjango[i].velocity); 
+                battery_percentages.push(telemetryFramesFromDjango[i].battery_percentage);
+                
+                cpuUsages.push(telemetryFramesFromDjango[i].cpu_usage);
+                cpuTemps.push(telemetryFramesFromDjango[i].cpu_temp);
+
+                var jsDate = new Date(telemetryFramesFromDjango[i].time);
+                var hours = jsDate.getHours();
+                var minutes = jsDate.getMinutes();
+                var seconds = jsDate.getSeconds();
+                hours = hours < 10 ? '0' + hours : hours;                
+                minutes = minutes < 10 ? '0' + minutes : minutes;                
+                seconds = seconds < 10 ? '0' + seconds : seconds;                
+                chartTimes.push(hours + ":" + minutes + ":" + seconds + "." + i);
+                var formattedTime = jsDate.toLocaleString();
+                formattedTimes.push(formattedTime);
+            }            
+
+
+            // add the image layer
+            map.loadImage('/static/aiders/imgs/target.png', function (error, image) {
+                if (error) throw error;
+
+                // add the device's path layer (line)
+                map.addSource('route', {
+                    'type': 'geojson',
+                    'data': {
+                        'type': 'Feature',
+                        'properties': {},
+                        'geometry': {
+                            'type': 'LineString',
+                            'coordinates': coordinates
+                        }
+                    }
+                });
+                map.addLayer({
+                    'id': 'route',
+                    'type': 'line',
+                    'source': 'route',
+                    'layout': {
+                        'line-join': 'round',
+                        'line-cap': 'round'
+                    },
+                    'paint': {
+                        'line-color': '#fc6b03',
+                        'line-width': 5,
+                        'line-opacity': 0.8
+                    }
+                });
+    
+    
+                // add the device's path layer (points)
+                map.addSource('telemetry-points', {
+                    "type": "geojson",
+                    "data": {
+                        "type": "Feature",
+                        "geometry": {
+                            "type": "MultiPoint",
+                            "coordinates": coordinates
+                        }
+                    }
+                });
+                map.addLayer({
+                    "id": 'telemetry-points',
+                    "type": "circle",
+                    "source": 'telemetry-points',
+                    "paint": {
+                        "circle-radius": 5,
+                        "circle-color": "#c33"
+                    }
+                });
+                
+                
+
+                // add the device's location image
+                map.addImage('device-position-pin', image);
+
+                // Add the source with initial data
+                map.addSource('device-position', {
+                    "type": "geojson",
+                    "data": {
+                        "type": "Feature",
+                        "geometry": {
+                            "type": "Point",
+                            "coordinates": [0, 0] // initial coordinates
+                        }
+                    }
+                });
+                map.addLayer({
+                    "id": 'device-position',
+                    "type": "symbol",
+                    "source": 'device-position',
+                    "layout": {
+                        'icon-image': 'device-position-pin',
+                        'icon-size': 1,
+                        "icon-allow-overlap": true, // avoid fading effect
+                    },
+                });
+
+
+
+            // start flag
+            map.loadImage('/static/aiders/imgs/start.png', function (error, image) {
+                if (error) throw error;            
+                // add the device's location image
+                map.addImage('device-first-position-img', image);
+
+                // Add the source with initial data
+                map.addSource('device-first-position', {
+                    "type": "geojson",
+                    "data": {
+                        "type": "Feature",
+                        "geometry": {
+                            "type": "Point",
+                            "coordinates": coordinates[0] // first coordinates
+                        }
+                    }
+                });
+                map.addLayer({
+                    "id": 'device-first-position',
+                    "type": "symbol",
+                    "source": 'device-first-position',
+                    "layout": {
+                        'icon-image': 'device-first-position-img',
+                        'icon-size': 1.1,
+                        "icon-allow-overlap": true, // avoid fading effect
+                    },
+                });
+            });
+
+            // end flag
+            map.loadImage('/static/aiders/imgs/end.png', function (error, image) {
+                if (error) throw error;            
+                // add the device's location image
+                map.addImage('device-last-position-img', image);
+
+                // Add the source with initial data
+                map.addSource('device-last-position', {
+                    "type": "geojson",
+                    "data": {
+                        "type": "Feature",
+                        "geometry": {
+                            "type": "Point",
+                            "coordinates": coordinates[coordinates.length-1] // last coordinates
+                        }
+                    }
+                });
+                map.addLayer({
+                    "id": 'device-last-position',
+                    "type": "symbol",
+                    "source": 'device-last-position',
+                    "layout": {
+                        'icon-image': 'device-last-position-img',
+                        'icon-size': 1,
+                        "icon-allow-overlap": true, // avoid fading effect
+                    },
+                });
+            });                  
+            
+
+
+                drawImage(0); // load first image
+                map.flyTo({
+                    center: coordinates[0],
+                    zoom: 18,
+                    speed: 2,
+                });                  
+            });
+
+
+          
+
+
+            // Draw image function
+            function drawImage(index) {
+                var img = new Image();
+                img.onload = function() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    $('#datetime').html(formattedTimes[index]);
+                    $('#filename').html("<a href='/media/" + imagePaths[index] + "' target='_blank'>" + imagePaths[index] + "</a>");
+                    $('#currentFrameIndex').html(index);
+                    updateMapImagePosition(coordinates[index], headings[index]);
+                    updateTelemetryData(index);                 
+                }
+                img.src = "/media/" + imagePaths[index];
+                map.flyTo({
+                    center: coordinates[index],
+                    speed: 0.1,
+                });                 
+            }
+
+
+            // Function to update the image's position and rotation on the map
+            function updateMapImagePosition(coordinates, rotation) {
+                if (map.getSource('device-position')) {
+                    map.getSource('device-position').setData({
+                        "type": "Feature",
+                        "geometry": {
+                            "type": "Point",
+                            "coordinates": coordinates
+                        }
+                    });
+                    
+                    map.setLayoutProperty('device-position', 'icon-rotate', rotation);
+                }
+            }
+
+            function updateTelemetryData(index) {
+                $('#latitude').html(telemetryFramesFromDjango[index].latitude.toFixed(8));
+                $('#longitude').html(telemetryFramesFromDjango[index].longitude.toFixed(8));
+            }
+
+
+
+            // Initialize slider
+            $("#slider").slider({
+                min: 0,
+                max: telemetryFramesFromDjango.length - 1,
+                slide: function(event, ui) {
+                    drawImage(ui.value);
+                    clearInterval(interval);
+                    isPlaying = false;                
+                    handleButtonStates(isPlaying);
+                }
+            });
+
+            // Play button
+            $('#play').click(function() {
+                if (isPlaying) {
+                    console.log('Already playing');
+                    return;
+                }
+                isPlaying = true;
+                handleButtonStates(isPlaying);
+                interval = setInterval(function() {
+                    var val = $('#slider').slider("value");
+                    val += 1;
+                    $('#slider').slider("value", val);
+                    drawImage(val); // Draw the image after changing the slider value
+                    if (val >= telemetryFramesFromDjango.length - 1) {
+                        clearInterval(interval);
+                        isPlaying = false;
+                        handleButtonStates(isPlaying);
+                    }
+                }, 2000);
+            });
+
+            // Pause button
+            $('#pause').click(function() {
+                clearInterval(interval);
+                isPlaying = false;
+                handleButtonStates(isPlaying);
+            });
+
+            $('#nextFrame').click(function() {
+                var val = $('#slider').slider("value");
+                if (val < telemetryFramesFromDjango.length) {
+                    clearInterval(interval);
+                    isPlaying = false;                
+                    handleButtonStates(isPlaying);
+                    var newVal = val + 1;
+                    $('#slider').slider("value", newVal);
+                    drawImage(newVal); // Draw the image after changing the slider value
+                }
+            });
+
+            $('#previousFrame').click(function() {
+                var val = $('#slider').slider("value");
+                if (val > 0) {
+                    clearInterval(interval);
+                    isPlaying = false;                
+                    handleButtonStates(isPlaying);
+                    var newVal = val - 1;
+                    $('#slider').slider("value", newVal);
+                    drawImage(newVal); // Draw the image after changing the slider value
+                }
+            });
+
+            $('#flyToClientLocation').click(function() {
+                var index = $('#slider').slider("value");
+                map.flyTo({
+                    center: coordinates[index],
+                    speed: 0.5,
+                });
+            });
+
+
+            function handleButtonStates(isPlaying) {
+                if (isPlaying) {
+                    $('#play').prop('disabled', true);
+                    $('#pause').prop('disabled', false);
+                } else {
+                    $('#play').prop('disabled', false);
+                    $('#pause').prop('disabled', true);
+                }
+            }
+
+        });
+    </script>
+
+
+</body>
+</html>

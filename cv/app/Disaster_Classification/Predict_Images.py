@@ -5,22 +5,19 @@ Created on Tue Jul 25 15:50:35 2023
 """
 
 import os
-import torch
-from torchvision import transforms
-from PIL import Image
-from torchvision import models
-from torchvision import transforms
-from collections import OrderedDict
-import os
-import torch.nn as nn
-import cv2
 import random
-import numpy as np
 import time
+from collections import OrderedDict
 from datetime import datetime
-import pytz
 
+import cv2
 import database.queries
+import numpy as np
+import pytz
+import torch
+import torch.nn as nn
+from PIL import Image
+from torchvision import models, transforms
 
 timezone = pytz.utc # timezone = pytz.timezone(os.environ.get("TZ"))
 
@@ -29,7 +26,7 @@ class DisasterClassification:
 
     def __init__(self, droneId, operationId, userId, sessionId, droneName):
         self.droneId = droneId
-        self.perationId = operationId
+        self.operationId = operationId
         self.userId = userId
         self.sessionId = sessionId
         self.droneName = droneName
@@ -206,10 +203,10 @@ class DisasterClassification:
         # save results to the database
         frameId = database.queries.saveFrame(self.sessionId, output_image_path) # TODO dynamic session ID
         max_value = max(result_probabilities.values())
-        if(max_value > 5):
+        if(max_value > 50):
             telemetry = database.queries.getDroneLatestTelemetry(self.droneId)  # TODO: dynamic drone ID # get latest drone telemetry
             # TODO dynamic session ID
-            database.queries.saveDetectedDisaster(telemetry[0], telemetry[1], result_probabilities["Earthquake"], result_probabilities["Fire"], result_probabilities["Flood"], self.sessionId, frameId)
+            database.queries.saveDetectedDisaster(telemetry[0], telemetry[1], result_probabilities["Earthquake"], result_probabilities["Fire"], result_probabilities["Flood"], self.operationId, self.droneId, self.sessionId, frameId)
         
         return predicted_class
 

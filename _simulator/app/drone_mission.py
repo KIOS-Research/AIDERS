@@ -16,13 +16,22 @@ class DroneMission:
         self.heading = 0
         self.is_paused = False
         self.is_over = False
+
+        self.acceleration = 2
+        self.deceleration = 4
+        self.safety_factor = 2
+        self.current_speed = 0  # Start at speed 0        
     
 
     def update(self):
         self.check_if_over()
 
         if self.is_over or self.is_paused:
-            return self.current_position[0], self.current_position[1], self.current_altitude, self.heading
+            if self.current_speed > 0:
+                self.current_speed -= (2 * self.deceleration) / self.move_frequency # Decelerate
+            else:
+                self.current_speed = 0
+            return self.current_position[0], self.current_position[1], self.current_altitude, self.heading, self.current_speed
             
         current_target_pos = (self.target_coordinates[self.current_target_index][0], self.target_coordinates[self.current_target_index][1])
         current_target_altitude = self.target_coordinates[self.current_target_index][2]
@@ -34,19 +43,29 @@ class DroneMission:
         self.heading = math.degrees(math.atan2(dy, dx))
 
         lat_b, lon_b = current_target_pos
-        distance = self.speed  # Distance to cover in this iteration
-        
-        self.move_towards(self.current_position, current_target_pos, distance, current_target_altitude)
-        
-        
-        distance_to_current_target = math.sqrt((self.current_position[0] - lat_b)**2 + (self.current_position[1] - lon_b)**2) * 111000
-        if distance_to_current_target < 6:
-            # print(f"reached target {next_target_index}!")
-            self.current_target_index = next_target_index
-               
-        self.current_time += distance / self.speed
 
-        return self.current_position[0], self.current_position[1], self.current_altitude, self.heading
+        # Calculate distance to target
+        distance_to_current_target = math.sqrt((self.current_position[0] - lat_b)**2 + (self.current_position[1] - lon_b)**2) * 111000
+
+        # Check if we should start decelerating
+        if distance_to_current_target < self.safety_factor * self.current_speed**2 / (2 * self.deceleration):
+            self.current_speed -= self.deceleration / self.move_frequency
+        else:
+            self.current_speed += self.acceleration / self.move_frequency
+
+        # Ensure speed is within bounds
+        self.current_speed = max(0, min(self.speed, self.current_speed))
+
+        distance = self.current_speed  # Distance to cover in this iteration
+
+        self.move_towards(self.current_position, current_target_pos, distance, current_target_altitude)
+
+        if distance_to_current_target < 6:
+            self.current_target_index = next_target_index
+
+        self.current_time += distance / self.current_speed
+
+        return self.current_position[0], self.current_position[1], self.current_altitude, self.heading, self.current_speed
 
 
     def move_towards(self, point_a, point_b, distance, target_altitude):

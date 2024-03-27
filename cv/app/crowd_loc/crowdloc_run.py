@@ -20,6 +20,8 @@ import pytz
 timezone = pytz.utc
 
 
+import math
+
 class Crowd_local:
     def __init__(
         self, droneId, operationId, userId, sessionId, droneName
@@ -31,8 +33,9 @@ class Crowd_local:
         self.droneName = droneName
         self.stop = False
         self.model = self.get_model()
+        self.tempcount = 0
 
-        self.weights_path = os.path.join("/app/crowd_loc/weights", "model_best_half_kernels_05.pth")
+        self.weights_path = os.path.join("/app/crowd_loc/weights", "model_best_u-hrnet05.pth")
 
         if os.path.isfile(self.weights_path):
             self.load_weights(model=self.model)
@@ -74,9 +77,6 @@ class Crowd_local:
         Returns:
             tensor: The image to be processed by the model
         """
-        img_transform = transforms.Normalize(
-            mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]
-        )
         tensor_transform = transforms.ToTensor()
         frame = frame.copy()
         image = tensor_transform(frame).unsqueeze(0)
@@ -93,16 +93,18 @@ class Crowd_local:
         Returns:
             cv2 object: Returns the original frame back with the points on it for each prediction
         """
+        out_points_array = []
         point_cord = np.nonzero(points)
 
         if len(point_cord[0]) != 0:
             for i in range(0, len(point_cord[0])):
                 h = int(point_cord[0][i])
                 w = int(point_cord[1][i])
+                out_points_array.append([w, h])
                 point_img = cv2.circle(img, (w, h), 3, (0, 255, 0), -1)
         else:
             point_img = img
-        return point_img
+        return point_img, out_points_array
 
 
 
@@ -116,6 +118,9 @@ class Crowd_local:
             int: The predicted counting number
             np.array: An array with the same size of the original input. Each element of the array corresponds to a pixel and its either 0 or 1 depending on the detection.
         """
+        sigmoid_layer = nn.Sigmoid()
+        input_img = sigmoid_layer(input_img)
+        
         input_max = torch.max(input_img).item()
 
         if input_max < 0.1:
@@ -139,13 +144,38 @@ class Crowd_local:
 
 
 
+
+    def pixel_to_gps(self, pixel, img_size, fov, drone_info):
+        # Unpack drone_info
+        lat, lon, alt, bearing, pitch = drone_info
+
+        # Calculate the angle of the pixel from the center of the image
+        dx = (pixel[0] - img_size[0] / 2) / (img_size[0] / 2) * (fov[0] / 2)
+        dy = ((img_size[1] - pixel[1]) - img_size[1] / 2) / (img_size[1] / 2) * (fov[1] / 2)
+
+        # Adjust the angles for the pitch of the camera
+        dy += pitch
+
+        # Calculate the relative position of the pixel from the drone
+        dx = alt * math.tan(math.radians(dx))
+        dy = alt * math.tan(math.radians(dy))
+
+        # Rotate the relative position by the drone's bearing
+        dx, dy = dx * math.cos(math.radians(-bearing)) - dy * math.sin(math.radians(-bearing)), dx * math.sin(math.radians(-bearing)) + dy * math.cos(math.radians(-bearing))
+
+        # Convert the relative position to GPS coordinates
+        lat += dy / 111111
+        lon += dx / (111111 * math.cos(math.radians(lat)))
+
+        return lat, lon
+
+
+    
     def run_inference(
         self,
         img_path,
         output_img_path,
         total_count: list,
-        prev_frame_time,
-        new_frame_time,
     ):
         """Run inference on a given frame
 
@@ -163,19 +193,12 @@ class Crowd_local:
         input_frame = input_frame.cuda()
         self.model.eval()
 
-        sigmoid_layer = nn.Sigmoid()
-
         with torch.no_grad():
             output_img = self.model(input_frame) # Pass input frame through model to get prediction
-            output_img = sigmoid_layer(output_img) # Pass prediction through a sigmoid layer
-
-            pred_count, pred_points = self.LMDS_counting(input_img=output_img) # Run prediction through the LMDS algorithm
-            out_frame = self.plot_points(points=pred_points, img=input_frame_raw)  # Draw points on the original frame
             
-        # Calculate FPS
-        new_frame_time = time.time()
-        fps = 1 / (new_frame_time - prev_frame_time)
-        prev_frame_time = new_frame_time
+            pred_count, pred_points = self.LMDS_counting(input_img=output_img) # Run prediction through the LMDS algorithm
+            out_frame, out_points_array = self.plot_points(points=pred_points, img=input_frame_raw)  # Draw points on the original frame
+
 
         total_count.append(pred_count)
         avg_count = int(np.mean(total_count))
@@ -204,17 +227,35 @@ class Crowd_local:
             2,
         )
         cv2.imwrite(output_img_path, out_frame)
-        database.queries.saveFrame(self.sessionId, output_img_path)
+        frameId = database.queries.saveFrame(self.sessionId, output_img_path)
 
-        print(f"FPS - {fps}/tCount: {int(pred_count)}/tAvg Count - {avg_count}", flush=True)
+        # loop through all the detected points and calculate their coordinates
+        telemetry = database.queries.getDroneLatestTelemetry(self.droneId) # get latest drone telemetry
+
+
+        # TODO: get fov from database and adjust for zoom level(?)
+        fov_horizontal = 68  # FOR MAVIC
+        fov_vertical = 40  # mavic
+
+
+        gimbal_angle = telemetry[4] + 90
+
+        detectedCoords = []
+        for p in out_points_array:
+            # telemetry - lat, lon, alt, heading, gimbal_angle
+            lat, lon = self.pixel_to_gps(p, (width, height), (fov_horizontal, fov_vertical), (telemetry[0], telemetry[1], telemetry[2], telemetry[3], gimbal_angle))
+            detectedCoords.append([lat, lon])
+
+        # save the detected coordinates
+        if(len(detectedCoords) > 0):
+            database.queries.saveCrowdLocalizationResults(self.droneId, self.operationId, self.sessionId, frameId, detectedCoords)
+            # print(detectedCoords, flush=True)
 
 
 
 
     def start_loop(self):
         total_count = []
-        prev_frame_time = 0
-        new_frame_time = 0
         output_folder = os.path.join(
             "/media", f"crowd_loc_session{self.sessionId}_{self.droneName}"
         )
@@ -241,8 +282,6 @@ class Crowd_local:
                     img_path=image_path,
                     output_img_path=os.path.join(output_folder, frame_name),
                     total_count=total_count,
-                    prev_frame_time=prev_frame_time,
-                    new_frame_time=new_frame_time,
                 )
 
         print(f"{self.droneName}: Crowd Localization stopped.")

@@ -17,10 +17,8 @@ from .mapPins import *
 from .systemMonitoring import *
 from .algorithm import *
 
-# SESAME
+
 from .safeDrones import *
-from .sinadra import *
-from .safeml import *
 
 from django.contrib.auth.models import Group, Permission
 from django.db import connection

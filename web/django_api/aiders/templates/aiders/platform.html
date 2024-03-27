@@ -193,10 +193,12 @@
             var NET_IP = '{{ net_ip }}';
             var WS_PORT = '{{ ws_port }}';
             var USE_ONLINE_MAPS = '{{use_online_map}}' === 'True';
-            var DISASTER_EPICENTER_LATITUDE = '{{disaster_epicenter_latitude}}'
-            var DISASTER_EPICENTER_LONGITUDE = '{{disaster_epicenter_longitude}}'
+            var DISASTER_EPICENTER_LATITUDE = '{{disaster_epicenter_latitude}}';
+            var DISASTER_EPICENTER_LONGITUDE = '{{disaster_epicenter_longitude}}';
+            var TOKEN = '{{ token }}';
               
-            console.log('NET IP: ', NET_IP);
+            {% comment %} console.log('NET IP: ', NET_IP); {% endcomment %}
+            {% comment %} console.log('TOKEN: ', TOKEN); {% endcomment %}
         </script>
         {% if algorithm_results is not None %}
         <script>
@@ -211,7 +213,7 @@
         
         <div id="drone-warnings"></div>
         <div id="point-selection-message">Click on the map to place mission waypoints... <button class="btn btn-danger panel-btn msn" id="clickCancelSecondary" type="button">CANCEL</button> <button class="btn btn-success panel-btn msn" id="clickGoSecondary" type="button">GO</button></div>
-        
+        <div id="selected-drones-list"></div>
 
         <div id="sidebar-overlay" class="sidebar-overlay"></div>
 
@@ -654,36 +656,48 @@
                             <table style="width: 100%">
                                 <tr>
                                     <td colspan="2" style="padding-left: 0px">
-                                        <m4><i class="fa fa-video" style="color: white;"></i> Stream replays</m4>
+                                        <m4><i class="fa fa-video" style="color: white;"></i> Session replays</m4>
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td>Raw stream</td>
+                                    <td>Drone</td>
                                     <td>
                                         <button
                                             aria-pressed="false"
                                             class="btn btn-outline-success panel-btn bldmp"
-                                            id="rawStreamReplayBtn"
-                                            onclick="showAvailableStreams('raw')"
+                                            id="droneSessionReplayBtn"
+                                            onclick="showAvailableDroneSessions('raw')"
                                             type="button">
                                             LOAD
                                         </button>
                                     </td>
                                 </tr>
-                                <tr>
+                                {% comment %} <tr>
                                     <td>Detection stream</td>
                                     <td>
                                         <button
                                             aria-pressed="false"
                                             class="btn btn-outline-success panel-btn bldmp"
                                             id="detectionStreamReplayBtn"
-                                            onclick="showAvailableStreams('detection')"
+                                            onclick="showAvailableDroneSessions('detection')"
                                             type="button">
                                             LOAD
                                         </button>
                                     </td>
-                                </tr>
-                                
+                                </tr> {% endcomment %}
+                                <tr>
+                                    <td>Mobile Device</td>
+                                    <td>
+                                        <button
+                                            aria-pressed="false"
+                                            class="btn btn-outline-success panel-btn bldmp"
+                                            id="deviceSessionReplayBtn"
+                                            onclick="showAvailableDeviceSessions()"
+                                            type="button">
+                                            LOAD
+                                        </button>
+                                    </td>
+                                </tr>                                
                             </table>
                             
 
@@ -716,38 +730,81 @@
                                     </td>
                                 </tr>
                             </table>
-                            
+                            {% endcomment %}                            
+
+
+                            <m4><i class="fa fa-vector-square" style="color: white;"></i> Computer Vision Detections</m4>
                             <table>
                                 <tr>
-                                    <td class="tools-option-title">Sinadra Data</td>
+                                    <td class="tools-option-title">Crowd Localization</td>
                                     <td>
                                         <input
                                             data-onstyle="success"
                                             data-toggle="toggle"
-                                            id="sinadraInfoToggle"
-                                            onchange="toggleSinadraCalculation(this.id)"
+                                            id="showDetectionsForCrowdLocalizationToggleId"
+                                            onchange="toggleCrowdLocalization(this.checked)"
                                             type="checkbox" />
                                     </td>
                                 </tr>
-                            </table>     {% endcomment %}                            
-
-
-                            <m4><i class="fa fa-vector-square" style="color: white;"></i> Object Detection</m4>
-                            <table>
                                 <tr>
-                                    <td class="tools-option-title">Show Detections</td>
+                                    <td class="tools-option-title">Disaster Classification</td>
+                                    <td>
+                                        <input
+                                            data-onstyle="success"
+                                            data-toggle="toggle"
+                                            id="showDetectionsForDisasterClassificationToggleId"
+                                            onchange="toggleDissasterClassification(this.checked)"
+                                            type="checkbox" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="tools-option-title">Vechicle & Person Tracker</td>
                                     <td>
                                         <input
                                             data-onstyle="success"
                                             data-toggle="toggle"
                                             id="showDetsToggle"
-                                            onchange="toggleDetObject()"
+                                            onchange="toggleVechicleAndPersonTracker(this.checked)"
                                             type="checkbox" />
                                     </td>
                                 </tr>
-                            </table>                            
-                            <ul id="detection-types-list"></ul>   
-                            
+                                <tr>
+                                    <td class="tools-option-content">• All</td>
+                                    <td>
+                                        <input id="showAllDetsCheckboxID" type="checkbox" class="vehicle-and-person-tracker-visual-option" disabled="" onclick="vechicleAndPersonTrackerOptionClick()" value="all">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="tools-option-content">• Car</td>
+                                    <td>
+                                        <input id="detcarCheckbox" type="checkbox" class="vehicle-and-person-tracker-visual-option" disabled="" onclick="vechicleAndPersonTrackerOptionClick()" value="car">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="tools-option-content">• Bus</td>
+                                    <td>
+                                        <input id="detbusCheckbox" type="checkbox" class="vehicle-and-person-tracker-visual-option" disabled="" onclick="vechicleAndPersonTrackerOptionClick()" value="bus">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="tools-option-content">• Truck</td>
+                                    <td>
+                                        <input id="dettruckCheckbox" type="checkbox" class="vehicle-and-person-tracker-visual-option" disabled="" onclick="vechicleAndPersonTrackerOptionClick()" value="truck">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="tools-option-content">• Motorbike</td>
+                                    <td>
+                                        <input id="detmotorbikeCheckbox" type="checkbox" class="vehicle-and-person-tracker-visual-option" disabled="" onclick="vechicleAndPersonTrackerOptionClick()" value="motorbike">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="tools-option-content">• Person</td>
+                                    <td>
+                                        <input id="detpersonCheckbox" type="checkbox" class="vehicle-and-person-tracker-visual-option" disabled="" onclick="vechicleAndPersonTrackerOptionClick()" value="person">
+                                    </td>
+                                </tr>
+                            </table>                        
 
                         </div>
                     </ul>
@@ -1547,6 +1604,9 @@
 
         {% include 'aiders/forms/coverage.html' %}
 
+        <div id="audioPathDing" data-path="{% static 'aiders/audio/ding.mp3' %}"></div>
+        {% include 'aiders/partials/mavlink_logs.html' %}
+
 
         <script>
             let arrowMenu = document.querySelectorAll('.arrow-menu');
@@ -1655,8 +1715,6 @@
         <script src="{% static 'aiders/javascripts/weather/weather_data.js' %}"></script>
         <script src="{% static 'aiders/javascripts/map_layers/object_loader.js' %}"></script>
         <script src="{% static 'aiders/javascripts/motor_failure_risk/motor_failure_risk_calculator.js' %}"></script>
-        <script src="{% static 'aiders/javascripts/sesame/sinadra.js' %}"></script>
-        <script src="{% static 'aiders/javascripts/sesame/safeml.js' %}"></script>
         <script src="{% static 'aiders/javascripts/mission/fetch_path_plan.js' %}"></script>
         <script src="{% static 'aiders/javascripts/drone/join_operation.js' %}"></script>
         <script src="{% static 'aiders/javascripts/display_on_map/display_data_on_map.js' %}"></script>
@@ -1664,5 +1722,8 @@
         <script src="{% static 'aiders/javascripts/drone/lidarMesh.js' %}"></script>
         <script src="{% static 'aiders/javascripts/lora/visualize_lora_devices.js' %}"></script>
         <script src="{% static 'aiders/javascripts/coverage/coverage.js' %}"></script>
+        <script src="{% static 'aiders/javascripts/detection/crowd_loc_results.js' %}"></script>
+        <script src="{% static 'aiders/javascripts/detection/disaster_class_results.js' %}"></script>
+        <script src="{% static 'aiders/javascripts/detection/computer_vision_websocket.js' %}"></script>
     </body>
 </html>

@@ -16,6 +16,32 @@ function getNumberOfOverlayPanels() {
     return numberOfVisibleElements;
 }
 
+// zoom the map to the given client
+function zoomToClient(_type, _name) {
+    console.log("zoomToClient");
+    var location = 0;
+
+    if (_type === "drone") {
+        location = getDroneAttributeValue(_name, "droneInfo");
+    } 
+    else if (_type === "device") {
+        location = getDeviceAttributeValue(_name, "deviceInfo");
+    } 
+    else if (_type === "balora") {
+        location = getBaloraAttributeValue(_name, "baloraInfo");
+    }
+    
+    var lat = location.currentCoordinate[1];
+    var lng = location.currentCoordinate[0];
+    
+    if(lat === 0 || lng === 0) {
+        return;
+    }
+
+    map.flyTo({ center: [lng, lat], zoom: 18 });
+}
+
+
 function find_difference_on_two_arrays(a1, a2) {
     var a = [],
         diff = [];

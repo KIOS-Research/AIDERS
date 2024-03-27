@@ -1,5 +1,6 @@
-import os
 import json
+import os
+
 import requests
 
 #####################################
@@ -68,23 +69,6 @@ def postRequestForOpenWaterSamplingValve(_droneName):
     response = requests.post(url, data=json_payload, headers=headers)
     return response.json()
 
-# Safedrone Post data of GPS reliability
-def postRequestForReliableNavigationValue(_droneId, _droneName, _value):
-    url = f"{rosBaseUrl}/droneReliableNavigationValue"
-    payload = {
-        "droneId": _droneId,
-        "droneName": _droneName,
-        "reliableNavigation": _value
-    }
-    headers = {
-        'Content-Type': 'application/json'
-    }    
-    json_payload = json.dumps(payload)
-
-    response = requests.post(url, data=json_payload, headers=headers)
-    return response.json()
-
-
 #####################################
 ############## MAVLINK ##############
 #####################################
@@ -103,58 +87,17 @@ def postRequestForMavlink(_urlSlug, _payload):
     response = requests.post(url, data=json_payload, headers=headers)
     return response.json()
 
-
 #####################################
-############## SESAME ###############
-#####################################
-
-ssmBaseUrl = f"http://localhost:{os.environ['SSM_API_PORT']}"
-
-def postRequestForSinadraStartOrStop(_operationId, _command):
-    url = f"{ssmBaseUrl}/sinadraStartOrStop"
-    payload = {
-        "operationId": _operationId,
-        "command": _command,
-    }
-    headers = {
-        'Content-Type': 'application/json'
-    }    
-    json_payload = json.dumps(payload)
-
-    response = requests.post(url, data=json_payload, headers=headers)
-    return response.json()
-
-#####################################
-############## SAFEML ###############
+############# ALGORITHM #############
 #####################################
 
-safemlBaseUrl = f"http://localhost:{os.environ['SAFEML_API_PORT']}"
+algorithmBaseUrl = f"http://localhost:{os.environ['ALG_API_PORT']}"
 
-def postDetectionStartToSafeML(_userId, _operationId, _droneId, _droneName, _detectionType):
-    url = f"{safemlBaseUrl}/startDetection"
-    payload = {
-        "userId": _userId,
-        "operationId": _operationId,
-        "droneId": _droneId,
-        "droneName": _droneName,
-        "detectionType": _detectionType
-    }
-    headers = {
-        'Content-Type': 'application/json'
-    }    
-    json_payload = json.dumps(payload)
-
-    response = requests.post(url, data=json_payload, headers=headers)
-    return response.json()
-
-def postDetectionStopToSafeML(_operationId, _droneId, _droneName, _detectionType):
-    url = f"{safemlBaseUrl}/stopDetection"
-    payload = {
-        "operationId": _operationId,
-        "droneId": _droneId,
-        "droneName": _droneName,
-        "detectionType": _detectionType
-    }
+def postRequestForLidarProcess(_lidarSessionId):
+    url = f"{algorithmBaseUrl}/processPointCloud"
+    payload =  {
+            "sessionId": _lidarSessionId,
+        }
     headers = {
         'Content-Type': 'application/json'
     }    

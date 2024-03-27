@@ -24,7 +24,6 @@ map.on('load', function () {
     add_no_drones_text_on_panel_sections(ELEMENT_IDS_OF_DYNAMIC_PANEL_LISTS_DRONES);
     add_no_devices_text_on_panel_sections(ELEMENT_IDS_OF_DYNAMIC_PANEL_LISTS_DEVICES);
     add_no_baloras_text_on_panel_sections(ELEMENT_IDS_OF_DYNAMIC_PANEL_LISTS_BALORAS);    
-    add_available_detector_types_on_panel(); // get a list of detected object types from the back-end
 
     setInterval(sendWebsocketMessage, wsInterval); // init websocket data timer
 
@@ -47,7 +46,7 @@ map.on('load', function () {
 // establish websocket connection and set up event listeners
 function initWebsocket(_address) {
     console.log(_address);
-    let ws = new WebSocket(_address);
+    let ws = new WebSocket(_address + '?token=' + encodeURIComponent(TOKEN));
     ws.addEventListener('open', function (event) {
         console.log('WebSocket connection established.');
     });
@@ -91,6 +90,7 @@ function handleIncomingWebsocketMessage(_wsMessage) {
             create_popup_for_a_little(WARNING_ALERT, _wsMessage['error_msg'], 10000);
         }
         droneUpdate(_wsMessage['drones']);
+        updateDroneFOVPolygons(_wsMessage['drones']);
         deviceUpdate(_wsMessage['devices']);
         baloraUpdate(_wsMessage['baloras']);
 
@@ -100,7 +100,139 @@ function handleIncomingWebsocketMessage(_wsMessage) {
 }
 
 
+const fovLineLayers = {};
 
+// update the drone's field of view polygons
+function updateDroneFOVPolygons(drones) {
+    drones.forEach(function (drone) {
+        let droneName = drone['drone_name'];
+
+        let localDrone = get_drone_object(droneName);
+
+        if (typeof(localDrone.droneObject) === "undefined") {
+            console.log("no local drone object");
+            return;
+        }
+
+        // hide layers if drone not selected
+        if (!localDrone.droneObject.selected) {
+            if (map.getLayer("fov-polygon-layer-" + droneName)) {
+                map.setLayoutProperty("fov-polygon-layer-" + droneName, 'visibility', 'none');
+                map.setLayoutProperty("fov-polygon-outline-" + droneName, 'visibility', 'none');
+                map.setLayoutProperty(droneName + '-to-fov-line', 'visibility', 'none');
+            }
+            return;
+        }
+
+        // make layers visible
+        if (map.getLayer("fov-polygon-layer-" + droneName)) {
+            map.setLayoutProperty("fov-polygon-layer-" + droneName, 'visibility', 'visible');
+            map.setLayoutProperty("fov-polygon-outline-" + droneName, 'visibility', 'visible');
+            map.setLayoutProperty(droneName + '-to-fov-line', 'visibility', 'visible');
+        }        
+
+        var fov_coordinates = JSON.parse(drone["telemetry"]["fov_coordinates"]);
+        var fov_points = [];
+        if (fov_coordinates == null) {
+            return;
+        }
+        fov_coordinates.forEach(function (point, i) {
+            fov_points.push([point[1], point[0]]);
+        });
+
+        var newData_fov = {
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [fov_points.concat([fov_points[0]])] // Ensure the polygon is closed
+            }
+        };
+
+        // Check if the source exists before setting data
+        if (map.getSource("fov-polygon-" + droneName)) {
+            map.getSource("fov-polygon-" + droneName).setData(newData_fov);
+            // calculate the center of the polygon
+            let sumLat = 0, sumLon = 0;
+            for (let i = 0; i < fov_coordinates.length; i++) {
+                sumLat += fov_coordinates[i][0];
+                sumLon += fov_coordinates[i][1];
+            }
+            let centerLat = sumLat / fov_coordinates.length;
+            let centerLon = sumLon / fov_coordinates.length;
+            // update the view direction line
+            fovLineLayers[droneName].setProps({
+                data: [
+                    {
+                        source: [drone["telemetry"]["lon"], drone["telemetry"]["lat"], drone["telemetry"]["alt"]],
+                        dest: [fov_coordinates[0][1], fov_coordinates[0][0], fov_coordinates[0][2]]
+                    },
+                    {
+                        source: [drone["telemetry"]["lon"], drone["telemetry"]["lat"], drone["telemetry"]["alt"]],
+                        dest: [fov_coordinates[1][1], fov_coordinates[1][0], fov_coordinates[1][2]]
+                    },
+                    {
+                        source: [drone["telemetry"]["lon"], drone["telemetry"]["lat"], drone["telemetry"]["alt"]],
+                        dest: [fov_coordinates[2][1], fov_coordinates[2][0], fov_coordinates[2][2]]
+                    },
+                    {
+                        source: [drone["telemetry"]["lon"], drone["telemetry"]["lat"], drone["telemetry"]["alt"]],
+                        dest: [fov_coordinates[3][1], fov_coordinates[3][0], fov_coordinates[3][2]]
+                    },
+                ]
+            });
+            
+                     
+        } else {
+
+            var test = new MapboxLayer({
+                id: droneName + '-to-fov-line',
+                type: LineLayer,
+                data: [],
+                fp64: false,
+                widthScale: 0.1,
+                getWidth: 15, //Change getWidth and widthScale to fine-tune the line width
+                opacity: 0.2,
+                widthUnit: 'meters',
+                // getStrokeWidth: 6,
+                getSourcePosition: (d) => d.source,
+                getTargetPosition: (d) => d.dest,
+                getColor: [250, 50, 50],
+            });
+            map.addLayer(test);
+            fovLineLayers[droneName] = test;
+
+
+            // If the source doesn't exist, add it to the map
+            map.addSource("fov-polygon-" + droneName, {
+                "type": "geojson",
+                "data": newData_fov
+            });
+
+            // Add a layer for the polygon
+            map.addLayer({
+                "id": "fov-polygon-layer-" + droneName,
+                "type": "fill",
+                "source": "fov-polygon-" + droneName,
+                "layout": {},
+                "paint": {
+                    "fill-color": "#888888",
+                    "fill-opacity": 0.2
+                }
+            });
+            // add an outline layer
+            map.addLayer({
+                "id": "fov-polygon-outline-" + droneName,
+                "type": "line",
+                "source": "fov-polygon-" + droneName,
+                "paint": {
+                    "line-color": "#ff5555", // Set the outline color here
+                    "line-width": 2,
+                    "line-opacity": 0.6
+                }
+            });
+        }
+    });
+} // end of updateDroneFOVPolygons()
 
 
 
@@ -110,13 +242,6 @@ function updateStreamFrames(drones) {
         let droneName = drone['drone_name'];
         changeStreamImageAndStatus(droneName, drone['video_frame_url'], "live-stream");
         changeStreamImageAndStatus(droneName, drone['detected_frame_url'], "detection-stream");
-        // SafeML
-        if (drone['detected_frame_safeml_url'] != undefined) {
-            changeStreamImageAndStatus(droneName, drone['detected_frame_safeml_url'], "detection-stream-safeml");
-        }
-        if (drone['detected_frame_deepknowledge_url'] != undefined) {
-            changeStreamImageAndStatus(droneName, drone['detected_frame_deepknowledge_url'], "detection-stream-deepknowledge");
-        }
     });
 }
 
@@ -423,14 +548,22 @@ function checkForDroneWarnings(drones) {
 // show a message if the mission point selection is in progress
 function checkForMissionPointSelection() {
 
-    var pointSelectionMessageDiv = document.getElementById("point-selection-message");
+    // var pointSelectionMessageDiv = document.getElementById("point-selection-message");
+    var drones = get_selected_drones();
 
-    if (selectionInProgress(get_selected_drones())) {
-        pointSelectionMessageDiv.style.display = "inline-block";
+    if (selectionInProgress(drones)) {
+        $("#selected-drones-list").html("")
+        drones.forEach(function (drone) {
+            $("#selected-drones-list").append("<div> - "+drone.droneID+"</div>");
+        });
+        $("#point-selection-message").show();
+        $("#selected-drones-list").show();
         $("#sidebar-overlay").show();
     }
     else {
-        pointSelectionMessageDiv.style.display = "none";
+        // pointSelectionMessageDiv.style.display = "none";
+        $("#point-selection-message").hide();
+        $("#selected-drones-list").hide();
         $("#sidebar-overlay").hide();
     }
 }
@@ -774,6 +907,7 @@ function updateDroneWS(telemetry, allDroneInfoArray, iteration) {
     document.getElementById('sidepanel-drone-battery-' + currentDrone.droneID).innerHTML = Math.round(telemetry.battery_percentage) + "%";
 
     setDroneAttributeValue(currentDrone.droneID, "droneState", telemetry.drone_state)
+    setDroneAttributeValue(currentDrone.droneID, "vtolState", telemetry.vtol_state);
 
     // adjust MAVLINK buttons based on the drone's status
     if (allDroneInfoArray[iteration].droneType == "MAVLINK") {
@@ -849,6 +983,8 @@ function updateDroneWS(telemetry, allDroneInfoArray, iteration) {
         droneObj.gimbal_angle = telemetry.gimbal_angle;
         droneObj.under_water = telemetry.water_sampler_in_water;
         droneObj.crpsStatus = crpsStatus;
+        droneObj.vtol_state = telemetry.vtol_state;
+        droneObj.droneType = allDroneInfoArray[iteration].droneType;
         displayDroneData(droneObj, currentDrone.droneID);
 
 

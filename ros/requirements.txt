@@ -2,4 +2,4 @@ mysql-connector-python
 flask
 pytz
 gunicorn
-haversine
+vector3d

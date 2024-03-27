@@ -1,0 +1,71 @@
+<div id="mavlinkLogsWrapper" 
+    style="display: none; position: absolute; left: 305px; bottom: 5px; padding:5px; width: 420px; max-height: 155px; background-color: #333; color: orange; opacity: 0.9;">
+    <div style="font-weight: bold; font-size: 14px; border-bottom: 1px solid orange; margin-bottom: 5px;">MAVLink Logs</div>
+    <a id="closeMavlinkLogsBtn" style="border: 1px solid orange; font-size: 8px; font-weight: bold; position: absolute; right: 0px; top: 0px; margin: 4px 6px; padding: 2px 6px;" action="#" class="btn">X</a>
+    <div id="mavlinkLogs" 
+        style="max-height: 120px; overflow-y: auto; font-size: 12px;">
+    </div>        
+</div>
+
+<a id="openMavlinkLogsBtn" style="display: none; background-color: #333; color: orange; border: 1px solid orange; font-size: 12px; font-weight: bold; position: absolute; left: 300px; bottom: 0px; margin: 5px 5px; padding: 2px 6px;" action="#" class="btn">
+    <i class="fa fa-exclamation-triangle" style="color: orange;"></i> MAVLink Logs
+</a>
+
+
+
+
+<script>
+    let lastMavlinkLogId = 0;
+
+    function updateLogs(_onPageLoad) {
+        $.ajax({
+            url: '/mavlinkGetLogs/' + OPERATION_ID + '/' + lastMavlinkLogId,
+            method: 'GET',
+            success: function(logs) {
+                let logDiv = $('#mavlinkLogs');
+                logs.forEach(function(log) {
+                    var date = new Date(log.time);
+                    var formattedTime = date.toLocaleString();                            
+                    logDiv.append('<div>' + formattedTime + ' - <b>' + log.drone__drone_name + '</b> - ' + log.message + '</div>');
+                    if (log.id > lastMavlinkLogId) {
+                        lastMavlinkLogId = log.id;  // update lastMavlinkLogId
+                    }
+                });
+                if(logs.length > 0) {
+                    if(_onPageLoad) {
+                        hideMavlinkLogsDiv();
+                    }
+                    else {
+                        showMavlinkLogsDiv();
+                        let audioPath = document.querySelector('#audioPathDing').dataset.path;
+                        let audio = new Audio(audioPath); // Create a new Audio object
+                        audio.play(); // Play the audio                  
+                    }
+                    logDiv[0].scrollTop = logDiv[0].scrollHeight;  // scroll to bottom
+                }
+            }
+        });
+    }
+
+    updateLogs(true);  // call once to get all logs
+    setInterval(function() {
+        updateLogs(false);
+    }, 3000);    // start polling
+
+    function showMavlinkLogsDiv() {
+        $('#mavlinkLogsWrapper').show();
+        $('#openMavlinkLogsBtn').hide();
+    }
+
+    function hideMavlinkLogsDiv() {
+        $('#mavlinkLogsWrapper').hide();
+        $('#openMavlinkLogsBtn').show();
+    }
+    
+    $('#closeMavlinkLogsBtn').click(function() {
+        hideMavlinkLogsDiv();
+    });
+    $('#openMavlinkLogsBtn').click(function() {
+        showMavlinkLogsDiv();
+    });
+</script>

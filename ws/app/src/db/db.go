@@ -26,3 +26,10 @@ func Init() {
 	}
 	fmt.Println("DB connection successful.")
 }
+
+// check if the token exists in the database
+func CheckTokenValidity(token string) bool {
+	var exists bool
+	Conn.QueryRow("SELECT EXISTS(SELECT 1 FROM authtoken_token WHERE authtoken_token.key=?)", token).Scan(&exists)
+	return exists
+}

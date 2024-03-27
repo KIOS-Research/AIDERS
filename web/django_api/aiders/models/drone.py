@@ -97,6 +97,8 @@ class Telemetry(models.Model):
     secondsOn = models.FloatField()
     gimbal_angle = models.FloatField()
     water_sampler_in_water = models.BooleanField(default=False)
+    vtol_state = models.CharField(max_length=50, null=True)
+    fov_coordinates = models.CharField(max_length=250, null=True)
     operation = models.ForeignKey(
         "Operation", on_delete=models.CASCADE, blank=True, null=True)
     mission_log = models.ForeignKey(
@@ -478,3 +480,13 @@ class MissionLog(models.Model):
             fields["drone"] = Drone.getDroneNameById(fields["drone"])
             fields["mission"] = Mission.getMissionDataById(fields["mission"])
         return [recordOfMissionLogsJson["fields"] for recordOfMissionLogsJson in listOfMissionLogsJson]
+
+
+
+class MavlinkLog(models.Model):
+    time = models.DateTimeField(auto_now=True)
+    message = models.CharField(max_length=255, blank=False)
+    drone = models.ForeignKey(
+        Drone, on_delete=models.CASCADE, blank=True, null=True)
+    operation = models.ForeignKey(
+        "Operation", on_delete=models.CASCADE, blank=True, null=True)

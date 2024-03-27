@@ -11,7 +11,16 @@ import (
 
 var upgrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool {
-		return true
+		// check the token before upgrading the connection
+		token := r.URL.Query().Get("token")
+		log.Println("Token:", token)
+		tokenIsValid := db.CheckTokenValidity(token)
+		if tokenIsValid {
+			log.Println("Token is valid")
+		} else {
+			log.Println("Token is invalid")
+		}
+		return tokenIsValid
 	},
 }
 
@@ -87,7 +96,7 @@ func HandleWebsocketConnection(w http.ResponseWriter, r *http.Request) {
 
 			responseJSON, jsonError = json.Marshal(allDataResponse)
 			if jsonError != nil {
-				log.Fatal(jsonError)
+				log.Println(jsonError)
 			}
 
 			// printableResponse, _ := json.MarshalIndent(allDataResponse, "", "    ")
@@ -102,7 +111,7 @@ func HandleWebsocketConnection(w http.ResponseWriter, r *http.Request) {
 
 			responseJSON, jsonError = json.Marshal(framesResponse)
 			if jsonError != nil {
-				log.Fatal(jsonError)
+				log.Println(jsonError)
 			}
 			// printableResponse, _ := json.MarshalIndent(framesResponse, "", "    ")
 			// fmt.Println(string(printableResponse))
@@ -172,12 +181,93 @@ func HandleWebsocketConnectionForLidar(w http.ResponseWriter, r *http.Request) {
 		}
 		responseJSON, jsonError = json.Marshal(responseMessage)
 		if jsonError != nil {
-			log.Fatal(jsonError)
+			log.Println(jsonError)
 		}
 
 		err = conn.WriteMessage(websocket.TextMessage, responseJSON) // respond to the client
 		if err != nil {
 			log.Println(err)
+			return
+		}
+	}
+}
+
+// Cv interface
+type IncomingMessageForCv struct {
+	OperationId                   int                              `json:"operationId"`
+	CrowdLocalizationLoaded       []db.LoadedDetectionDataPerDrone `json:"CrowdLocalizationLoaded"`
+	DisasterLoaded                []db.LoadedDetectionDataPerDrone `json:"DisasterLoaded"`
+	VehicleAndPersonTrackerLoaded []db.LoadedDetectionDataPerDrone `json:"VehicleAndPersonTrackerLoaded"`
+	ActiveCrowdLocalization       bool                             `json:"ActiveCrowdLocalization"`
+	ActiveDisasterClassification  bool                             `json:"ActiveDisasterClassification"`
+	ActiveVehicleAndPersonTracker bool                             `json:"ActiveVehicleAndPersonTracker"`
+}
+
+type CvResponseMessage struct {
+	CrowdLocalization       []*db.CrowdLocalization `db:"crowd_localization" json:"crowd_localization"`
+	DisasterClassification  []*db.DetectedDisaster  `db:"disaster_classification" json:"disaster_classification"`
+	VehicleAndPersonTracker []*db.DetectedTracker   `db:"vehicle_and_person_tracker" json:"vehicle_and_person_tracker"`
+}
+
+// initializes and maintains a websocket connection with the client for Computer Vision results
+// it reads the message sent by the client and responds with data retrieved from the database
+func HandleWebsocketConnectionForCv(w http.ResponseWriter, r *http.Request) {
+	// upgrade the HTTP connection to a WebSocket connection
+	conn, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	defer conn.Close()
+	log.Println("Cv client connected")
+	for {
+		_, p, err := conn.ReadMessage() // read message from the client
+		if err != nil {
+			log.Println(err)
+			return
+		}
+
+		var receivedMessage IncomingMessageForCv
+		// unmarshal the JSON data into a struct
+		err = json.Unmarshal(p, &receivedMessage)
+		if err != nil {
+			log.Println("Error decoding JSON:", err)
+			return
+		}
+		// Declare the data variables
+		var crowdLocalizationData []*db.CrowdLocalization
+		var disasterClassificationData []*db.DetectedDisaster
+		var vehicleAndPersonTrackerData []*db.DetectedTracker
+
+		// Get the data from the database only if the corresponding active flag is true
+		if receivedMessage.ActiveCrowdLocalization {
+			crowdLocalizationData = db.GetLatestCrowdLocalizationResultsForActiveDrones(receivedMessage.OperationId, receivedMessage.CrowdLocalizationLoaded)
+		}
+		if receivedMessage.ActiveDisasterClassification {
+			disasterClassificationData = db.GetLatestDetectedDisasterResultsForActiveDrones(receivedMessage.OperationId, receivedMessage.DisasterLoaded)
+		}
+		if receivedMessage.ActiveVehicleAndPersonTracker {
+			vehicleAndPersonTrackerData = db.GetLatestDetectedVehicleAndPersonTrackerForActiveDrones(receivedMessage.OperationId)
+		}
+
+		// Create the CvResponseMessage
+		responseMessage := CvResponseMessage{
+			CrowdLocalization:       crowdLocalizationData,
+			DisasterClassification:  disasterClassificationData,
+			VehicleAndPersonTracker: vehicleAndPersonTrackerData,
+		}
+
+		// Marshal the responseMessage into JSON
+		jsonResponse, err := json.Marshal(responseMessage)
+		if err != nil {
+			log.Println("Error encoding JSON:", err)
+			return
+		}
+
+		// Send the jsonResponse back to the client
+		err = conn.WriteMessage(websocket.TextMessage, jsonResponse)
+		if err != nil {
+			log.Println("Error sending message:", err)
 			return
 		}
 	}
