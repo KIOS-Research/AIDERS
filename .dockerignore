@@ -1,0 +1,16 @@
+/.env
+__pycache__
+__init__.py
+!web/django_api/aiders/models/__init__.py
+
+general.log
+logs/
+_backups/
+
+web/django_api/aiders/media/*
+web/django_api/aiders/migrations/
+web/django_api/results_TM/
+osm-data
+db-logs
+
+*/app/database/connection.py
