@@ -1,14 +1,24 @@
 /.env
+keycloak/.env
+/nginx/certs/*
 __pycache__
 __init__.py
 !web/django_api/aiders/models/__init__.py
+!streamcv/**/__init__.py
 # frames
+venv
+aidersenv
 
+db_states.txt
 general.log
 logs/
-
+_backups/
 web/django_api/aiders/media/*
+_remote_video_and_cv/media/*
 web/django_api/aiders/migrations/
+web/django_api/aiders/static/*
+!web/django_api/aiders/static/aiders
+!web/django_api/aiders/static/libs
 web/django_api/results_TM/
 osm-data
 db-logs
@@ -22,9 +32,8 @@ db-logs
 
 platform_geojson_files_roadnetwork_original.geojson
 platform_geojson_files_buildings.geojson
-cv/app/crowd_loc/weights/model_best.pth
-cv/app/crowd_loc/weights/model_best_half_kernels_05.pth
-
-# SESAME
-safeml/app/safeml/29092023_Good_Results/wasserstein/train_features.npy
+# cv/app/crowd_loc/weights/model_best.pth
+# cv/app/crowd_loc/weights/model_best_half_kernels_05.pth
+cvn/app/waldo/yolov7-W25_rect_1280_736_newDefaults-bs96-best-topk-200.onnx
+_remote_video_and_cv/cvnr/app/waldo/yolov7-W25_rect_1280_736_newDefaults-bs96-best-topk-200.onnx
 
