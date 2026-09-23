@@ -1,0 +1,21 @@
+mysql-connector-python
+flask
+pytz
+requests==2.24.0
+
+# computer vision
+opencv-python
+torch==2.0.0 # ~4 mins to install
+torchvision
+
+# waldo
+numpy==1.23.5
+
+# disaster classification
+Pillow
+
+# crowd localization
+yacs
+easydict
+
+onnxruntime

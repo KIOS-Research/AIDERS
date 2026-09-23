@@ -2,6 +2,7 @@ import os
 import threading
 
 # custom libs
+import httpRequests
 import requestHandler
 from flask import Flask, jsonify, request
 
@@ -13,40 +14,52 @@ def start(_port):
     
 
 # returns the active threads in this app
-@app.route('/cv/threads', methods=['GET'])
+@app.route('/cvn/threads', methods=['GET'])
 def getThreads():
     threadList = [{'name': t.name} for t in threading.enumerate() if not t.name.startswith(('Thread-', 'Dummy-'))]
     return jsonify(threadList)
 
 
 # called when a user requests detection start
-@app.route('/cv/startDetection', methods=['POST'])
+@app.route('/cvn/startDetection', methods=['POST'])
 def handleStartDetectionRequest():
     data = request.get_json()
     print("Detection start requested.")
     print(data)
+
+    # start the live stream capture for this drone
+    print("Starting live stream capture for drone:", data['droneName'])
+    httpRequests.startDroneLiveStreamCapture(data['droneId'], data['droneName'])
+    
     if(data["detectionType"] == "DISASTER_CLASSIFICATION"):
         print("Starting disaster classification detection.")
         requestHandler.startDroneDisasterClassification(data)
     elif(data["detectionType"] == "CROWD_LOCALIZATION"):
         print("Starting crowd detection.")
-        requestHandler.startDroneCrowdDetector(data)        
+        requestHandler.startDroneCrowdDetector(data)
+    elif(data["detectionType"] == "WALDO_DETECTOR"):
+        print("Starting Waldo detector.")
+        requestHandler.startDroneWaldoDetector(data)         
     else:
-        print("Starting Aiders tracker detection.")
-        requestHandler.startDroneStreamTracker(data)
+        # stop the live stream capture for this drone
+        httpRequests.stopDroneLiveStreamCapture(data['droneName'])        
+        print("ERROR: Invalid detector type requested.")
+        return "400"
     return "200"
 
 
 # called when a user requests detection stop
-@app.route('/cv/stopDetection', methods=['POST'])
+@app.route('/cvn/stopDetection', methods=['POST'])
 def handleStopDetectionRequest():
     data = request.get_json()
     print("Detection stop requested.")
     print(data)
     requestHandler.stopDetection(data)
+    # stop the live stream capture for this drone
+    httpRequests.stopDroneLiveStreamCapture(data['droneName'])
     return "200"
 
 
-@app.route('/cv/healthCheck', methods=['GET'])
+@app.route('/cvn/healthCheck', methods=['GET'])
 def handleHealthCheckRequest():
     return "200"

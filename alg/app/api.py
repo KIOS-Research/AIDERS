@@ -18,4 +18,12 @@ async def processLidarPointCloudToMeshBySessionId(request):
     return web.json_response(response_data)
 
 
-app.router.add_post("/processPointCloud", processLidarPointCloudToMeshBySessionId)
+async def handleHealthCheckRequest(request):
+    response_data = {
+        "status": "OK",
+        "message": "Health check successful"
+    }
+    return web.json_response(response_data)
+
+app.router.add_post("/alg/processPointCloud", processLidarPointCloudToMeshBySessionId)
+app.router.add_get("/alg/healthCheck", handleHealthCheckRequest)

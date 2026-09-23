@@ -179,7 +179,7 @@ class Tracker(object):
 
                                         # calculate detected object position
                                         # telemetry - lat, lon, alt, heading, gimbal_angle
-                                        dist_gps, lat2, long2 = track.calc_dist_gps_coords(
+                                        dist_gps, long2, lat2 = track.calc_dist_gps_coords(
                                             (x, y, w, h), telemetry[2], (telemetry[0], telemetry[1]), telemetry[3], telemetry[4], imH, imW
                                         )
 
