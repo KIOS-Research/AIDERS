@@ -1,7 +1,7 @@
-import os
-from datetime import datetime
-import pytz
 import json
+from datetime import datetime
+
+import pytz
 
 # custom libs
 from database.connection import MySQLConnector
@@ -14,9 +14,9 @@ timezone = pytz.utc # timezone = pytz.timezone(os.environ.get("TZ"))
 #####################################
 
 
-def getDroneByNameAndModel(_name, _model):
-    query = f"SELECT id, is_connected_with_platform FROM aiders_drone WHERE drone_name = %s AND model = %s LIMIT 1"
-    params = (_name, _model)
+def getDroneByName(_name):
+    query = f"SELECT id, is_connected_with_platform FROM aiders_drone WHERE drone_name = %s LIMIT 1"
+    params = (_name,)
     connector = MySQLConnector()
     result = connector.executeQuery(query, params, True)
     connector.close()
@@ -46,12 +46,12 @@ def getDroneState(_droneId):
     connector.close()
     return result
 
-def updateDroneConnectionStatus(_id, _status):
+def updateDroneConnectionStatusAndType(_id, _status, _type, _connection_type):
     if _status == 0:
-        query = f"UPDATE aiders_drone SET is_connected_with_platform = {_status}, build_map_activated = 0 WHERE id = %s"
+        query = "UPDATE aiders_drone SET is_connected_with_platform = %s, type = %s, connection_type = %s, build_map_activated = 0 WHERE id = %s"
     else:
-        query = f"UPDATE aiders_drone SET is_connected_with_platform = {_status} WHERE id = %s"
-    params = (_id,)
+        query = "UPDATE aiders_drone SET is_connected_with_platform = %s, type = %s WHERE id = %s"
+    params = (_status, _type, _connection_type, _id)
     connector = MySQLConnector()
     connector.executeQuery(query, params, False)
     connector.close()
@@ -61,18 +61,39 @@ def saveDrone(_drone):
         "INSERT INTO aiders_drone "
         "(drone_name, ip, model, camera_model, time, is_connected_with_platform, "
         "ballistic_available, water_sampler_available, weather_station_available, "
-        "multispectral_available, lidar_available, drone_movement_available, build_map_activated, type) "
-        "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+        "multispectral_available, lidar_available, drone_movement_available, build_map_activated, type, connection_type, configuration) "
+        "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
     )
     params = (
         _drone["name"], _drone["ip"], _drone["model"], _drone["cameraModel"], datetime.now(timezone), 1,
         _drone["ballisticAvailable"], _drone["waterSamplerAvailable"], _drone["weatherStationAvailable"],
-        _drone["multispectralAvailable"], _drone["lidarAvailable"], 0, 0, _drone["type"]
+        _drone["multispectralAvailable"], _drone["lidarAvailable"], 0, 0, _drone["type"], _drone["connection_type"], _drone["configuration"]
     )
     connector = MySQLConnector()
     droneId = connector.executeQuery(query, params, False)
     connector.close()
     return droneId
+
+def createDroneTelemetryLatest(_droneId):
+    connector = MySQLConnector()
+    
+    # Check if a record with the same drone_id already exists
+    check_query = "SELECT * FROM aiders_telemetrylatest WHERE drone_id = %s"
+    check_params = (_droneId,)
+    existing_record = connector.executeQuery(check_query, check_params)
+    
+    # If no record exists, insert a new one
+    if not existing_record:
+        insert_query = (
+            "INSERT INTO aiders_telemetrylatest "
+            "(drone_id, time_updated) "
+            "VALUES (%s, %s)"
+        )
+        insert_params = (_droneId, datetime.now(timezone))
+        connector.executeQuery(insert_query, insert_params, False)
+    
+    connector.close()
+
 
 def createDroneDetectionEntry(_droneId):
     query = (
@@ -113,6 +134,25 @@ def saveDroneTelemetry(_droneId, _secondsOn, _rosMsg, _missionLogId, _operationI
         _rosMsg.gpsSignal, _rosMsg.satelliteNumber, _rosMsg.homeLatitude, _rosMsg.homeLongitude, _rosMsg.droneState, _missionLogId,
         _rosMsg.gimbalAngle, False, _rosMsg.batteryPercentage, _operationId, _secondsOn, json.dumps(_fov_polygon), datetime.now(timezone)
     )
+    connector = MySQLConnector()
+    telemetryId = connector.executeQuery(query, params, False)
+    connector.close()
+    return telemetryId
+
+def updateDroneTelemetryLatest(_droneId, _secondsOn, _rosMsg, _missionLogId, _operationId, _fov_polygon):
+    query = (
+        "UPDATE aiders_telemetrylatest "
+        "SET lat = %s, lon = %s, alt = %s, heading = %s, velocity = %s, gps_signal = %s, satellites = %s, "
+        "homeLat = %s, homeLon = %s, drone_state = %s, mission_log_id = %s, gimbal_angle = %s, "
+        "water_sampler_in_water = %s, battery_percentage = %s, operation_id = %s, secondsOn = %s, fov_coordinates = %s, time_updated = %s "
+        "WHERE drone_id = %s "
+    )
+    params = (
+        _rosMsg.latitude, _rosMsg.longitude, _rosMsg.altitude, _rosMsg.heading, _rosMsg.velocity, _rosMsg.gpsSignal, _rosMsg.satelliteNumber, 
+        _rosMsg.homeLatitude, _rosMsg.homeLongitude, _rosMsg.droneState, _missionLogId,_rosMsg.gimbalAngle, 
+        False, _rosMsg.batteryPercentage, _operationId, _secondsOn, json.dumps(_fov_polygon), datetime.now(timezone),
+        _droneId,
+        )
     connector = MySQLConnector()
     connector.executeQuery(query, params, False)
     connector.close()

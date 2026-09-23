@@ -357,3 +357,223 @@ class ws_monitoring(AsyncWebsocketConsumer):
                 await self.send("")
         except Exception as e:
             print(e)
+
+
+class ChatConsumer(AsyncWebsocketConsumer):
+    """
+    WebSocket consumer for real-time chat functionality
+    """
+    
+    async def connect(self):
+        """Accept WebSocket connection and join the chat room group"""
+        self.room_id = self.scope['url_route']['kwargs']['room_id']
+        self.room_group_name = f'chat_{self.room_id}'
+        self.user = self.scope['user']
+        
+        if self.user.is_anonymous:
+            await self.close()
+            return
+            
+        # Join room group
+        await self.channel_layer.group_add(
+            self.room_group_name,
+            self.channel_name
+        )
+        
+        await self.accept()
+        
+        # Update user's membership and last seen
+        await self.update_user_membership()
+        
+        # Send user join notification to the room
+        await self.channel_layer.group_send(
+            self.room_group_name,
+            {
+                'type': 'user_join',
+                'user': self.user.username,
+                'user_id': self.user.id,
+                'timestamp': self.get_current_timestamp()
+            }
+        )
+    
+    async def disconnect(self, close_code):
+        """Leave room group and update user status"""
+        # Send user leave notification to the room
+        await self.channel_layer.group_send(
+            self.room_group_name,
+            {
+                'type': 'user_leave',
+                'user': self.user.username,
+                'user_id': self.user.id,
+                'timestamp': self.get_current_timestamp()
+            }
+        )
+        
+        # Leave room group
+        await self.channel_layer.group_discard(
+            self.room_group_name,
+            self.channel_name
+        )
+    
+    async def receive(self, text_data):
+        """Receive message from WebSocket"""
+        try:
+            text_data_json = json.loads(text_data)
+            message_type = text_data_json.get('type')
+            
+            if message_type == 'chat_message':
+                message = text_data_json['message']
+                
+                # Save message to database
+                chat_message = await self.save_message(message)
+                
+                # Send message to room group
+                await self.channel_layer.group_send(
+                    self.room_group_name,
+                    {
+                        'type': 'chat_message',
+                        'message': message,
+                        'user': self.user.username,
+                        'user_id': self.user.id,
+                        'message_id': chat_message.id,
+                        'timestamp': self.get_current_timestamp(),
+                        'is_edited': False
+                    }
+                )
+            
+            elif message_type == 'edit_message':
+                message_id = text_data_json['message_id']
+                new_content = text_data_json['message']
+                
+                # Edit message in database
+                success = await self.edit_message(message_id, new_content)
+                
+                if success:
+                    # Send edited message to room group
+                    await self.channel_layer.group_send(
+                        self.room_group_name,
+                        {
+                            'type': 'message_edited',
+                            'message': new_content,
+                            'user': self.user.username,
+                            'user_id': self.user.id,
+                            'message_id': message_id,
+                            'timestamp': self.get_current_timestamp(),
+                            'is_edited': True
+                        }
+                    )
+            
+            elif message_type == 'typing':
+                is_typing = text_data_json.get('is_typing', False)
+                
+                # Send typing indicator to room group (except sender)
+                await self.channel_layer.group_send(
+                    self.room_group_name,
+                    {
+                        'type': 'typing_indicator',
+                        'user': self.user.username,
+                        'user_id': self.user.id,
+                        'is_typing': is_typing,
+                        'sender_channel': self.channel_name
+                    }
+                )
+                
+        except Exception as e:
+            logger.error(f"Error in ChatConsumer.receive: {e}")
+    
+    # Handlers for different message types
+    async def chat_message(self, event):
+        """Send chat message to WebSocket"""
+        await self.send(text_data=json.dumps({
+            'type': 'chat_message',
+            'content': event['message'],
+            'user': event['user'],
+            'user_id': event['user_id'],
+            'message_id': event['message_id'],
+            'timestamp': event['timestamp'],
+            'is_edited': event['is_edited']
+        }))
+    
+    async def message_edited(self, event):
+        """Send edited message to WebSocket"""
+        await self.send(text_data=json.dumps({
+            'type': 'message_edited',
+            'content': event['message'],
+            'user': event['user'],
+            'user_id': event['user_id'],
+            'message_id': event['message_id'],
+            'timestamp': event['timestamp'],
+            'is_edited': event['is_edited']
+        }))
+    
+    async def user_join(self, event):
+        """Send user join notification to WebSocket"""
+        await self.send(text_data=json.dumps({
+            'type': 'user_join',
+            'user': event['user'],
+            'user_id': event['user_id'],
+            'timestamp': event['timestamp']
+        }))
+    
+    async def user_leave(self, event):
+        """Send user leave notification to WebSocket"""
+        await self.send(text_data=json.dumps({
+            'type': 'user_leave',
+            'user': event['user'],
+            'user_id': event['user_id'],
+            'timestamp': event['timestamp']
+        }))
+    
+    async def typing_indicator(self, event):
+        """Send typing indicator to WebSocket (except to sender)"""
+        if event['sender_channel'] != self.channel_name:
+            await self.send(text_data=json.dumps({
+                'type': 'typing_indicator',
+                'user': event['user'],
+                'user_id': event['user_id'],
+                'is_typing': event['is_typing']
+            }))
+    
+    # Database operations
+    @database_sync_to_async
+    def save_message(self, message):
+        """Save chat message to database"""
+        from .models import ChatRoom, ChatMessage
+        room = ChatRoom.objects.get(id=self.room_id)
+        chat_message = ChatMessage.objects.create(
+            room=room,
+            user=self.user,
+            content=message
+        )
+        return chat_message
+    
+    @database_sync_to_async
+    def edit_message(self, message_id, new_content):
+        """Edit a chat message"""
+        try:
+            from .models import ChatMessage
+            message = ChatMessage.objects.get(id=message_id, user=self.user)
+            message.edit_message(new_content)
+            return True
+        except ChatMessage.DoesNotExist:
+            return False
+    
+    @database_sync_to_async
+    def update_user_membership(self):
+        """Update or create user membership in the chat room"""
+        from .models import ChatRoom, ChatRoomMember
+        room = ChatRoom.objects.get(id=self.room_id)
+        membership, created = ChatRoomMember.objects.get_or_create(
+            room=room,
+            user=self.user,
+            defaults={'is_active': True}
+        )
+        if not created:
+            membership.update_last_seen()
+            membership.is_active = True
+            membership.save()
+    
+    def get_current_timestamp(self):
+        """Get current timestamp as string"""
+        from django.utils import timezone
+        return timezone.now().isoformat()

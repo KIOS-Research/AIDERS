@@ -1,5 +1,6 @@
 import os
 from datetime import datetime
+
 import pytz
 
 # custom libs
@@ -35,8 +36,8 @@ def getDroneConnectionState(_droneId):
 
 
 def deactivateSessionsAndCreateNew(_droneId):
-    updateQuery = f"UPDATE aiders_livestreamsession SET is_active = 0 WHERE drone_id = %s"
-    updateParams = (_droneId, )
+    updateQuery = f"UPDATE aiders_livestreamsession SET is_active = 0, end_time = %s WHERE drone_id = %s AND is_active = 1"
+    updateParams = (datetime.now(timezone), _droneId, )
 
     insertQuery = (
         "INSERT INTO aiders_livestreamsession "
@@ -62,12 +63,12 @@ def saveFrame(_droneId, _sessionId, _framePath):
     )
     frameParams = (_droneId, _sessionId, _framePath, datetime.now(timezone))
 
-    sessionQuery = "UPDATE aiders_livestreamsession SET latest_frame_url = %s WHERE id = %s"
-    sessionParams = (_framePath, _sessionId)
+    telemetryLatestQuery = "UPDATE aiders_telemetrylatest SET live_stream_frame_url = %s WHERE drone_id = %s"
+    telemetryLatestParams = (_framePath, _droneId)
 
     connector = MySQLConnector()
     connector.executeQuery(frameQuery, frameParams, False)
-    connector.executeQuery(sessionQuery, sessionParams, False)
+    connector.executeQuery(telemetryLatestQuery, telemetryLatestParams, False)
     connector.close()
 
 
@@ -77,3 +78,11 @@ def updateSessionEnd(_sessionId):
     connector = MySQLConnector()
     connector.executeQuery(query, params, False)
     connector.close()
+
+def updateLiveStreamConnectionStatus(_droneId):
+    query = "UPDATE aiders_drone SET is_live_stream_connected = 1 WHERE id = %s"
+    params = (_droneId, )
+    connector = MySQLConnector()
+    connector.executeQuery(query, params, False)
+    connector.close()
+

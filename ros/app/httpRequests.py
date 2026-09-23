@@ -1,11 +1,17 @@
-import os
-import time
 import json
-import requests
+import os
 import threading
+import time
 
-streamCaptureBaseUrl = f"http://localhost:{os.environ['LSC_API_PORT']}"
-detectionBaseUrl = f"http://localhost:{os.environ['CV_API_PORT']}"
+import requests
+
+
+if os.environ.get('VIDEO_AND_CV_REMOTE', 0) is True:
+    streamCaptureBaseUrl = f"http://{os.environ['NGINX_HOST']}:{os.environ['NGINX_PORT']}/remote/lsc"
+    detectionBaseUrl = f"http://{os.environ['NGINX_HOST']}:{os.environ['NGINX_PORT']}/remote/cvn"
+else:
+    streamCaptureBaseUrl = f"http://{os.environ['NGINX_HOST']}:{os.environ['NGINX_PORT']}/lsc"
+    detectionBaseUrl = f"http://{os.environ['NGINX_HOST']}:{os.environ['NGINX_PORT']}/cvn"
 
 
 def makePostRequestWithRetries(_url, _payload):

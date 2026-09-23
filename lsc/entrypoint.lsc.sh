@@ -2,8 +2,8 @@
 echo "-- Running entrypoint.lsc.sh --"
 
 # wait for mysql
-while ! nc -z $SQL_HOST $SQL_PORT; do
-    sleep 0.1
+while ! echo exit | nc -z $DB_HOST $DB_PORT > /dev/null 2>&1 ; do
+	sleep 1
 done
 
 # run the python application

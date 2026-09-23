@@ -1,0 +1,31 @@
+# Web framework
+fastapi
+uvicorn[standard]
+
+# Database
+mysql-connector-python
+pytz
+
+# Computer vision
+opencv-python-headless
+numpy
+torch
+torchvision
+supervision
+
+# ONNX inference
+onnxruntime-gpu
+
+# HRNet+ESPCN crowd localization (streamcv/ml/crowd_loc)
+yacs
+easydict
+
+
+nvidia-cublas-cu12
+nvidia-cudnn-cu12==9.*
+nvidia-cuda-runtime-cu12
+nvidia-curand-cu12
+nvidia-cufft-cu12
+nvidia-cusolver-cu12
+nvidia-cusparse-cu12
+nvidia-nvjitlink-cu12

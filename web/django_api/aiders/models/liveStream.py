@@ -12,11 +12,12 @@ from .drone import Drone
 
 
 class LiveStreamSession(models.Model):
-    start_time = models.DateTimeField(auto_now_add=True)
+    start_time = models.DateTimeField(auto_now_add=False, null=False)
     end_time = models.DateTimeField(auto_now_add=False, null=True, blank=True)
     drone = models.ForeignKey("Drone", on_delete=models.CASCADE)
     is_active = models.BooleanField(default=True)
     latest_frame_url = models.CharField(max_length=255, null=False)
+    recording_url = models.CharField(max_length=255, null=True, blank=True)
 
     def save(self, *args, **kwargs):
         # At any given time, there should be only one active Live Stream Session per

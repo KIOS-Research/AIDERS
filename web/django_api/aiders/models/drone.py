@@ -5,13 +5,13 @@ import json
 from django.contrib.auth import get_user_model
 from django.contrib.gis.db import models
 from django.core import serializers as coreDjangoSerializers
-from django.utils import timezone
 from django.db.models import Count
+from django.utils import timezone
 from logic.Constants import Constants
 
-
 from .detection import Detection
-from .operation import Operation, OnlineSession
+from .operation import OnlineSession, Operation
+
 
 class Drone(models.Model):
     drone_name = models.CharField(max_length=100, unique=True)
@@ -20,10 +20,13 @@ class Drone(models.Model):
     live_stream_url = models.CharField(max_length=200, blank=True, null=True)
     model = models.CharField(max_length=200)
     type = models.CharField(max_length=200, null=True)
+    connection_type = models.CharField(max_length=200, null=True)
+    configuration = models.CharField(max_length=200, null=True)
     camera_model = models.CharField(max_length=200)
     time = models.DateTimeField(null=True, blank=True)
     operation = models.ForeignKey("Operation", on_delete=models.SET_NULL, blank=True, null=True)
     is_connected_with_platform = models.BooleanField()
+    is_live_stream_connected = models.BooleanField(default=False, null=True)
     mission = models.ForeignKey("Mission", on_delete=models.SET_NULL, blank=True, null=True)
     ballistic_available = models.BooleanField(default=False)
     build_map_activated = models.BooleanField(default=False)
@@ -149,6 +152,28 @@ class Telemetry(models.Model):
             fields["drone"] = Drone.getDroneNameById(fields["drone"])
         return [recordOfTelemetriesJson["fields"] for recordOfTelemetriesJson in listOfTelemetryJson]
 
+class TelemetryLatest(models.Model):
+    time_updated = models.DateTimeField()
+    drone = models.ForeignKey(Drone, on_delete=models.CASCADE)
+    battery_percentage = models.FloatField(blank=True, null=True)
+    gps_signal = models.FloatField(blank=True, null=True)
+    satellites = models.IntegerField(blank=True, null=True)
+    heading = models.FloatField(blank=True, null=True)
+    velocity = models.FloatField(blank=True, null=True)
+    homeLat = models.FloatField(blank=True, null=True)
+    homeLon = models.FloatField(blank=True, null=True)
+    lat = models.FloatField(blank=True, null=True)
+    lon = models.FloatField(blank=True, null=True)
+    alt = models.FloatField(blank=True, null=True)
+    drone_state = models.CharField(max_length=100, blank=True, null=True)
+    secondsOn = models.FloatField(blank=True, null=True)
+    gimbal_angle = models.FloatField(blank=True, null=True)
+    water_sampler_in_water = models.BooleanField(default=False, blank=True, null=True)
+    vtol_state = models.CharField(max_length=50, blank=True, null=True)
+    fov_coordinates = models.CharField(max_length=250, blank=True, null=True)
+    operation = models.ForeignKey("Operation", on_delete=models.CASCADE, blank=True, null=True)
+    mission_log = models.ForeignKey("MissionLog", on_delete=models.CASCADE, blank=True, null=True)
+    live_stream_frame_url = models.CharField(max_length=255, blank=True, null=True)
 
 class ErrorMessage(models.Model):
     time = models.DateTimeField(auto_now=True)
@@ -361,6 +386,7 @@ class BuildMapAdvanceImage(models.Model):
 
 class MissionPoint(models.Model):
     point = models.PointField()
+    time = models.DateTimeField(auto_now_add=True)
     # mission = models.ForeignKey(Mission,on_delete=models.CASCADE)
 
     def getMissionPointsDataById(pk):

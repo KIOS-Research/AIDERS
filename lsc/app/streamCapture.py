@@ -13,8 +13,16 @@ import utils
 
 timezone = pytz.utc # timezone = pytz.timezone(os.environ.get("TZ"))
 
+# surpress ffmpeg opencv warnings
+os.environ['OPENCV_FFMPEG_LOGLEVEL'] = 'quiet'
+
+# Global dictionary to keep track of stop events for threads by name
+thread_stop_events = {}
+
 # save the frames of a drone's RTMP stream to the disk and its info to the database
 def saveDroneRtmpFrames(_droneId, _droneName, _sessionId):
+    threadName = f"frameCapture_{_droneName}"
+    stop_event = thread_stop_events.get(threadName)
 
     dbStreamUrl = database.queries.getDroneStreamURL(_droneId)  # retrieve stream URL from db
 
@@ -22,7 +30,8 @@ def saveDroneRtmpFrames(_droneId, _droneName, _sessionId):
         if dbStreamUrl[0] is not None:
             streamUrl = dbStreamUrl[0]  # custom stream URL from the database
         else:
-            streamUrl = f"rtmp://{os.environ['NET_IP']}/live/{_droneName}"  # RTMP stream URL
+            streamUrl = f"rtmp://{os.environ['NET_IP']}/live/{_droneName}"  # RTMP stream URL        
+
     else:
         return
     
@@ -33,6 +42,7 @@ def saveDroneRtmpFrames(_droneId, _droneName, _sessionId):
 
     # stream connection loop
     while True:
+        # print("START")
         videoStream = cv2.VideoCapture(streamUrl)
         if not videoStream.isOpened():
             if retries == maxRetries:
@@ -50,7 +60,8 @@ def saveDroneRtmpFrames(_droneId, _droneName, _sessionId):
 
     print(f"\n\U0001F4AA Stream capture from drone '{_droneName}' started.")
     startTime = time.time()
-    captureInterval = 1 / int(os.environ.get("STREAM_CAPTURE_FPS"))  # Capture X frames per second
+    database.queries.updateLiveStreamConnectionStatus(_droneId)
+    captureInterval = 1 / int(os.environ.get("COMPUTER_VISION_FPS"))  # Capture X frames per second
     nextCaptureTime = startTime + captureInterval
     frameCount = 0
 
@@ -58,22 +69,41 @@ def saveDroneRtmpFrames(_droneId, _droneName, _sessionId):
     if not os.path.exists(outputDirectory):
         os.mkdir(outputDirectory)        
 
+    numberOfFailedReads = 0
     # stream capture loop
     while videoStream.isOpened():
-        ret, frame = videoStream.read()
-        if not ret:
-            print(f"\n\U0001F4A9 Failed reading stream frame from drone '{_droneName}'...")
+        # Check for stop event in the capture loop
+        if stop_event and stop_event.is_set():
+            print(f"\n\U0001F6D1 Stop signal received for '{_droneName}'.")
             break
 
-        numberOfFailedReads = 0
+        ret, frame = videoStream.read()
+        # print(ret)
+        if not ret:
+            if(numberOfFailedReads > 1):
+                print(f"\n\U0001F4A9 Failed reading stream frame from drone '{_droneName}'...")
+                break
+            else:            
+                numberOfFailedReads = numberOfFailedReads + 1
+                # print("INCREASED FAILS ")
+                # print(numberOfFailedReads)
+                continue
+        else: 
+            numberOfFailedReads = 0
+            # print("RESET FAILS ")
+            # print(numberOfFailedReads)
+
+
+
+        # print(numberOfFailedReads)
         currentTime = time.time()
         if currentTime >= nextCaptureTime:
             currentDateTime = datetime.now(timezone).time()
             formattedDateTime = currentDateTime.strftime('%H-%M-%S')            
             
             framePath = f"{outputDirectory}/frame{frameCount:05d}_{formattedDateTime}.jpg"
-
-            cv2.imwrite(framePath, frame)                               # save the frame to the hard drive
+            # print(framePath)
+            cv2.imwrite(framePath, frame)                              # save the frame to the hard drive
             database.queries.saveFrame(_droneId, _sessionId, framePath) # save the frame info in the database
             frameCount += 1
             nextCaptureTime += captureInterval
@@ -82,13 +112,19 @@ def saveDroneRtmpFrames(_droneId, _droneName, _sessionId):
     cv2.destroyAllWindows()
 
     # check if drone is still connected and start capturing again
+    if stop_event and stop_event.is_set():
+        print(f"\n\U0001F6D1 Stop signal received for '{_droneName}'. Will not try to reconnect.")
+        sys.stdout.flush()
+        return
+    
     isStillConnected = database.queries.getDroneConnectionState(_droneId)
     if isStillConnected[0] == 1:
         # startDroneStreamCapture(_droneId, _droneName)
         print(f"\n\U0000267B Drone '{_droneName}' is still connected. Restarting stream capture.")
         saveDroneRtmpFrames(_droneId, _droneName, _sessionId)
     else:
-        database.queries.updateSessionEnd(_sessionId)   # mark session end time
+        # legacyLSC
+        # database.queries.updateSessionEnd(_sessionId)   # mark session end time
         print(f"\n\U0001F480 Drone '{_droneName}' is no longer connected. Stopping stream capture.")
         sys.stdout.flush()
 
@@ -96,15 +132,38 @@ def saveDroneRtmpFrames(_droneId, _droneName, _sessionId):
 # start the capturing loop on a new thread
 def startDroneStreamCapture(_droneId, _droneName):
     threadName = f"frameCapture_{_droneName}"
+
+    if utils.threadStarted(threadName):
+        print(f"\n\U0001F6A8 Stream capture thread for '{_droneName}' already running.")
+        return
+
     session = database.queries.getActiveDroneLiveSession(_droneId)  # retrieve last ACTIVE live stream session from DB
     if session is not None:
-        if utils.threadStarted(threadName):
-            print(f"\n\U0001F6A8 Stream capture thread for '{_droneName}' already running.")
-            return
-    sessionId = database.queries.deactivateSessionsAndCreateNew(_droneId)  # deactivate drone's sessions and create a new one
+        sessionId = session[0]
+        print(f"\n\U0001F6A8 There is an active live session for drone '{_droneName}'.")
+    else:
+        print(f"\n\U0001F6A8 Creating a new session for drone '{_droneName}'.")
+        sessionId = database.queries.deactivateSessionsAndCreateNew(_droneId)
+
+    print(f"\n\U0001F4C5 Session ID: {sessionId} for drone '{_droneName}'.")
 
     # start a thread that captures and saves the stream frames
-    if not utils.threadStarted(threadName):
+    if sessionId > 0:
+        stop_event = threading.Event()
+        thread_stop_events[threadName] = stop_event
         thread = threading.Thread(target=saveDroneRtmpFrames, args=(_droneId, _droneName, sessionId))
         thread.name = threadName
         thread.start()
+    else:
+        print(f"\n\U0001F6AB No active live stream session found for drone '{_droneName}'. Cannot start capture.")
+
+
+# stop the capturing thread
+def stopDroneStreamCapture(_droneName):
+    threadName = f"frameCapture_{_droneName}"
+    stop_event = thread_stop_events.get(threadName)
+    if stop_event:
+        stop_event.set()
+        print(f"\n\U0001F6D1 Stop signal sent to thread '{threadName}'.")
+    else:
+        print(f"\n\U0001F50D No stop event found for thread '{threadName}'.")

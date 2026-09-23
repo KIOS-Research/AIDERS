@@ -7,6 +7,7 @@ from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
 
 from .views import *
+from .views_adsb import get_aircraft_trail
 
 User = get_user_model()
 schema_view = get_schema_view(
@@ -27,21 +28,41 @@ droneUrls = [
     path("detection", DetectionRetrieveAPIView.as_view(), name="detection"),
     path("detectionStartOrStop", DetectionStartOrStopAPIView.as_view(), name="detection_start_or_stop"),
     
+
     # Lidar
     path("lidarStartOrStop", LidarStartOrStopAPIView.as_view(), name="lidar_start_or_stop"),
 
     path("live_stream_status", live_stream_status_api_view, name="live_stream_status"),
-    path("mission_points", MissionPointsListCreateAPIView.as_view(), name="mission_points"),
     path("mission", ExecuteMissionAPIView.as_view(), name="mission"),
     path("telemetry", TelemetryRetrieveAPIView.as_view(), name="telemetry"),
 ]
 
 operationUrls = [
+    # ADS-B Aircraft Tracking
+    path("adsb/aircraft/<str:icao24>/trail", get_aircraft_trail, name="adsb_aircraft_trail"),
+    
     path("algorithm/execute", ExecuteAlgorithmAPIView.as_view(), name="algorithm_execute"),
     path("algorithms/", AlgorithmListView.as_view(), name="algorithms"),
     path("algorithms/<int:pk>/<str:attr>", AlgorithmRetrieveView.as_view(), name="algorithm_result"),
-    path("ballistic", ballisticActivatedAPIView.as_view(), name="ballistic"),
+    
+    path("live_stream_sessions/", LiveStreamSessionListView.as_view(), name="live_stream_sessions"),
+    path("detection_sessions/", DetectionSessionListView.as_view(), name="detection_sessions"),
+    path("device_sessions/", DeviceSessionListView.as_view(), name="device_sessions"),
+
+    # path("ballistic", ballisticActivatedAPIView.as_view(), name="ballistic"), # unused?
+
     path("balora_pm25", BaloraPM25APIView.as_view(), name="balora_pm25"),
+    path("balora_pm1", BaloraPM1APIView.as_view(), name="balora_pm1"),
+    path("balora_nox", BaloraNOxAPIView.as_view(), name="balora_nox"),
+    path("balora_voc", BaloraVOCAPIView.as_view(), name="balora_voc"),
+
+    # running averages of balora telemetry
+    # path("balora_pm25_avg", BaloraPM25AverageAPIView.as_view(), name="balora_pm25_avg"),
+    # path("balora_pm1_avg", BaloraPM1AverageAPIView.as_view(), name="balora_pm1_avg"),
+    # path("balora_nox_avg", BaloraNOxAverageAPIView.as_view(), name="balora_nox_avg"),
+    # path("balora_voc_avg", BaloraVOCAverageAPIView.as_view(), name="balora_voc_avg"),
+    # path("balora_temp_avg", BaloraTempAverageAPIView.as_view(), name="balora_temp_avg"),
+    # path("balora_humidity_avg", BaloraHumidityAverageAPIView.as_view(), name="balora_humidity_avg"),
 
     # Build Map Urls
     path("buildMapSessions", buildMapSessionsAPIView.as_view(), name="build_map_sessions"),
@@ -51,14 +72,15 @@ operationUrls = [
     path("getActiveBuildMapSessionImages", buildMapGetLatestImages, name="getActiveBuildMapSessionImages"),
     path("getBuildMapImagesBySessionId", buildMapGetLatestImagesBySessionId, name="getBuildMapImagesBySessionId"),
 
-    path("control_device/", ControlDeviceDataAPIView.as_view(), name="control_device"),
-    path("detection_types", detection_types_api_view, name="detection_types"),
+    # path("control_device/", ControlDeviceDataAPIView.as_view(), name="control_device"),
+    # path("detection_types", detection_types_api_view, name="detection_types"), # unused?
     path("drones/", DroneListCreateAPIView.as_view(), name="drones"),
     path("drones/<drone_name>/", include(droneUrls)),
     path("external_api", ExternalAPI.as_view(), name="external_api"),
     path("fire_prediction", FirePredictionCreateAPIView.as_view(), name="fire_prediction"),
     path("flying_report", FlyingReportAPIView.as_view(), name="flying_report"),
     path("flying_reports", FlyingReportTableAPIView.as_view(), name="flying_reports"),
+    path("operation_report", OperationReportAPIView.as_view(), name="operation_report"),
     path("front_end_actions", frontEndUserInputAPIView.as_view(), name="front_end_actions"),
 
     # Lidar Urls
@@ -78,8 +100,6 @@ operationUrls = [
     path("water_collection_activated", waterCollectionActivatedAPIView.as_view(), name="water_collection_activated"),
     path("weather_station", WeatherStationAPIView.as_view(), name="weather_station"),
 
-    path("set_detected_object_description/<track_id>" , DetectedObjectDescriptionSetPIView.as_view(), name="set_detected_object_description"),
-
 
     path("getLatestManualObjects", getLatestManuallySetObject, name="getLatestManualObjects"),
     path("add_manual_object", ManuallySetObjectAddAPIView.as_view(), name="add_manual_object"),
@@ -93,9 +113,23 @@ operationUrls = [
 ]
 
 urlpatterns = [
-    path("api/operations/", OperationListCreateAPIView.as_view(), name="operations"),
+    # allauth
+    path('accounts/', include('allauth.urls')),
+    
+    # auth
+    path("login/", custom_login, name="login"),
+    path("logout/", custom_logout, name="logout"),
+    # path("", include("django.contrib.auth.urls")),
+    # path("api-auth/", include("rest_framework.urls"), name="api_auth"),
+    # path("register/", register_request, name="register"),
+
+    # path("api/operations/", OperationListCreateAPIView.as_view(), name="operations"), # unused?
     path("api/operations/<operation_name>/", include(operationUrls)),
     path("baloras/", BaloraList.as_view(), name="baloras_list"),
+    path("static-cameras/", StaticCameraList.as_view(), name="static_cameras_list"),
+    path("static-cameras/new", static_camera_create_view, name="static_camera_create"),
+    path("static-cameras/<int:camera_id>/edit", static_camera_edit_view, name="static_camera_edit"),
+    path("ground-vehicles/", GroundVehicleList.as_view(), name="ground_vehicles_list"),
     path("devices/", DeviceList.as_view(), name="devices_list"),
     path("devices/<device_name>/new_session", DeviceNewSessionView.as_view(), name="device_new_session"),
     path("devices/<device_name>/operation", DeviceModifyOperationView.as_view(), name="device_modify_operation"),
@@ -104,34 +138,53 @@ urlpatterns = [
     path("drones/", DroneList.as_view(), name="drones_list"),
     path("drones/<drone_name>/operation", DroneModifyOperationView.as_view(), name="drone_modify_operation"),
     path("baloras/<lora_name>/operation", BaloraModifyOperationView.as_view(), name="balora_modify_operation"),
-    path("fillDummy/", DatabaseFiller.as_view(), name="fill_dummy_data"),
+    # path("fillDummy/", DatabaseFiller.as_view(), name="fill_dummy_data"), # unused?
     path("Health-Check/Monitoring_Control_Devices", ControlDevicesMonitoringView.as_view(), name="control_devices_monitoring"),
     path("Health-Check/Monitoring_Control_Devices/<control_device>", ControlDeviceMonitoringView.as_view(), name="control_device_monitoring"),
     path("Health-Check/Monitoring_Platform", SystemMonitoringView.as_view(), name="platform_monitoring"),
     path("home", index, name="home"),
-    path("login/", login_view, name="login"),
-    path("logout/", logout_view, name="logout"),
+
     path("operations/", ManageOperationsView.as_view(), name="manage_operations"),
     path("operations/edit/<operation_name>", edit_operation_form_view, name="edit_operation"),
     path("operations/join/<operation_name>", join_operation_view, name="join_operation"),
     path("operations/leave", leave_operation_view, name="leave_operation"),
     path("operations/new", new_operation_form_view, name="new_operation"),
     path("operations/stop/<operation_name>", stop_operation_view, name="stop_operation"),
-    path("permissions/", ManagePermissionsView.as_view(), name="manage_permissions"),
-    path("permissions/<user_name>", ManageUserPermissionsView.as_view(), name="manage_permissions_user"),
+
+    # path("permissions/", ManagePermissionsView.as_view(), name="manage_permissions"),
+    # path("permissions/<user_name>", ManageUserPermissionsView.as_view(), name="manage_permissions_user"),
+
+    path('users/permissions/', users_permissions_view, name='users_permissions_view'),
+    path("deactivate_user_account/<user_id>", deactivate_user_account, name="deactivate_user_account"),
+    path("activate_user_account/<user_id>", activate_user_account, name="activate_user_account"),
+
+
+    # Mission
+    path("missionGetMissonPointsByMissionId", postGetMissionPointsFromMissionId, name="missionGetMissonPointsByMissionId"),
+
+    # Detection Objects
+    path("postGetAllActiveSessionDetectionObjectsFromOperationId/", postGetAllActiveSessionDetectionObjectsFromOperationId, name="getAllActiveSessionDetectionObjectsFromOperationId"),
+    path("postGetAllDetectionInfoFromDroneIdAndSessionId/", postGetAllDetectionInfoFromDroneIdAndSessionId, name="postGetAllDetectionInfoFromDroneIdAndSessionId/"),
+    path("postUpdateDetectionObjectDescriptionById/", postUpdateDetectionObjectDescriptionById, name="postUpdateDetectionObjectDescriptionById"),
+    
+    # Imports Images
     path("postBuildMapImg/", BuildMapImageView, name="build_map_img"),
     path("postDataImg/", DataImageView, name="data_img"),
     path("postDeviceImg/", DeviceImageView, name="device_img"),
-    path("register/", register_request, name="register"),
+
     path("settings/", settings_view, name="settings"),
+    path("weather/config/", weather_config_view, name="weather_config"),
+    path("weather/data/", weather_data_view, name="weather_data"),
+    path("weather/update/", manual_weather_update, name="manual_weather_update"),
+    path("api/weather/map-data/", weather_map_data, name="weather_map_data"),
+    path("about/", about_view, name="about"),
     path("safeDronesStart", safeDronesStart, name="safeDronesStart"),
     path("safeDronesStop", safeDronesStop, name="safeDronesStop"),
     path("safeDronesResults", safeDronesResults, name="safeDronesResults"),
     path("users/", UserList.as_view(), name="users"),
     path("users/<int:pk>/", UserDetail.as_view(), name="user_detail"),
-    path("", include("django.contrib.auth.urls")),
+
     path("", RedirectView.as_view(pattern_name="login", permanent=False)),
-    path("api-auth/", include("rest_framework.urls"), name="api_auth"),
     re_path(r"^redoc/$", schema_view.with_ui("redoc", cache_timeout=0), name="schema-redoc"),
     re_path(r"^swagger(?P<format>\.json|\.yaml)$", schema_view.without_ui(cache_timeout=0), name="schema-json"),
     re_path(r"^swagger/$", schema_view.with_ui("swagger", cache_timeout=0), name="schema-swagger-ui"),
@@ -161,10 +214,43 @@ urlpatterns = [
     # operation coverage points
     path("coverage_points/<operation_name>", operation_coverage_points, name="coverage-points"),
 
-    # drone session replay
+    # session replays
     path("drone_session_replay/<stream_type>/<session_id>", drone_session_replay, name="drone-session-replay"),
+    path("drone_video_session_replay/<session_id>", drone_video_session_replay, name="drone-video-session-replay"),
     path("device_session_replay/<session_id>", device_session_replay, name="device-session-replay"),
+
+    path("liveStreamCaptureStart/<pk>'", liveStreamCaptureStart, name="live_stream_capture_start"),
+
+    # KMZ save results
+    path("save_kmz_results/<operation_name>", save_kmz_results, name="save_kmz_results"),
+
+    path("save-user-defined-area/", save_user_defined_area, name="save_user_defined_area"),
+
+    # Crisis Classification
+    path("crisis_classification/update/<id>", crisisClassificationUpdate, name="crisis_classification_update"),
+
+    # mediaMTX hooks
+    path("mtx-stream-started/live/<drone_name>", mtx_stream_started, name="mtx-stream_started"),
+    path("mtx-stream-ended/live/<drone_name>", mtx_stream_ended, name="mtx-stream_ended"),
+
+    # Pilot Notification
+    path("sendPilotNotification/", sendPilotNotification, name="pilot_notification"),
+    path("getPilotNotifications/<operation_id>/<last_notification_id>", getPilotNotifications, name="get_pilot_notifications"),
+
+    # Device Notification
+    path("sendDeviceNotification/", sendDeviceNotification, name="device_notification"),
+    path("getDeviceNotifications/<operation_id>/<last_notification_id>", getDeviceNotifications, name="get_device_notifications"),
+    
+    path("platform_is_here/", platform_is_here, name="platform_is_here"),
+
+    # Chat System
+    path("chat/room/<pk>/", ChatRoomDetailView.as_view(), name="chat_room_detail"),
+    path("chat/api/room/<int:room_id>/messages/", chat_room_messages_api, name="chat_room_messages_api"),
+    path("chat/api/operation/<int:operation_id>/room/", get_operation_chat_room, name="get_operation_chat_room"),
+
+    path('media/<path:path>', serve_media, name='serve_media'),
 ]
 
-urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+# NOTE: media files are served via the authenticated serve_media view + nginx X-Accel-Redirect.
+# Do NOT re-add static(MEDIA_URL) here as it bypasses authentication.
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

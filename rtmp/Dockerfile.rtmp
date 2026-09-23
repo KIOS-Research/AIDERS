@@ -1,3 +1,9 @@
 FROM tiangolo/nginx-rtmp
 
+# Install netcat for health check
+RUN apt-get update && apt-get install -y --no-install-recommends netcat && rm -rf /var/lib/apt/lists/*
+
 COPY rtmp/nginx.conf /etc/nginx/nginx.conf
+
+# HealthCheck
+HEALTHCHECK --interval=30s CMD nc -z -w 5 localhost ${RTMP_PORT} || exit 1

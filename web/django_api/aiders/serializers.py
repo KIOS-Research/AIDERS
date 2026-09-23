@@ -2,7 +2,9 @@ from django.contrib.auth import get_user_model
 from drf_extra_fields.geo_fields import PointField
 from rest_framework import serializers
 
+
 from .models import *
+
 
 User = get_user_model()
 
@@ -57,6 +59,15 @@ class LoraSerializer(serializers.ModelSerializer):
         model = BaloraMaster
         fields = "__all__"
 
+class CrisisClassificationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CrisisClassification
+        fields = '__all__' 
+
+class PathPlanningOutputSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = pathPlanningOutput
+        fields = '__all__' 
 
 class LoraTelemetrySerializer(serializers.ModelSerializer):
     class Meta:
@@ -239,47 +250,12 @@ class LidarPointSerializer(serializers.ModelSerializer):
         model = LidarPoint
         fields = "__all__"
 
-
 class UserPreferencesSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserPreferences
         fields = "__all__"
 
 
-## Manually detected object 
-
-class DetectedObjectDescriptionSerializer(serializers.ModelSerializer):
-
-    updated_by_username = serializers.CharField(source='received_by.username', read_only=True)
-
-    class Meta:
-        model = DetectedObjectDescription
-        fields = [ 
-                            "id",
-                            "track_id",
-                            "description",
-                            "updated_by" ,
-                            "updated_at",
-                            "updated_by_username",
-                        ]
-        read_only_fields = [ 
-                            "id",
-                            "updated_by" ,
-                            "updated_at",
-                            "updated_by_username",
-                        ]
-
-    def create(self, validated_data ):
-        updated_by = validated_data.pop("updated_by")
-        Detected_Object_Description = DetectedObjectDescription.objects.create(    **validated_data, updated_by = updated_by) 
-        return Detected_Object_Description
-
-    def update(self, instance, validated_data):
-        updated_by = validated_data.pop("updated_by")
-        instance.description = validated_data.get('description', instance.description)
-        instance.updated_by = updated_by
-        instance.save()
-        return instance
 
 class ManuallySetObjectSerializer(serializers.ModelSerializer):
 
@@ -369,3 +345,6 @@ class ManuallySetObjectDescriptionSerializer(serializers.ModelSerializer):
                                                                                         updated_by = updated_by) 
 
         return Manually_Set_Object_Description
+    
+    
+

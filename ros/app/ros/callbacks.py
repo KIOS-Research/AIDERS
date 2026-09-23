@@ -1,7 +1,7 @@
 import json
+import math
 import re
 import time
-import math
 
 # custom libs
 import database.queries
@@ -27,7 +27,7 @@ def droneConnectedOrDisconnected(_rosMsg):
     waterSamplerAvailable = jsonData.get("WaterSampler", False)
     weatherStationAvailable = jsonData.get("WeatherStation", False)    
     droneIsRequestingConnection = jsonData["Connected"]
-    drone = database.queries.getDroneByNameAndModel(droneName, droneModel)  # retrieve drone from database
+    drone = database.queries.getDroneByName(droneName)  # retrieve drone from database
     if droneIsRequestingConnection == "True":
         if drone is not None:
             droneId = drone[0]
@@ -35,7 +35,7 @@ def droneConnectedOrDisconnected(_rosMsg):
             if droneIsConnected == 1:
                 print(f"\U0001F44D Drone '{droneName}' is already connected")
             else:
-                database.queries.updateDroneConnectionStatus(droneId, 1)  # flag drone as connected in the database
+                database.queries.updateDroneConnectionStatusAndType(droneId, 1, "DJI", "ROS")  # flag drone as connected in the database
                 print(f"\U0001F504 Drone '{droneName}' has re-connected")
         else:
             droneObj = {
@@ -48,22 +48,27 @@ def droneConnectedOrDisconnected(_rosMsg):
                 "weatherStationAvailable": weatherStationAvailable,
                 "multispectralAvailable": multispectralAvailable,
                 "lidarAvailable": lidarAvailable,
-                "type": "ROS"
-            }            
+                "type": "DJI",
+                "connection_type": "ROS",
+                "configuration": "MULTICOPTER",
+            }
             droneId = database.queries.saveDrone(droneObj)      # create drone entry in the database
+            database.queries.createDroneTelemetryLatest(droneId) # create entry in aiders_telemetrylatest
             database.queries.createDroneDetectionEntry(droneId) # create entry in aiders_detection
             print(f"\U0001F680 Drone '{droneName}' has connected")
 
         ros.publishers.performHandshake(droneName)                          # send connection acknowledgement
         ros.subscribers.createDroneSubscribers(droneId, droneName)          # create ROS subscribers for this drone
-        try:
-            httpRequests.startDroneLiveStreamCapture(droneId, droneName)    # request stream capture start
-        except:
-            print("\U0001F6AB Live stream capture service is unreachable")        
+
+        # legacyLSC
+        # try:
+        #     httpRequests.startDroneLiveStreamCapture(droneId, droneName)    # request stream capture start
+        # except:
+        #     print("\U0001F6AB Live stream capture service is unreachable")        
     else:
         if drone is not None:
             droneId = drone[0]        
-            database.queries.updateDroneConnectionStatus(droneId, 0)                        # flag drone as disconnected
+            database.queries.updateDroneConnectionStatusAndType(droneId, 0, "DJI", "ROS")     # flag drone as disconnected
             # database.queries.updateDroneDetectionStatus(droneId, "DETECTION_DISCONNECTED")  # flag detection as disconnected
             # database.queries.updateDroneDetectionSessionStatus(droneId, 0)                  # flag detection status as inactive
             ros.subscribers.stopDroneSubscribers(droneName)                                 # stop subscribers
@@ -81,7 +86,10 @@ def droneTelemetryReceived(_rosMsg, _args):
         mission = database.queries.getDroneMissionLogId(droneId)
         missionLogId = mission[0]
     operation = database.queries.getDroneOperationId(droneId)
-    operationId = operation[0]
+    try:
+        operationId = operation[0]
+    except:
+        operationId = None
 
     fov_polygon = []
     if _rosMsg.altitude > 1:
@@ -97,7 +105,8 @@ def droneTelemetryReceived(_rosMsg, _args):
             math.radians(_rosMsg.gimbalAngle+90),
             math.radians(_rosMsg.heading+180 % 360))    
 
-    database.queries.saveDroneTelemetry(droneId, connectionDuration, _rosMsg, missionLogId, operationId, fov_polygon) # save telemetry data to the database    
+    database.queries.saveDroneTelemetry(droneId, connectionDuration, _rosMsg, missionLogId, operationId, fov_polygon) # save telemetry data to the database
+    database.queries.updateDroneTelemetryLatest(droneId, connectionDuration, _rosMsg, missionLogId, operationId, fov_polygon)
 
 
 
@@ -236,7 +245,6 @@ def deviceTelemetryReceived(_rosMsg, _args):
     operation = database.queries.getDeviceOperationId(deviceId)
     operationId = operation[0]
     database.queries.saveDeviceTelemetry(deviceId, connectionDuration, _rosMsg, operationId) # save telemetry data to the database    
-
 
 ##################################
 ############# LORA ###############

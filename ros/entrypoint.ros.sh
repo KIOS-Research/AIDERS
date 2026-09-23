@@ -1,7 +1,7 @@
 #!/bin/bash
 echo "-- Running entrypoint.ros.sh --"
 
-export ROS_IP="$NET_IP"
+export ROS_IP=${NET_IP}
 export ROS_MASTER_URI=http://"${ROS_IP}":11311
 
 echo "ROS MASTER URI: ${ROS_MASTER_URI}"
@@ -30,8 +30,10 @@ rosrun rosserial_python serial_node.py /dev/loraReceiver 2> /dev/null &
 sleep 2
 
 # wait for mysql
-while ! nc -z $SQL_HOST $SQL_PORT; do
-    sleep 0.1
+# NOTE: For some reason telnet is not working properly
+while ! echo exit | nc -z ${DB_HOST} ${DB_PORT} > /dev/null 2>&1 ; do
+	sleep 1
+	echo "run"
 done
 
 # run the python application
