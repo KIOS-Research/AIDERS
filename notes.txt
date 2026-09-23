@@ -1,0 +1,207 @@
+
+
+MAVLink compatibility
+
+
+SQL Database
+Kafka
+Keycloak
+
+
+
+def operation_coverage_points(request, operation_name):
+    # from scipy.spatial import ConvexHull
+    from alpha_shapes import Alpha_Shaper
+    from shapely.geometry import mapping
+    operation = Operation.objects.filter(operation_name=operation_name).last()
+
+    print(request.body, flush=True)
+    requestData = json.loads(request.body)
+
+    # get from and to datetimes
+    fromDatetimeStr = f"{requestData['fromDate']} {requestData['fromTime']}"
+    fromDatetimeObj = datetime.datetime.strptime(fromDatetimeStr, '%Y-%m-%d %H:%M')    
+    toDatetimeStr = f"{requestData['toDate']} {requestData['toTime']}"
+    toDatetimeObj = datetime.datetime.strptime(toDatetimeStr, '%Y-%m-%d %H:%M')    
+
+    dronePolygons = []
+    droneData = []
+    devicePolygons = []
+    deviceData = []
+    baloraPolygons = []
+    baloraData = []
+    droneAllTelemetryPoints = []
+    deviceAllTelemetryPoints = []
+    baloraAllTelemetryPoints = []
+
+    # drones
+    if(requestData['getDrones'] == True):
+        if(requestData['getPoints'] == True):
+            droneAllTelemetryPoints = list(Telemetry.objects.filter(operation_id=operation.id, time__gte=fromDatetimeObj, time__lt=toDatetimeObj)[0:100000].values('lat', 'lon'))
+        drones = Drone.objects.all()
+        for drone in drones:
+            try:
+                droneTelemetry = list(Telemetry.objects.filter(drone_id=drone.id, operation_id=operation.id, time__gte=fromDatetimeObj, time__lt=toDatetimeObj)[0:100000].values('lat', 'lon', 'secondsOn', 'time'))
+                previousSecondsOn = 0
+                currentSecondsOn = 0
+                # break down drone's telemetry into sessions based on the secondsOn field
+                droneTelemetrySessions = []
+                sessionPoints = []
+                for t in droneTelemetry:
+                    if(t['lat'] != 0 and t['lon'] != 0):
+                        currentSecondsOn = t['secondsOn']
+                        if abs(currentSecondsOn - previousSecondsOn) > 29:
+                            if(len(sessionPoints)) > 0:
+                                droneTelemetrySessions.append(sessionPoints)
+                            sessionPoints = []
+                        sessionPoints.append([t['lat'], t['lon'], t['time']])
+                        previousSecondsOn = currentSecondsOn
+
+                if(len(sessionPoints)) > 0:
+                    droneTelemetrySessions.append(sessionPoints) # append the last session
+
+                # # loop telemetry sessions and create polygons
+                # for s in droneTelemetrySessions:
+                #     droneTelemetryTuple = [(d[0], d[1]) for d in s]
+                #     hull = ConvexHull(droneTelemetryTuple)
+                #     dronePolygon = json.dumps([hull.points[i].tolist() for i in hull.vertices])
+                #     dronePolygons.append(dronePolygon)
+                #     droneData.append([drone.drone_name, s[0][2]]) # drone name and start time of session
+
+                # loop telemetry sessions and create polygons
+                for s in droneTelemetrySessions:
+                    droneTelemetryTuple = [(d[0], d[1]) for d in s]
+                    try:
+                        shaper = Alpha_Shaper(droneTelemetryTuple)
+                        alpha_shape = shaper.get_shape(alpha=2)
+                        shapeMapping = mapping(alpha_shape)
+                        for i in range(len(shapeMapping['coordinates'])):
+                            dronePolygon = json.dumps(shapeMapping['coordinates'][i])
+                            dronePolygons.append(dronePolygon)
+                            droneData.append([drone.drone_name, s[0][2]])
+                    except Exception as e:
+                        print(e, flush=True)                
+
+            except Exception as e:
+                print(e)
+
+    #devices
+    if(requestData['getDevices'] == True):
+        if(requestData['getPoints'] == True):
+            deviceAllTelemetryPoints = list(DeviceTelemetry.objects.filter(operation_id=operation.id, time__gte=fromDatetimeObj, time__lt=toDatetimeObj)[0:100000].values('latitude', 'longitude'))
+        devices = Device.objects.all()
+        for device in devices:
+            try:
+                deviceTelemetry = list(DeviceTelemetry.objects.filter(device_id=device.id, operation_id=operation.id, time__gte=fromDatetimeObj, time__lt=toDatetimeObj)[0:100000].values('latitude', 'longitude', 'secondsOn', 'time'))
+                previousSecondsOn = 0
+                currentSecondsOn = 0
+                # break down device's telemetry into sessions based on the secondsOn field
+                deviceTelemetrySessions = []
+                sessionPoints = []
+                for t in deviceTelemetry:
+                    if(t['latitude'] != 0 and t['longitude'] != 0):
+                        currentSecondsOn = t['secondsOn']
+                        if abs(currentSecondsOn - previousSecondsOn) > 29:
+                            if(len(sessionPoints)) > 0:
+                                deviceTelemetrySessions.append(sessionPoints)
+                            sessionPoints = []
+
+                        sessionPoints.append([t['latitude'], t['longitude'], t['time']])
+                        previousSecondsOn = currentSecondsOn
+
+                if(len(sessionPoints)) > 0:
+                    deviceTelemetrySessions.append(sessionPoints) # append the last session
+
+                # # loop telemetry sessions and create polygons
+                # for s in deviceTelemetrySessions:
+                #     deviceTelemetryTuple = [(d[0], d[1]) for d in s]
+                #     hull = ConvexHull(deviceTelemetryTuple)
+                #     devicePolygon = json.dumps([hull.points[i].tolist() for i in hull.vertices])
+                #     devicePolygons.append(devicePolygon)
+                #     deviceData.append([device.name, s[0][2]])
+                
+                # loop telemetry sessions and create polygons
+                for s in deviceTelemetrySessions:
+                    deviceTelemetryTuple = [(d[0], d[1]) for d in s]
+                    try:
+                        shaper = Alpha_Shaper(deviceTelemetryTuple)
+                        alpha_shape = shaper.get_shape(alpha=5)
+                        shapeMapping = mapping(alpha_shape)
+                        for i in range(len(shapeMapping['coordinates'])):
+                            devicePolygon = json.dumps(shapeMapping['coordinates'][i])
+                            devicePolygons.append(devicePolygon)
+                            deviceData.append([device.name, s[0][2]])
+                    except Exception as e:
+                        print(e, flush=True)                  
+
+            except Exception as e:
+                print(e)
+
+    # baloras
+    if(requestData['getBaloras'] == True):
+        if(requestData['getPoints'] == True):
+            baloraAllTelemetryPoints = list(BaloraTelemetry.objects.filter(operation_id=operation.id, time__gte=fromDatetimeObj, time__lt=toDatetimeObj)[0:100000].values('latitude', 'longitude'))
+        baloras = Balora.objects.all()
+        for balora in baloras:
+            try:
+                baloraTelemetry = list(BaloraTelemetry.objects.filter(balora_id=balora.id, operation_id=operation.id, time__gte=fromDatetimeObj, time__lt=toDatetimeObj)[0:100000].values('latitude', 'longitude', 'secondsOn', 'time'))
+                previousSecondsOn = 0
+                currentSecondsOn = 0
+                # break down balora's telemetry into sessions based on the secondsOn field
+                baloraTelemetrySessions = []
+                sessionPoints = []
+                for t in baloraTelemetry:
+                    if(t['latitude'] != 0 and t['longitude'] != 0):
+                        currentSecondsOn = t['secondsOn']
+                        if abs(currentSecondsOn - previousSecondsOn) > 29:
+                            if(len(sessionPoints)) > 0:
+                                baloraTelemetrySessions.append(sessionPoints)
+                            sessionPoints = []
+
+                        sessionPoints.append([t['latitude'], t['longitude'], t['time']])
+                        previousSecondsOn = currentSecondsOn
+
+                if(len(sessionPoints)) > 0:
+                    baloraTelemetrySessions.append(sessionPoints) # append the last session
+
+                # # loop telemetry sessions and create polygons
+                # for s in baloraTelemetrySessions:
+                #     baloraTelemetryTuple = [(d[0], d[1]) for d in s]
+                #     hull = ConvexHull(baloraTelemetryTuple)
+                #     baloraPolygon = json.dumps([hull.points[i].tolist() for i in hull.vertices])
+                #     baloraPolygons.append(baloraPolygon)
+                #     baloraData.append([balora.name, s[0][2]])
+
+                # loop telemetry sessions and create polygons
+                for s in baloraTelemetrySessions:
+                    baloraTelemetryTuple = [(d[0], d[1]) for d in s]
+                    try:
+                        shaper = Alpha_Shaper(baloraTelemetryTuple)
+                        alpha_shape = shaper.get_shape(alpha=5)
+                        shapeMapping = mapping(alpha_shape)
+                        for i in range(len(shapeMapping['coordinates'])):
+                            baloraPolygon = json.dumps(shapeMapping['coordinates'][i])
+                            baloraPolygons.append(baloraPolygon)
+                            baloraData.append([balora.name, s[0][2]])
+                    except Exception as e:
+                        print(e, flush=True)                
+
+
+            except Exception as e:
+                print(e)
+
+    
+
+    response_data = {
+        'dronePolygons': dronePolygons,
+        'droneData': droneData,
+        'devicePolygons': devicePolygons,
+        'deviceData': deviceData,
+        'baloraPolygons': baloraPolygons,
+        'baloraData': baloraData,
+        'droneAllTelemetryPoints': json.dumps(droneAllTelemetryPoints),
+        'deviceAllTelemetryPoints': json.dumps(deviceAllTelemetryPoints),
+        'baloraAllTelemetryPoints': json.dumps(baloraAllTelemetryPoints),
+    }
+
+    return JsonResponse(response_data, safe=False)

@@ -1,2 +1,5 @@
 ffmpeg-python
 flask
+websocket-client
+kafka-python
+requests

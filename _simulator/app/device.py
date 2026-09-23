@@ -1,18 +1,19 @@
-import rospy
+import websocket
 import random
+import threading
 import time
+import json
+import ssl
 import requests
 import os
 from datetime import datetime
 
 import utils
 
-# ROS messages
-from std_msgs.msg import String
-from kios.msg import TelemetryDevice
 
 class Device:
     def __init__(self, name, model, ipAddress, frequency, netIp):
+        self.ws_url = f"ws://{netIp}:8888/wsi/deviceConnect/{name}"
         self.name = name
         self.model = model
         self.ipAddress = ipAddress
@@ -20,43 +21,63 @@ class Device:
         self.netIp = netIp
         self.latitude = random.uniform(35.15519455, 35.16004460)
         self.longitude = random.uniform(33.37611508, 33.38052320)
-        self.heading = random.randint(0,359)
+        self.altitude = 1.0
+        self.heading = random.randint(0, 359)
+        self.batteryPercentage = 100
         self.connected = False
         self.previousDirection = "n"
         self.postPhotoInterval = 5
-
-        #publishers
-        self.deviceIdsPublisher = rospy.Publisher("/deviceIds", String, queue_size=10)
-        self.telemetryPublisher = rospy.Publisher(f"/{self.name}/TelemetryDevice", TelemetryDevice, queue_size=10)
-
-        # subscribers
-        rospy.Subscriber(f"/{self.name}/handshake", String, self.handshakeReceived)
-
+        self.ws = None
 
     def start(self):
         utils.myPrint(f"Simulating device: {self.name}")
         self.loop()
 
-
     def loop(self):
-        rate = rospy.Rate(float(self.frequency))  # adjust the publishing rate
+        rate = float(1 / float(self.frequency))
         nextPostPhotoTime = time.time() + self.postPhotoInterval
         while True:
             if not self.connected:
                 self.connectToPlatform()
+                time.sleep(3)
             else:
                 self.move()
                 self.publishTelemetry()
                 if time.time() >= nextPostPhotoTime:
                     self.postPhoto()
                     nextPostPhotoTime += self.postPhotoInterval
-            rate.sleep()
-
+            time.sleep(rate)
 
     def connectToPlatform(self):
-        message = f"{{\"Name\":\"{self.name}\",\"Model\":\"{self.model}\",\"Ip\":\"{self.ipAddress}\",\"Connected\":\"True\"}}"
-        self.deviceIdsPublisher.publish(message)
+        utils.myPrint(f"Device {self.name} connecting to {self.ws_url}")
+        self.ws = websocket.WebSocketApp(
+            self.ws_url,
+            on_open=self.on_open,
+            on_message=self.on_message,
+            on_error=self.on_error,
+            on_close=self.on_close,
+        )
+        ws_thread = threading.Thread(
+            target=lambda: self.ws.run_forever(
+                sslopt={"cert_reqs": ssl.CERT_NONE, "check_hostname": False}
+            )
+        )
+        ws_thread.daemon = True
+        ws_thread.start()
 
+    def on_open(self, ws):
+        self.connected = True
+        utils.myPrint(f"Device {self.name} connected")
+
+    def on_message(self, ws, message):
+        utils.myPrint(f"Device {self.name} received: {message}")
+
+    def on_error(self, ws, error):
+        utils.myPrint(f"Device {self.name} WS error: {error}")
+
+    def on_close(self, ws, close_status_code, close_msg):
+        self.connected = False
+        utils.myPrint(f"Device {self.name} disconnected")
 
     def move(self):
         stepSize = random.uniform(0.000005, 0.000019)
@@ -64,38 +85,22 @@ class Device:
         self.latitude += deltaLatitude
         self.longitude += deltaLongitude
         self.previousDirection = direction
-        heading = utils.randomHeadingIncrement(self.heading, (5,20))
-        self.heading = heading
-
+        self.heading = utils.randomHeadingIncrement(self.heading, (5, 20))
 
     def publishTelemetry(self):
-        telemetryMessage = TelemetryDevice()
-        telemetryMessage.latitude = self.latitude
-        telemetryMessage.longitude = self.longitude
-        telemetryMessage.altitude = 100.0
-        telemetryMessage.heading = self.heading
-        telemetryMessage.orientation_x = 0.1
-        telemetryMessage.orientation_y = 0.2
-        telemetryMessage.orientation_z = 0.3
-        telemetryMessage.accelerometer_x = 0.4
-        telemetryMessage.accelerometer_y = 0.5
-        telemetryMessage.accelerometer_z = 0.6
-        telemetryMessage.gyroscope_x = 0.7
-        telemetryMessage.gyroscope_y = 0.8
-        telemetryMessage.gyroscope_z = 0.9
-        telemetryMessage.geomagnetic_x = 1.0
-        telemetryMessage.geomagnetic_y = 1.1
-        telemetryMessage.geomagnetic_z = 1.2
-        telemetryMessage.light = 100.0
-        telemetryMessage.step = 500.0
-        telemetryMessage.pressure = 1013.25
-        telemetryMessage.proximity = 0.5
-        telemetryMessage.battery_percentage = 75.0
-        self.telemetryPublisher.publish(telemetryMessage)
-
+        telemetryData = {
+            "telemetry": {
+                "latitude": self.latitude,
+                "longitude": self.longitude,
+                "altitude": self.altitude,
+                "heading": self.heading,
+                "batteryPercentage": self.batteryPercentage,
+            }
+        }
+        self.ws.send(json.dumps(telemetryData))
 
     def postPhoto(self):
-        url = f"http://{self.netIp}:8000/postDeviceImg/"
+        url = f"http://{self.netIp}:8888/postDeviceImg/"
 
         payload = {
             "deviceName": self.name,
@@ -118,9 +123,4 @@ class Device:
             print(f"Request {url} successful!")
         else:
             print(f"Request {url} failed.")
-
-
-    def handshakeReceived(self, _msg):
-        if _msg.data == "1":
-            self.connected = True
 

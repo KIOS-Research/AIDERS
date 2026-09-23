@@ -1,0 +1,10 @@
+
+# Safedrones
+
+    # Ta: is the actual temperature
+    # u: is the drone's utilization
+
+    # GPS_Failure_Risk_Calc
+
+
+    # calculate_collision_risk

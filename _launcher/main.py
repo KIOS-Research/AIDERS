@@ -10,11 +10,13 @@ from tkinter import PhotoImage, messagebox, ttk
 
 import netifaces as ni
 import pytz
+import requests
 
+import random, string;
+from dotenv import load_dotenv
 
 def buttonStartPressed():
     clear_db_states_file()
-    shouldCreateEnvFile = not envFileExists()
 
     # get values from the input fields
     netIp = ipDropdown.get()
@@ -22,107 +24,159 @@ def buttonStartPressed():
         writeToInfobox("[ERROR]: Please enter an IP address.")
         return
     
-    timezone = timezoneDropdown.get()
-    if (timezone == ""):
-        writeToInfobox("[ERROR]: Please select a timezone.")
-        return
+    timezone = "UTC"
+    # if (timezone == ""):
+    #     writeToInfobox("[ERROR]: Please select a timezone.")
+    #     return
     
     if debugVar.get():
         debugMode = 1
     else:
         debugMode = 0
-            
-    streamFps = streamFpsDropdown.get()
-    if (streamFps == "" or not streamFps.isdigit()):
-        writeToInfobox("[ERROR]: Please select a stream capture framerate.")
-        return
     
     cvFps = cvFpsDropdown.get()
     if (cvFps == "" or not cvFps.isdigit()):
         writeToInfobox("[ERROR]: Please select a computer vision framerate.")
         return
-    
-    if(cvFps > streamFps):
-        writeToInfobox("[ERROR]: Stream capture FPS must be greater or equal than Computer Vision FPS.")
-        return
-            
-    databaseUsername = databaseUsernameEntry.get()
-    databasePassword = databasePasswordEntry.get()
-    if (shouldCreateEnvFile and (databaseUsername == "" or databasePassword == "")):
-        writeToInfobox("[ERROR]: Please enter valid Database credentials.")
-        return
 
-    webAdminUsername = webAdminUsernameEntry.get()
-    webAdminPassword = webAdminPasswordEntry.get()
-    if (shouldCreateEnvFile and (webAdminUsername == "" or webAdminPassword == "")):
-        writeToInfobox("[ERROR]: Please enter valid Web Admin credentials.")
-        return
+    if remoteVideoAndCvVar.get():
+        remoteVideoAndCv = 1
+    else:
+        remoteVideoAndCv = 0
+    remoteVideoAndCvServer = remoteVideoAndCvServerEntry.get()
+    remoteVideoAndCvPort = remoteVideoAndCvPortEntry.get()
+
     
     if isNvidiaRuntimeActive():
         nvidiaAvailable = 1
     else:
         nvidiaAvailable = 0
 
-    webUrl = "http://" + netIp + ":" + config.get("Settings", "WEB_PORT")
 
-    if shouldCreateEnvFile:
-        # create .env file
-        envData = {
-            "VERSION": config.get("About", "VERSION"),
-            "NET_IP": netIp,
-            "SQL_HOST": "127.0.0.1",
-            "SQL_PORT": config.get("Settings", "SQL_PORT"),
-            "SQL_DATABASE": config.get("Settings", "SQL_DATABASE"),
-            "SQL_USER": databaseUsername,
-            "SQL_PASSWORD": databasePassword,
-            "ADMIN_USER": webAdminUsername,
-            "ADMIN_PASSWORD": webAdminPassword,
-            "WEB_PORT": config.get("Settings", "WEB_PORT"),
-            "WEB_URL": webUrl,
-            "NGINX_PORT": config.get("Settings", "NGINX_PORT"),
-            "ROS_API_PORT": config.get("Settings", "ROS_API_PORT"),
-            "LSC_API_PORT": config.get("Settings", "LSC_API_PORT"),
-            "CV_API_PORT": config.get("Settings", "CV_API_PORT"),
-            "ALG_API_PORT": config.get("Settings", "ALG_API_PORT"),
-            "MAV_API_PORT": config.get("Settings", "MAV_API_PORT"),
-            "WS_PORT": config.get("Settings", "WS_PORT"),
-            "ROS_MYSQL_CONNECTION_POOLS": config.get("Settings", "ROS_MYSQL_CONNECTION_POOLS"),
-            "LSC_MYSQL_CONNECTION_POOLS": config.get("Settings", "LSC_MYSQL_CONNECTION_POOLS"),
-            "CV_MYSQL_CONNECTION_POOLS": config.get("Settings", "CV_MYSQL_CONNECTION_POOLS"),
-            "ALG_MYSQL_CONNECTION_POOLS": config.get("Settings", "ALG_MYSQL_CONNECTION_POOLS"),
-            "MAV_MYSQL_CONNECTION_POOLS": config.get("Settings", "MAV_MYSQL_CONNECTION_POOLS"),
-            "NVIDIA_AVAILABLE": nvidiaAvailable,
-            "DEBUG": debugMode,
-            "DJANGO_ALLOWED_HOSTS": "* localhost 127.0.0.1",
-            "SECRET_KEY": "django-insecure-7u@(b_01go-msdw=*smjl0(4+02scu=&)m-(*6x%9+wp4tik$^",
-            "SQL_ENGINE": "django.contrib.gis.db.backends.mysql",
-            "TZ": timezone,
-            "STREAM_CAPTURE_FPS": streamFps,
-            "COMPUTER_VISION_FPS": cvFps,
-        }
-        with open(envFilePath, 'w') as f:
-            for key, value in envData.items():
-                f.write(f"{key}={value}\n")        
-    else:
-        modifyEnvVariable("NET_IP", netIp) # update NET_IP
-        modifyEnvVariable("WEB_URL", webUrl) # update WEB_URL
-        modifyEnvVariable("DEBUG", debugMode)
-        modifyEnvVariable("STREAM_CAPTURE_FPS", streamFps)
-        modifyEnvVariable("COMPUTER_VISION_FPS", cvFps)
-        modifyEnvVariable("VERSION", config.get("About", "VERSION"))
+    algHost = netIp if config.get("Settings", "ALG_HOST") == "NET_IP" else config.get("Settings", "ALG_HOST")
+    ccdHost = netIp if config.get("Settings", "CCD_HOST") == "NET_IP" else config.get("Settings", "CCD_HOST")
+    cvHost = netIp if config.get("Settings", "CV_HOST") == "NET_IP" else config.get("Settings", "CV_HOST")
+    cvnHost = netIp if config.get("Settings", "CVN_HOST") == "NET_IP" else config.get("Settings", "CVN_HOST")
+    dbHost = netIp if config.get("Settings", "DB_HOST") == "NET_IP" else config.get("Settings", "DB_HOST")
+    lscHost = netIp if config.get("Settings", "LSC_HOST") == "NET_IP" else config.get("Settings", "LSC_HOST")
+    geoHost = netIp if config.get("Settings", "GEO_HOST") == "NET_IP" else config.get("Settings", "GEO_HOST")
+    mavHost = netIp if config.get("Settings", "MAV_HOST") == "NET_IP" else config.get("Settings", "MAV_HOST")
+    nginxHost = netIp if config.get("Settings", "NGINX_HOST") == "NET_IP" else config.get("Settings", "NGINX_HOST")
+    odmHost = netIp if config.get("Settings", "ODM_HOST") == "NET_IP" else config.get("Settings", "ODM_HOST")
+    rosHost = netIp if config.get("Settings", "ROS_HOST") == "NET_IP" else config.get("Settings", "ROS_HOST")
+    rtmpHost = netIp if config.get("Settings", "RTMP_HOST") == "NET_IP" else config.get("Settings", "RTMP_HOST")
+    webHost = netIp if config.get("Settings", "WEB_HOST") == "NET_IP" else config.get("Settings", "WEB_HOST")
+    wsHost = netIp if config.get("Settings", "WS_HOST") == "NET_IP" else config.get("Settings", "WS_HOST")
+    wsiHost = netIp if config.get("Settings", "WSI_HOST") == "NET_IP" else config.get("Settings", "WSI_HOST")
+    wsmHost = netIp if config.get("Settings", "WSM_HOST") == "NET_IP" else config.get("Settings", "WSM_HOST")
+    kcHost = netIp if config.get("Settings", "KC_HOST") == "NET_IP" else config.get("Settings", "KC_HOST")
+    subnet = config.get("Settings", "SUBNET")
+    gateway = config.get("Settings", "GATEWAY")
+    algIp = netIp if config.get("Settings", "ALG_IP") == "NET_IP" else config.get("Settings", "ALG_IP")
+    ccdIp = netIp if config.get("Settings", "CCD_IP") == "NET_IP" else config.get("Settings", "CCD_IP")
+    cvIp = netIp if config.get("Settings", "CV_IP") == "NET_IP" else config.get("Settings", "CV_IP")
+    cvnIp = netIp if config.get("Settings", "CVN_IP") == "NET_IP" else config.get("Settings", "CVN_IP")
+    dbIp = netIp if config.get("Settings", "DB_IP") == "NET_IP" else config.get("Settings", "DB_IP")
+    geoIp = netIp if config.get("Settings", "GEO_IP") == "NET_IP" else config.get("Settings", "GEO_IP")
+    lscIp = netIp if config.get("Settings", "LSC_IP") == "NET_IP" else config.get("Settings", "LSC_IP")
+    mavIp = netIp if config.get("Settings", "MAV_IP") == "NET_IP" else config.get("Settings", "MAV_IP")
+    nginxIp = netIp if config.get("Settings", "NGINX_IP") == "NET_IP" else config.get("Settings", "NGINX_IP")
+    odmIp = netIp if config.get("Settings", "ODM_IP") == "NET_IP" else config.get("Settings", "ODM_IP")
+    rosIp = netIp if config.get("Settings", "ROS_IP") == "NET_IP" else config.get("Settings", "ROS_IP")
+    rtmpIp = netIp if config.get("Settings", "RTMP_IP") == "NET_IP" else config.get("Settings", "RTMP_IP")
+    webIp = netIp if config.get("Settings", "WEB_IP") == "NET_IP" else config.get("Settings", "WEB_IP")
+    wsIp = netIp if config.get("Settings", "WS_IP") == "NET_IP" else config.get("Settings", "WS_IP")
+    wsiIp = netIp if config.get("Settings", "WSI_IP") == "NET_IP" else config.get("Settings", "WSI_IP")
+    wsmIp = netIp if config.get("Settings", "WSM_IP") == "NET_IP" else config.get("Settings", "WSM_IP")
+    kcIp = netIp if config.get("Settings", "KC_IP") == "NET_IP" else config.get("Settings", "KC_IP")
+    dbWhitelist = config.get("Settings", "DB_WHITELIST")
 
+
+
+    ########################
+    ### UPDATE .env FILE ###
+    ########################
+ 
+    modifyEnvVariable(envFilePath, "ALG_HOST", algHost)
+    modifyEnvVariable(envFilePath, "CCD_HOST", ccdHost)
+    modifyEnvVariable(envFilePath, "CV_HOST", cvHost)
+    modifyEnvVariable(envFilePath, "CVN_HOST", cvnHost)
+    modifyEnvVariable(envFilePath, "DB_HOST", dbHost)
+    modifyEnvVariable(envFilePath, "LSC_HOST", lscHost)
+    modifyEnvVariable(envFilePath, "GEO_HOST", geoHost)
+    modifyEnvVariable(envFilePath, "MAV_HOST", mavHost)
+    modifyEnvVariable(envFilePath, "NGINX_HOST", nginxHost)
+    modifyEnvVariable(envFilePath, "ODM_HOST", odmHost)
+    modifyEnvVariable(envFilePath, "ROS_HOST", rosHost)
+    modifyEnvVariable(envFilePath, "RTMP_HOST", rtmpHost)
+    modifyEnvVariable(envFilePath, "WEB_HOST", webHost)
+    modifyEnvVariable(envFilePath, "WS_HOST", wsHost)
+    modifyEnvVariable(envFilePath, "WSI_HOST", wsiHost)
+    modifyEnvVariable(envFilePath, "WSM_HOST", wsmHost)
+    modifyEnvVariable(envFilePath, "KC_HOST", kcHost)
+    modifyEnvVariable(envFilePath, "SUBNET", subnet)
+    modifyEnvVariable(envFilePath, "GATEWAY", gateway)
+    modifyEnvVariable(envFilePath, "DB_WHITELIST", dbWhitelist)
+    modifyEnvVariable(envFilePath, "ALG_IP", algIp)
+    modifyEnvVariable(envFilePath, "CCD_IP", ccdIp)
+    modifyEnvVariable(envFilePath, "CV_IP", cvIp)
+    modifyEnvVariable(envFilePath, "CVN_IP", cvnIp)
+    modifyEnvVariable(envFilePath, "DB_IP", dbIp)
+    modifyEnvVariable(envFilePath, "GEO_IP", geoIp)
+    modifyEnvVariable(envFilePath, "LSC_IP", lscIp)
+    modifyEnvVariable(envFilePath, "MAV_IP", mavIp)
+    modifyEnvVariable(envFilePath, "NGINX_IP", nginxIp)
+    modifyEnvVariable(envFilePath, "ODM_IP", odmIp)
+    modifyEnvVariable(envFilePath, "ROS_IP", rosIp)
+    modifyEnvVariable(envFilePath, "RTMP_IP", rtmpIp)
+    modifyEnvVariable(envFilePath, "WEB_IP", webIp)
+    modifyEnvVariable(envFilePath, "WS_IP", wsIp)
+    modifyEnvVariable(envFilePath, "WSI_IP", wsiIp)
+    modifyEnvVariable(envFilePath, "WSM_IP", wsmIp)
+    modifyEnvVariable(envFilePath, "KC_IP", kcIp)
+    modifyEnvVariable(envFilePath, "NET_IP", netIp)
+    modifyEnvVariable(envFilePath, "DEBUG", debugMode)
+    # modifyEnvVariable(envFilePath, "OPEN_NETWORK", openNetworkMode)
+    # modifyEnvVariable(envFilePath, "STREAM_CAPTURE_FPS", streamFps)
+    modifyEnvVariable(envFilePath, "COMPUTER_VISION_FPS", cvFps)
+    modifyEnvVariable(envFilePath, "NVIDIA_AVAILABLE", nvidiaAvailable)
+    modifyEnvVariable(envFilePath, "VIDEO_AND_CV_REMOTE", remoteVideoAndCv)
+    modifyEnvVariable(envFilePath, "VIDEO_AND_CV_SERVER", remoteVideoAndCvServer)
+    modifyEnvVariable(envFilePath, "VIDEO_AND_CV_PORT", remoteVideoAndCvPort)
+    modifyEnvVariable(envFilePath, "VERSION", config.get("About", "VERSION"))
+
+    # keycloak
+    if config.get("Keycloak", "KEYCLOAK_IP") == "NET_IP":
+        modifyEnvVariable(envFilePath, "KEYCLOAK_IP", netIp)
+
+    # kafka
+    if config.get("Settings", "KAFKA_LOCAL_IP") == "NET_IP":
+        modifyEnvVariable(envFilePath, "KAFKA_LOCAL_IP", netIp)
 
     writeToInfobox("[INFO]: The platform is starting...")
     disableDropDownList(ipDropdown)
-    disableDropDownList(streamFpsDropdown)
     disableDropDownList(cvFpsDropdown)
-    disableDropDownList(timezoneDropdown)
+    # disableDropDownList(timezoneDropdown)
     disableButton(buttonStart)
     disableButton(debugCheckbox)
+    disableButton(remoteVideoAndCvCheckbox)
+    disableButton(remoteVideoAndCvServerEntry)
+    disableButton(remoteVideoAndCvPortEntry)
     disableButton(buttonStop)
     disableButton(buttonClearData)
     disableButton(buttonTools)
     hideCredentialFields()
+
+
+    # check if kafka should be local and active and if so, start it
+    load_dotenv(envFilePath)  # reload the environment variables from the .env file
+
+    kafkaActive = os.getenv("KAFKA_ACTIVE", "0")
+    kafkaLocal = os.getenv("KAFKA_LOCAL", "0")
+
+    if kafkaActive == "1" and kafkaLocal == "1":
+        kafkaStartThread = threading.Thread(target=startKafka, args=(netIp,))
+        kafkaStartThread.start()
 
     dockerStartThread = threading.Thread(target=startDockerContainers, args=())
     dockerStartThread.start()
@@ -180,31 +234,120 @@ def buttonClearDataPressed():
         resetDataThread.start()
 
 
-def startDockerContainers():
+def updateKafkaAdvertisedListenersYml(_netIp):
+    # KAFKA_ADVERTISED_LISTENERS: HOST://_netIp:9092,DOCKER://kafka:9093
+    kafka_compose_path = os.path.join(getParentDirectory(), 'kafka-broker', 'docker-compose.yml')
     try:
+        with open(kafka_compose_path, 'r') as file:
+            lines = file.readlines()
+        new_lines = []
+        for line in lines:
+            if "KAFKA_ADVERTISED_LISTENERS" in line and "HOST://" in line:
+                # Replace the IP after HOST:// and before :9092
+                import re
+                new_line = re.sub(r'HOST://([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+):9092', f'HOST://{_netIp}:9092', line)
+                new_lines.append(new_line)
+            else:
+                new_lines.append(line)
+        with open(kafka_compose_path, 'w') as file:
+            file.writelines(new_lines)
+    except Exception as e:
+        writeToInfobox(f"[ERROR]: Could not update Kafka docker-compose.yml: {e}")
+
+
+def startKafka(_netIp):
+    try:
+        writeToInfobox(f"[INFO]: Starting Kafka on {_netIp}...")
+        # change the IP address of "HOST:..." in the kafka-broker docker-compose.yml
+        updateKafkaAdvertisedListenersYml(_netIp)
         process = subprocess.Popen(
-            f"cd {getParentDirectory()} && docker compose up -d",
+            f"cd {os.path.join(getParentDirectory(), 'kafka-broker')} && docker compose -f docker-compose.yml up -d",
             shell=True,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,  # Redirect stderr to stdout
             text=True
         )
+        # Start a thread to capture and display the output in real-time
+        outputThread = threading.Thread(target=printSubprocessOutputToInfobox, args=(process, infobox))
+        outputThread.start()
+        # Wait for the process to complete
+        while process.poll() is None:
+            writeToInfobox("[INFO]: Waiting for Kafka to start...\n")
+            time.sleep(1)
+        outputThread.join()
 
+        # run the kafka topic creation script kafka_create_topics.py
+        writeToInfobox("[INFO]: Creating Kafka topics...")
+        process = subprocess.Popen(
+            f"cd {getParentDirectory()} && python3 kafka_create_topics.py",
+            shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True
+        )
+        outputThread = threading.Thread(target=printSubprocessOutputToInfobox, args=(process, infobox))
+        outputThread.start()
+        process.wait()
+        outputThread.join()
+    except Exception as e:
+        writeToInfobox(f"[ERROR]: Error starting Kafka: {e}")
+
+
+def startDockerContainers():
+    time.sleep(5)  # wait for Kafka to start
+    try:
+        dockerFileName="docker-compose.yml"
+
+        # platform containers
+        process = subprocess.Popen(
+            f"cd {getParentDirectory()} && docker compose -f {dockerFileName} up -d",
+            shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,  # Redirect stderr to stdout
+            text=True
+        )
         # Start a thread to capture and display the output in real-time
         outputThread = threading.Thread(target=printSubprocessOutputToInfobox, args=(process, infobox))
         outputThread.start()
 
+        # keycloak containers
+        process2 = subprocess.Popen(
+            f"cd {os.path.join(getParentDirectory(), 'keycloak')} && docker compose -f docker-compose.yml up -d",
+            shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,  # Redirect stderr to stdout
+            text=True
+        )
+        # Start a thread to capture and display the output in real-time
+        outputThread2 = threading.Thread(target=printSubprocessOutputToInfobox, args=(process2, infobox))
+        outputThread2.start()
 
-        while not webserverIsUp():
+        secondsWaiting = 0
+        while not webServerIsUp() or not keycloakServerIsUp():
+            secondsWaiting += 1
+            if secondsWaiting >= 30:
+                writeToInfobox("[INFO]: The platform is taking too long to start. Please check the logs for more information.")
+                enableButton(buttonStop)
             time.sleep(1)
 
+        # run the keycloak seeder script
+        writeToInfobox("[INFO]: Updating Keycloak client...")
+        process3 = subprocess.Popen(
+            f"cd {getParentDirectory()} && python3 keycloak_seeder.py --client-only",
+            shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True
+        )
+        outputThread3 = threading.Thread(target=printSubprocessOutputToInfobox, args=(process3, infobox))
+        outputThread3.start()
+
         outputThread.join()
+        outputThread2.join()
+        outputThread3.join()
 
         ip = getEnvVariable("NET_IP")
-        if getEnvVariable("DEBUG") == "1":
-            port = getEnvVariable("WEB_PORT")
-        else:
-            port = getEnvVariable("NGINX_PORT")
+        port = getEnvVariable("NGINX_PORT")
         writeToInfobox(f"[INFO]: The platform started successfully at {ip}")
         enableButton(buttonStop)
         webbrowser.open(f"http://{ip}:{port}")
@@ -234,19 +377,41 @@ def stopDockerContainers():
             stderr=subprocess.PIPE,
             text=True
         )
-        while webserverIsUp():
+        result2 = subprocess.run(
+            f"cd {os.path.join(getParentDirectory(), 'keycloak')} && docker compose down",
+            shell=True,
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True
+        )
+
+        result3 = subprocess.run(
+            f"cd {os.path.join(getParentDirectory(), 'kafka-broker')} && docker compose down",
+            shell=True,
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True
+        )
+
+        while webServerIsUp() or keycloakServerIsUp():
             time.sleep(1)
+
         writeToInfobox("[INFO]: The platform has stopped.")
         enableDropDownList(ipDropdown)
-        enableDropDownList(streamFpsDropdown)
         enableDropDownList(cvFpsDropdown)
         enableButton(buttonStart)
         enableButton(debugCheckbox)
+        enableButton(remoteVideoAndCvCheckbox)
+        enableButton(remoteVideoAndCvServerEntry)
+        enableButton(remoteVideoAndCvPortEntry)
         enableButton(buttonClearData)    
         enableButton(buttonTools)    
 
-    except:
+    except Exception as e:
         writeToInfobox("[ERROR]: Error stopping Docker containers...")
+        writeToInfobox(f"{e}")
 
 
 def resetData():
@@ -254,6 +419,9 @@ def resetData():
         stopDockerContainers()
         disableButton(buttonStart)
         disableButton(debugCheckbox)
+        disableButton(remoteVideoAndCvCheckbox)
+        disableButton(remoteVideoAndCvServerEntry)
+        disableButton(remoteVideoAndCvPortEntry)
         disableButton(buttonClearData)
         disableButton(buttonTools)
         try:
@@ -261,7 +429,7 @@ def resetData():
             subprocess.run(f"docker volume rm {os.path.basename(getParentDirectory())}_mysql-data", shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
         except:
             pass
-        os.remove(envFilePath) # delete .env file
+        # os.remove(envFilePath) # delete .env file
         writeToInfobox("[INFO]: Database was deleted successfully.")
         writeToInfobox("[INFO]: IMPORTANT: To also delete all the media files you need root privileges. Run the following command to delete them:")
         writeToInfobox(f"sudo {getParentDirectory()}/_scripts/delete_media.sh")
@@ -269,26 +437,39 @@ def resetData():
         writeToInfobox(f"[ERROR]: An error occured: {e}")
         return
     showCredentialsFields()
-    enableDropDownList(timezoneDropdown)
+    # enableDropDownList(timezoneDropdown)
     enableButton(buttonStart)
     enableButton(debugCheckbox)
+    enableButton(remoteVideoAndCvCheckbox)
+    enableButton(remoteVideoAndCvServerEntry)
+    enableButton(remoteVideoAndCvPortEntry)
 
 
-def webserverIsUp():
-    if getEnvVariable("DEBUG") == "1":
-        ip = getEnvVariable("NET_IP")
-    else:
-        ip = "0.0.0.0"
-    port = getEnvVariable("WEB_PORT")
+def webServerIsUp():
+    ip = getEnvVariable("NET_IP")
+    port = getEnvVariable("NGINX_PORT")
     try:
-        result = subprocess.run(["netstat", "-tuln"], capture_output=True, text=True, check=True)
-        if f"{ip}:{port}" in result.stdout:
+        response = requests.get(f"http://{ip}:{port}", timeout=1)
+        if response.status_code == 200:
             return True
         else:
             return False
     except:
         return False
 
+
+def keycloakServerIsUp():
+    ip = getEnvVariable("NET_IP")
+    port = getEnvVariable("NGINX_PORT")
+    try:
+        response = requests.get(f"http://{ip}:{port}", timeout=1)
+        if response.status_code == 200:
+            return True
+        else:
+            return False
+    except:
+        return False
+    
 
 def getEnvVariable(_key):
     try:
@@ -303,8 +484,8 @@ def getEnvVariable(_key):
         return None
 
 
-def modifyEnvVariable(_key, _newValue):
-    with open(envFilePath, 'r') as file:
+def modifyEnvVariable(_envFilePath, _key, _newValue):
+    with open(_envFilePath, 'r') as file:
         lines = file.readlines()
     modifiedLines = []
     for line in lines:
@@ -313,7 +494,7 @@ def modifyEnvVariable(_key, _newValue):
             modifiedLines.append(f"{_key}={_newValue}\n")
         else:
             modifiedLines.append(line)
-    with open(envFilePath, 'w') as file:
+    with open(_envFilePath, 'w') as file:
         file.writelines(modifiedLines)
 
 
@@ -328,8 +509,8 @@ def getParentDirectory():
     return parentDdirectory
     
 
-def envFileExists(): 
-    return os.path.isfile(envFilePath)
+def envFileExists(_envFilePath): 
+    return os.path.isfile(_envFilePath)
 
 
 def hasNvidiaGpu():
@@ -342,9 +523,9 @@ def hasNvidiaGpu():
 
 def hasNvidiaRuntime():
     try:
-        subprocess.check_output(["dpkg", "-l", "nvidia-container-runtime"])
+        subprocess.check_output(["nvidia-container-runtime", "--version"], stderr=subprocess.DEVNULL)
         return True
-    except subprocess.CalledProcessError:
+    except (subprocess.CalledProcessError, FileNotFoundError):
         return False
 
 
@@ -357,12 +538,37 @@ def isNvidiaRuntimeActive():
             else:
                 return False
     except FileNotFoundError:
-        print(f"File not found.")
+        print("File not found.")
         return False
     
 
 def writeToInfobox(_text):
+    # Configure text tags for different message types if not already configured
+    try:
+        infobox.tag_configure("info", foreground=dark_accent)
+        infobox.tag_configure("warning", foreground=dark_warning)
+        infobox.tag_configure("error", foreground=dark_error)
+        infobox.tag_configure("success", foreground=dark_success)
+        infobox.tag_configure("normal", foreground=dark_fg)
+    except:
+        pass
+    
+    # Determine the tag based on the message content
+    tag = "normal"
+    if "[INFO]" in _text:
+        tag = "info"
+    elif "[WARNING]" in _text or "[WARN]" in _text:
+        tag = "warning"
+    elif "[ERROR]" in _text:
+        tag = "error"
+    elif "successfully" in _text.lower() or "completed" in _text.lower():
+        tag = "success"
+    
+    # Insert text with appropriate tag
+    start_index = infobox.index(tk.END)
     infobox.insert(tk.END, f"\n{_text}")
+    end_index = infobox.index(tk.END)
+    infobox.tag_add(tag, f"{start_index} linestart", f"{end_index} lineend")
     infobox.see(tk.END)    
 
 
@@ -399,7 +605,7 @@ def clear_db_states_file():
 
 def getLocalIps():
     localIps = []
-    if envFileExists():
+    if envFileExists(envFilePath):
         localIps.append(getEnvVariable("NET_IP"))
     interfaces = ni.interfaces()    # get a list of all network interfaces
     # iterate through the interfaces and get their IP addresses
@@ -409,29 +615,49 @@ def getLocalIps():
             if ni.AF_INET in addresses:
                 ipInfo = addresses[ni.AF_INET]
                 for ip in ipInfo:
-                    localIps.append(ip['addr'])
+                    if ip["addr"] != "127.0.0.1":
+                        localIps.append(ip['addr'])
     return localIps
 
 
-def getTimezones():
-    # Create a list of timezone identifiers
-    allTimezones = pytz.all_timezones
-    # timezones = [tz for tz in allTimezones if tz.startswith('Europe/') or tz.startswith('Asia/')]
-    timezones = [tz for tz in allTimezones if tz.startswith('Europe/')]
-    if envFileExists():
-        timezones.insert(0, getEnvVariable("TZ"))    
-    return timezones
+# def getTimezones():
+#     # Get all timezones and filter out values that start with 'Etc/GMT' but are not exactly 'Etc/GMT'
+#     etcGmtValues = [tz for tz in pytz.all_timezones if tz.startswith('Etc/GMT') and tz != 'Etc/GMT' and tz != 'Etc/GMT-0' and tz != 'Etc/GMT+0' ]
+#     # Define a custom sorting key function
+#     def sortTimeZoneKey(tz):
+#         # Extract the numeric part from the timezone name
+#         return int(tz.replace('Etc/GMT', ''))
+#     # Sort the filtered values
+#     timezones = sorted(etcGmtValues, key=sortTimeZoneKey)
+#     return timezones
+
+# def getLocalTimezone():
+#     if time.daylight:
+#         offsetHour = time.altzone / 3600
+#     else:
+#         offsetHour = time.timezone / 3600
+#     return 'Etc/GMT%+d' % offsetHour
 
 
 def getFpsOptions(param):
     fpsOptions = list(range(1, 16))
-    if envFileExists():
-        if(param == "stream"):
-            fpsOptions.insert(0, getEnvVariable("STREAM_CAPTURE_FPS"))
-        elif(param == "cv"):
+    if envFileExists(envFilePath):
+        if(param == "cv"):
             fpsOptions.insert(0, getEnvVariable("COMPUTER_VISION_FPS"))            
     return fpsOptions
 
+
+def toggleRemoteVideoAndCvFields():
+    if remoteVideoAndCvVar.get():
+        remoteVideoAndCvServerLabel.grid()
+        remoteVideoAndCvServerEntry.grid()
+        remoteVideoAndCvPortLabel.grid()
+        remoteVideoAndCvPortEntry.grid()
+    else:
+        remoteVideoAndCvServerLabel.grid_remove()
+        remoteVideoAndCvServerEntry.grid_remove()
+        remoteVideoAndCvPortLabel.grid_remove()
+        remoteVideoAndCvPortEntry.grid_remove()
 
 def readConfigFile(_configFile):
     c = configparser.ConfigParser()
@@ -443,12 +669,88 @@ def readConfigFile(_configFile):
 envFilePath = os.path.join(getParentDirectory(), '.env')
 configPath = os.path.join(getParentDirectory(), 'config.ini')
 config = readConfigFile(configPath)
+keycloakEnvFilePath = os.path.join(getParentDirectory(), 'keycloak', '.env')
 
 # create the main window
 window = tk.Tk(className="AIDERS Launcher")
 window.title("AIDERS Launcher")
 icon = tk.PhotoImage(file=f"{getCurrentDirectory()}/logo-white.png")
 window.iconphoto(False, icon)
+
+# Configure dark theme colors
+dark_bg = "#2B2B2B"          # Dark background
+dark_fg = "#E8E8E8"          # Light text
+dark_frame_bg = "#3C3C3C"    # Slightly lighter for frames (not used)
+dark_entry_bg = "#404040"    # Entry/combobox background
+dark_button_bg = "#6e6d6d"   # Button background
+dark_accent = "#5ab6d4"      # Accent color (blue)
+dark_success = "#87D96C"     # Success green
+dark_warning = "#F7CA88"     # Warning orange
+dark_error = "#F78C6C"       # Error red
+
+# Configure the main window
+window.configure(bg=dark_bg)
+
+# Configure ttk styles for dark theme
+style = ttk.Style()
+
+# Try different themes to find the best one for dark mode
+try:
+    style.theme_use('alt')  # Try alt theme first as it's more customizable
+except:
+    try:
+        style.theme_use('clam')
+    except:
+        style.theme_use('default')
+
+# Set theme colors globally
+style.configure('.', background=dark_bg, foreground=dark_fg, bordercolor=dark_accent, focuscolor=dark_accent)
+
+# Configure ttk styles with more comprehensive theming
+style.configure('TLabel', background=dark_bg, foreground=dark_fg)
+style.configure('TFrame', background=dark_bg, relief='flat', borderwidth=0)
+style.configure('TLabelFrame', 
+                background=dark_bg, 
+                foreground=dark_fg, 
+                borderwidth=1, 
+                relief='solid',
+                bordercolor=dark_accent,
+                lightcolor=dark_bg,
+                darkcolor=dark_bg)
+style.configure('TLabelFrame.Label', 
+                background=dark_bg, 
+                foreground=dark_accent, 
+                font=('Sans', 9, 'bold'))
+style.configure('TCombobox', 
+                fieldbackground=dark_entry_bg, 
+                background=dark_button_bg, 
+                foreground=dark_fg, 
+                borderwidth=1,
+                selectbackground=dark_accent,
+                selectforeground=dark_bg)
+style.configure('TButton', 
+                background=dark_button_bg, 
+                foreground=dark_fg, 
+                borderwidth=1, 
+                focuscolor='none',
+                lightcolor=dark_button_bg,
+                darkcolor=dark_button_bg)
+
+# Map styles for different states
+style.map('TButton', 
+          background=[('active', dark_accent), ('pressed', dark_accent)])
+style.map('TCombobox', 
+          fieldbackground=[('readonly', dark_entry_bg), ('focus', dark_entry_bg)])
+style.map('TLabelFrame', 
+          background=[('active', dark_bg), ('!active', dark_bg)],
+          bordercolor=[('focus', dark_accent)])
+style.map('TFrame', 
+          background=[('active', dark_bg), ('!active', dark_bg)])
+
+# Configure tk widget defaults
+window.option_add('*TCombobox*Listbox.background', dark_entry_bg)
+window.option_add('*TCombobox*Listbox.foreground', dark_fg)
+window.option_add('*TCombobox*Listbox.selectBackground', dark_accent)
 
 iconDelete = tk.PhotoImage(file=f"{getCurrentDirectory()}/icon-delete.png")
 iconTools = tk.PhotoImage(file=f"{getCurrentDirectory()}/icon-tools.png")
@@ -492,24 +794,26 @@ footerFrame.pack(padx=0, pady=2)
 
 # header image
 image = PhotoImage(file=f"{getCurrentDirectory()}/header.png")
-imageLabel = tk.Label(topFrame, image=image)
+imageLabel = tk.Label(topFrame, image=image, bg=dark_bg)
 imageLabel.grid(row=0, column=0, padx=0, pady=0)
 
 # net IP drop-down list
 localIps = getLocalIps()
 selectedIp = tk.StringVar(value=localIps[0])
-ipLabel = tk.Label(settingsFrame, text="Net IP Address:")
+ipLabel = tk.Label(settingsFrame, text="Net IP Address:", bg=dark_bg, fg=dark_fg)
 ipLabel.grid(row=0, column=0, padx=10, pady=5, sticky='e')
 ipDropdown = ttk.Combobox(settingsFrame, textvariable=selectedIp, values=localIps)
 ipDropdown.grid(row=0, column=1, padx=10, pady=5)
 
 # timezones drop-down list
-timezones = getTimezones()
-selectedTimezone = tk.StringVar(value=timezones[0])
-timezoneLabel = tk.Label(settingsFrame, text="Timezone:")
+# timezones = getTimezones()
+# selectedTimezone = tk.StringVar(value=getLocalTimezone())
+timezoneLabel = tk.Label(settingsFrame, text="Timezone:", bg=dark_bg, fg=dark_fg)
 timezoneLabel.grid(row=1, column=0, padx=10, pady=5, sticky='e')
-timezoneDropdown = ttk.Combobox(settingsFrame, textvariable=selectedTimezone, values=timezones)
-timezoneDropdown.grid(row=1, column=1, padx=10, pady=5)
+timezoneValueLabel = tk.Label(settingsFrame, text="UTC", bg=dark_bg, fg=dark_fg)
+timezoneValueLabel.grid(row=1, column=1, padx=10, pady=5, sticky='w')
+# timezoneDropdown = ttk.Combobox(settingsFrame, textvariable=selectedTimezone, values=timezones)
+# timezoneDropdown.grid(row=1, column=1, padx=10, pady=5)
 
 # debug checkbox
 debugVar = tk.BooleanVar()
@@ -517,187 +821,185 @@ if getEnvVariable("DEBUG") == "1":
     debugVar.set(True)
 else:
     debugVar.set(False)
-debugLabel = tk.Label(settingsFrame, text="Debug Mode:")
+debugLabel = tk.Label(settingsFrame, text="Debug Mode:", bg=dark_bg, fg=dark_fg)
 debugLabel.grid(row=2, column=0, padx=10, pady=5, sticky='e')
-debugCheckbox = tk.Checkbutton(settingsFrame, text="", variable=debugVar)
+debugCheckbox = tk.Checkbutton(settingsFrame, text="", variable=debugVar, bg=dark_bg, fg=dark_fg, 
+                              selectcolor=dark_entry_bg, activebackground=dark_bg, activeforeground=dark_fg,
+                              highlightthickness=0, bd=0, relief='flat')
 debugCheckbox.grid(row=2, column=1, padx=2, pady=5, sticky='w')
-
-
-# stream capture FPS selection
-streamFps = getFpsOptions("stream")
-selectedStreamFps = tk.StringVar(value=streamFps[0])
-streamFpsLabel = tk.Label(videoSettingsFrame, text="Stream Capture FPS:")
-streamFpsLabel.grid(row=0, column=0, padx=0, pady=5, sticky='e')
-streamFpsDropdown = ttk.Combobox(videoSettingsFrame, textvariable=selectedStreamFps, values=streamFps)
-streamFpsDropdown.grid(row=0, column=1, padx=10, pady=5)
 
 # computer vision FPS selection
 cvFps = getFpsOptions("cv")
 selectedCvFps = tk.StringVar(value=cvFps[0])
-cvFpsLabel = tk.Label(videoSettingsFrame, text="Computer Vision FPS:")
-cvFpsLabel.grid(row=1, column=0, padx=0, pady=5, sticky='e')
+cvFpsLabel = tk.Label(videoSettingsFrame, text="Computer Vision FPS:", bg=dark_bg, fg=dark_fg)
+cvFpsLabel.grid(row=0, column=0, padx=0, pady=5, sticky='e')
 cvFpsDropdown = ttk.Combobox(videoSettingsFrame, textvariable=selectedCvFps, values=cvFps)
-cvFpsDropdown.grid(row=1, column=1, padx=10, pady=5)
+cvFpsDropdown.grid(row=0, column=1, padx=10, pady=5)
 
-# database fields
-databaseUsernameLabel = tk.Label(databaseFrame, text="Username:")
-databaseUsernameLabel.grid(row=0, column=0, padx=10, pady=2, sticky='e')
-databaseUsernameEntry = tk.Entry(databaseFrame)
-databaseUsernameEntry.grid(row=0, column=1, padx=10, pady=2)
+# remote video settings
+remoteVideoAndCvVar = tk.BooleanVar()
+if getEnvVariable("VIDEO_AND_CV_REMOTE") == "1":
+    remoteVideoAndCvVar.set(True)
+else:
+    remoteVideoAndCvVar.set(False)
 
-databasePasswordLabel = tk.Label(databaseFrame, text="Password:")
-databasePasswordLabel.grid(row=1, column=0, padx=10, pady=2, sticky='e')
-databasePasswordEntry = tk.Entry(databaseFrame, show="*")
-databasePasswordEntry.grid(row=1, column=1, padx=10, pady=2)
+remoteVideoAndCvLabel = tk.Label(videoSettingsFrame, text="Remote Video Mode:", bg=dark_bg, fg=dark_fg)
+remoteVideoAndCvLabel.grid(row=1, column=0, padx=0, pady=5, sticky='e')
+remoteVideoAndCvCheckbox = tk.Checkbutton(videoSettingsFrame, text="", variable=remoteVideoAndCvVar, 
+                                        command=toggleRemoteVideoAndCvFields, bg=dark_bg, fg=dark_fg,
+                                        selectcolor=dark_entry_bg, activebackground=dark_bg, activeforeground=dark_fg,
+                                        highlightthickness=0, bd=0, relief='flat')
+remoteVideoAndCvCheckbox.grid(row=1, column=1, padx=10, pady=5, sticky='w')
 
-# web admin fields
-webAdminUsernameLabel = tk.Label(webAdminFrame, text="Username:")
-webAdminUsernameLabel.grid(row=0, column=0, padx=10, pady=2, sticky='e')
-webAdminUsernameEntry = tk.Entry(webAdminFrame)
-webAdminUsernameEntry.grid(row=0, column=1, padx=10, pady=2)
+# remote video ip
+remoteVideoAndCvServerVar = getEnvVariable("VIDEO_AND_CV_SERVER") or ""
+remoteVideoAndCvServerLabel = tk.Label(videoSettingsFrame, text="Remote Video Server:", bg=dark_bg, fg=dark_fg)
+remoteVideoAndCvServerLabel.grid(row=3, column=0, padx=0, pady=5, sticky='e')
+remoteVideoAndCvServerEntry = tk.Entry(videoSettingsFrame, bg=dark_entry_bg, fg=dark_fg, 
+                                     insertbackground=dark_fg, borderwidth=1, relief='solid')
+remoteVideoAndCvServerEntry.insert(0, remoteVideoAndCvServerVar)
+remoteVideoAndCvServerEntry.grid(row=3, column=1, padx=10, pady=5)
 
-webAdminPasswordLabel = tk.Label(webAdminFrame, text="Password:")
-webAdminPasswordLabel.grid(row=1, column=0, padx=10, pady=2, sticky='e')
-webAdminPasswordEntry = tk.Entry(webAdminFrame, show="*")
-webAdminPasswordEntry.grid(row=1, column=1, padx=10, pady=2)
+# remote video port
+remoteVideoAndCvPortVar = getEnvVariable("VIDEO_AND_CV_PORT") or ""
+remoteVideoAndCvPortLabel = tk.Label(videoSettingsFrame, text="Remote Video Port:", bg=dark_bg, fg=dark_fg)
+remoteVideoAndCvPortLabel.grid(row=4, column=0, padx=0, pady=5, sticky='e')
+remoteVideoAndCvPortEntry = tk.Entry(videoSettingsFrame, bg=dark_entry_bg, fg=dark_fg, 
+                                   insertbackground=dark_fg, borderwidth=1, relief='solid')
+remoteVideoAndCvPortEntry.insert(0, remoteVideoAndCvPortVar)
+remoteVideoAndCvPortEntry.grid(row=4, column=1, padx=10, pady=5)
+
+# toggle remote video and cv fields
+toggleRemoteVideoAndCvFields()
 
 # NVIDIA info message
-nvidiaLabel = tk.Label(gpuStatusFrame, text="")
+nvidiaLabel = tk.Label(gpuStatusFrame, text="", bg=dark_bg)
 nvidiaLabel.pack(pady=2)
 if hasNvidiaGpu():
-    nvidiaLabel.config(text="NVIDIA GPU is available!", foreground="green")
+    nvidiaLabel.config(text="NVIDIA GPU is available!", foreground=dark_success)
 else:
-    nvidiaLabel.config(text="NVIDIA GPU is not available!", foreground="red")
+    nvidiaLabel.config(text="NVIDIA GPU is not available!", foreground=dark_error)
 
-nvidiaRuntimeLabel = tk.Label(gpuStatusFrame, text="")
+nvidiaRuntimeLabel = tk.Label(gpuStatusFrame, text="", bg=dark_bg)
 nvidiaRuntimeLabel.pack(pady=2)
 if hasNvidiaRuntime():
-    nvidiaRuntimeLabel.config(text="NVIDIA container runtime is installed!", foreground="green")
+    nvidiaRuntimeLabel.config(text="NVIDIA container runtime is installed!", foreground=dark_success)
 else:
-    nvidiaRuntimeLabel.config(text="NVIDIA container runtime is not installed!", foreground="red")
+    nvidiaRuntimeLabel.config(text="NVIDIA container runtime is not installed!", foreground=dark_error)
 
-nvidiaRuntimeActiveLabel = tk.Label(gpuStatusFrame, text="")
+nvidiaRuntimeActiveLabel = tk.Label(gpuStatusFrame, text="", bg=dark_bg)
 nvidiaRuntimeActiveLabel.pack(pady=2)
 if isNvidiaRuntimeActive():
-    nvidiaRuntimeActiveLabel.config(text="NVIDIA container runtime is active!", foreground="green")
+    nvidiaRuntimeActiveLabel.config(text="NVIDIA container runtime is active!", foreground=dark_success)
 else:
-    nvidiaRuntimeActiveLabel.config(text="NVIDIA container runtime is not active!", foreground="red")
-
-# # features checkboxes
-# dbFeatureVar = tk.BooleanVar()
-# dbFeatureVar.set(True)
-# dbFeatureCheckbox = tk.Checkbutton(featuresFrame, text="MySQL Database", variable=dbFeatureVar, state=tk.DISABLED)
-# dbFeatureCheckbox.grid(row=0, column=0, padx=10, pady=1, stick='w')
-
-# webFeatureVar = tk.BooleanVar()
-# webFeatureVar.set(True)
-# webFeatureCheckbox = tk.Checkbutton(featuresFrame, text="Web Interface", variable=webFeatureVar, state=tk.DISABLED)
-# webFeatureCheckbox.grid(row=0, column=1, padx=10, pady=1, stick='w')
-
-# rosFeatureVar = tk.BooleanVar()
-# rosFeatureVar.set(True)
-# rosFeatureCheckbox = tk.Checkbutton(featuresFrame, text="ROS Services", variable=rosFeatureVar, state=tk.DISABLED)
-# rosFeatureCheckbox.grid(row=1, column=0, padx=10, pady=1, stick='w')
-
-# rtmpFeatureVar = tk.BooleanVar()
-# rtmpFeatureVar.set(True)
-# rtmpFeatureCheckbox = tk.Checkbutton(featuresFrame, text="RTMP Server", variable=rtmpFeatureVar, state=tk.DISABLED)
-# rtmpFeatureCheckbox.grid(row=1, column=1, padx=10, pady=1, stick='w')
-
-# liveStreamFeatureVar = tk.BooleanVar()
-# liveStreamFeatureVar.set(True)
-# liveStreamFeatureCheckbox = tk.Checkbutton(featuresFrame, text="Live Stream", variable=liveStreamFeatureVar, state=tk.DISABLED)
-# liveStreamFeatureCheckbox.grid(row=2, column=0, padx=10, pady=1, stick='w')
-
-# computerVisionFeatureVar = tk.BooleanVar()
-# computerVisionFeatureVar.set(True)
-# computerVisionFeatureCheckbox = tk.Checkbutton(featuresFrame, text="Computer Vision", variable=computerVisionFeatureVar)
-# computerVisionFeatureCheckbox.grid(row=2, column=1, padx=10, pady=1, stick='w')
-
-# algorithmsFeatureVar = tk.BooleanVar()
-# algorithmsFeatureVar.set(True)
-# algorithmsFeatureCheckbox = tk.Checkbutton(featuresFrame, text="Algorithms", variable=algorithmsFeatureVar)
-# algorithmsFeatureCheckbox.grid(row=3, column=0, padx=10, pady=1, stick='w')
+    nvidiaRuntimeActiveLabel.config(text="NVIDIA container runtime is not active!", foreground=dark_error)
 
 # general info and error messages
 infobox = tk.Text(infoFrame, wrap=tk.WORD, width=50, height=9)
-infobox.configure(font=("Monospace", 8), fg="orange", bg="black")
+infobox.configure(font=("Monospace", 9), fg=dark_warning, bg="#1A1A1A", 
+                 insertbackground=dark_fg, selectbackground=dark_accent, 
+                 selectforeground=dark_bg, borderwidth=1, relief='solid')
 infobox.pack(fill="both", expand=True)
 
 # buttons
-buttonClearData = tk.Button(buttonsFrame, image=iconDelete, command=buttonClearDataPressed)
+buttonClearData = tk.Button(buttonsFrame, image=iconDelete, command=buttonClearDataPressed,
+                          bg=dark_button_bg, fg=dark_fg, activebackground=dark_accent, 
+                          activeforeground=dark_bg, borderwidth=1, relief='solid')
 # buttonClearData.grid(row=0, column=0, padx=2, pady=0, stick='ew')
 
-buttonTools = tk.Button(buttonsFrame, image=iconTools, command=buttonToolsPressed)
+buttonTools = tk.Button(buttonsFrame, image=iconTools, command=buttonToolsPressed,
+                      bg=dark_button_bg, fg=dark_fg, activebackground=dark_accent, 
+                      activeforeground=dark_bg, borderwidth=1, relief='solid')
 buttonTools.grid(row=0, column=0, padx=2, pady=0, stick='ew')
 
-buttonStop = tk.Button(buttonsFrame, image=iconStop, command=buttonStopPressed)
+buttonStop = tk.Button(buttonsFrame, image=iconStop, command=buttonStopPressed,
+                     bg=dark_button_bg, fg=dark_fg, activebackground=dark_error, 
+                     activeforeground=dark_bg, borderwidth=1, relief='solid')
 buttonStop.grid(row=0, column=1, padx=2, pady=0, stick='ew')
 
-buttonStart = tk.Button(buttonsFrame, image=iconStart, command=buttonStartPressed)
+buttonStart = tk.Button(buttonsFrame, image=iconStart, command=buttonStartPressed,
+                      bg=dark_button_bg, fg=dark_fg, activebackground=dark_success, 
+                      activeforeground=dark_bg, borderwidth=1, relief='solid')
 buttonStart.grid(row=0, column=2, padx=2, pady=0, stick='ew')
 
-buttonMonitor = tk.Button(buttonsFrame, image=iconMonitor, command=buttonMonitorPressed)
+buttonMonitor = tk.Button(buttonsFrame, image=iconMonitor, command=buttonMonitorPressed,
+                        bg=dark_button_bg, fg=dark_fg, activebackground=dark_accent, 
+                        activeforeground=dark_bg, borderwidth=1, relief='solid')
 buttonMonitor.grid(row=0, column=3, padx=2, pady=0, stick='ew')
 
-buttonSimulator = tk.Button(buttonsFrame, image=iconSim, command=buttonSimulatorPressed)
+buttonSimulator = tk.Button(buttonsFrame, image=iconSim, command=buttonSimulatorPressed,
+                          bg=dark_button_bg, fg=dark_fg, activebackground=dark_accent, 
+                          activeforeground=dark_bg, borderwidth=1, relief='solid')
 buttonSimulator.grid(row=0, column=4, padx=2, pady=0, stick='ew')
 
 # footer
 year = datetime.now().year
 version = config.get("About", "VERSION")
 footerText = f"v{version} \u00A9{year} KIOS C.O.E."
-footerLabel = tk.Label(footerFrame, text=footerText)
+footerLabel = tk.Label(footerFrame, text=footerText, bg=dark_bg, fg=dark_fg, font=('Sans', 8))
 footerLabel.pack(fill="both", expand=True)
 
 
 
-if envFileExists():
+if envFileExists(envFilePath):
     hideCredentialFields()
-    disableDropDownList(timezoneDropdown)
-    if webserverIsUp():
+    # disableDropDownList(timezoneDropdown)
+    if webServerIsUp():
         writeToInfobox(f"[INFO]: The platform is running at {getEnvVariable('NET_IP')}")
         disableButton(buttonStart)
         disableButton(debugCheckbox)
+        disableButton(remoteVideoAndCvCheckbox)
+        disableButton(remoteVideoAndCvServerEntry)
+        disableButton(remoteVideoAndCvPortEntry)
         enableButton(buttonStop)
         disableButton(buttonClearData)
         disableButton(buttonTools)
         disableDropDownList(ipDropdown)
-        disableDropDownList(streamFpsDropdown)
         disableDropDownList(cvFpsDropdown)
     else:
         writeToInfobox("[INFO]: The platform is stopped.")
         enableButton(buttonStart)
         enableButton(debugCheckbox)
+        enableButton(remoteVideoAndCvCheckbox)
+        enableButton(remoteVideoAndCvServerEntry)
+        enableButton(remoteVideoAndCvPortEntry)
         disableButton(buttonStop)
-        enableButton(buttonClearData)  
-        enableButton(buttonTools)  
+        enableButton(buttonClearData)
+        enableButton(buttonTools)
+
+    if hasNvidiaGpu():
+        writeToInfobox("\n[INFO]: NVIDIA GPU is available!")
+
+        if hasNvidiaRuntime():
+            writeToInfobox("[INFO]: NVIDIA container runtime is installed!")
+            if isNvidiaRuntimeActive():
+                writeToInfobox("[INFO]: NVIDIA container runtime is active!")
+            else:
+                writeToInfobox("\n[WARNING]: NVIDIA container runtime is not active! Run the following command to activate it:")
+                writeToInfobox(f" {getParentDirectory()}/_scripts/nvidia_container_enable.sh")            
+        else:
+            writeToInfobox("\n[WARNING]: NVIDIA container runtime is not installed! Run the following command to install it:")
+            writeToInfobox(f" {getParentDirectory()}/_scripts/nvidia_container_install.sh")
+
+    else:
+        writeToInfobox("\n[WARNING]: NVIDIA GPU is not available! Computer vision will run on CPU.")
+
+
 else:
-    showCredentialsFields()
+    # showCredentialsFields()
     writeToInfobox("[INFO]: Welcome to AIDERS.")
-    enableButton(buttonStart)
-    enableButton(debugCheckbox)
+    writeToInfobox("\n\n[WARN]: No environment files found. Please run the '_scripts/create_env_files.py' script or contact your system administrator.")
+    settingsFrame.pack_forget()
+    videoSettingsFrame.pack_forget()
+    disableButton(buttonStart)
+    disableButton(debugCheckbox)
+    disableButton(remoteVideoAndCvCheckbox)
+    disableButton(remoteVideoAndCvServerEntry)
+    disableButton(remoteVideoAndCvPortEntry)
     disableButton(buttonStop)
     disableButton(buttonClearData)
     disableButton(buttonTools)
 
-
-if hasNvidiaGpu():
-    writeToInfobox("\n[INFO]: NVIDIA GPU is available!")
-
-    if hasNvidiaRuntime():
-        writeToInfobox("[INFO]: NVIDIA container runtime is installed!")
-        if isNvidiaRuntimeActive():
-            writeToInfobox("[INFO]: NVIDIA container runtime is active!")
-        else:
-            writeToInfobox("\n[WARNING]: NVIDIA container runtime is not active! Run the following command to activate it:")
-            writeToInfobox(f" {getParentDirectory()}/_scripts/nvidia_container_enable.sh")            
-    else:
-        writeToInfobox("\n[WARNING]: NVIDIA container runtime is not installed! Run the following command to install it:")
-        writeToInfobox(f" {getParentDirectory()}/_scripts/nvidia_container_install.sh")
-
-else:
-    writeToInfobox("\n[WARNING]: NVIDIA GPU is not available! Computer vision will run on CPU.")
 
 
 # Run the main event loop

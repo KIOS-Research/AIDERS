@@ -6,8 +6,8 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import subprocess
 import select
 
-container_names = ["db", "web", "ws", "ros", "mav", "lsc", "cv", "alg", "ccd", "rtmp", "nginx", "geo", "odm"]
-line_colors = ["#0b6ee2", "#67bd4a", "#6d3537", "orange", "#ea7039", "#ef418c", "purple", "#00acac", "grey", "red", "#fd3da6", "#413aa1", "grey", "grey"]
+container_names = ["db", "web", "ws", "wsi", "mav", "lsc", "cv", "cvn", "alg", "ccd", "mtx", "ffrb", "nginx", "geo", "odm"]
+line_colors = ["#0b6ee2", "#67bd4a", "#6d3537", "#6d35FF", "#9f7aff", "#ea7039", "#ef418c", "purple", "#00acac", "#00acff", "grey", "red", "#fd3da6", "#413aa1", "grey", "grey"]
 
 container_cpu_values = {}
 for name in container_names:
@@ -113,7 +113,7 @@ def show_time_series_chart():
                     line.set_visible(True)
                     # total_cpu = total_cpu + container_cpu_values[container_names[i]][59]
                 else:
-                    line.set_data(range(len(container_cpu_values[container_names[i]])), 0)
+                    line.set_data(range(len(container_cpu_values[container_names[i]])), [0] * len(container_cpu_values[container_names[i]]))
                     line.set_visible(False)        
 
         # print(total_cpu)
@@ -165,6 +165,8 @@ def show_time_series_chart():
     ax.set_xticklabels([])
     # ax.set_ylabel('CPU Usage (%)')
     ax.set_title('CPU Usage (%)')
+
+    # ax.set_ylim([0, 30])
 
     # create the line objects
     total_containers = len(container_names)

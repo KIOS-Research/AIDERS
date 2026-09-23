@@ -48,21 +48,42 @@ def randomHeadingIncrement(_heading, _incrementRange):
 
 def streamToRtmp(_input_file, _rtmp_url):
     while True:
+        # cmd = [
+        #     'ffmpeg',
+        #     '-hwaccel', 'auto',     # Automatically select hardware acceleration
+        #     '-stream_loop', '-1',   # Loop the video indefinitely
+        #     '-re',                  # limits the reading speed of the input
+        #     '-i', _input_file,
+        #     '-c:v', 'h264_nvenc',   # NVIDIA NVENC (requires FFmpeg 5+ for driver >= 520)
+        #     '-preset', 'p4',        # p1=fastest .. p7=slowest, p4 ≈ medium quality
+        #     '-bf', '0',             # Disable B-frames for WebRTC compatibility
+        #     # '-c:v', 'libx264',    # software fallback if NVENC unavailable
+        #     # '-x264-params', 'bframes=0',
+        #     '-b:v', '2000k',        # Set the video bitrate
+        #     # '-r', '30',           # Set the output frame rate to 30 fps
+        #     #'-c:a', 'aac',
+        #     '-an',                  # Disable audio
+        #     '-f', 'flv',
+        #     _rtmp_url
+        # ]
+
         cmd = [
             'ffmpeg',
-            '-hwaccel', 'auto',     # Automatically select hardware acceleration
-            '-stream_loop', '-1',   # Loop the video indefinitely
-            '-re',                  # limits the reading speed of the input
+            '-hwaccel', 'auto',       # Automatically select hardware acceleration
+            '-stream_loop', '-1',     # Loop the video indefinitely
+            '-re',                    # limits the reading speed of the input
             '-i', _input_file,
-            '-c:v', 'h264_nvenc',   # NVIDIA NVENC hardware-accelerated encoder
-            # '-c:v', 'libx264',    # software-based encoding - 900% CPU
-            '-b:v', '2000k',        # Set the video bitrate
-            # '-r', '30',           # Set the output frame rate to 30 fps
-            '-c:a', 'aac',
-            '-an',                  # Disable audio
+            # '-vf', "drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf:text='%{localtime\\:%Y-%m-%d %H\\:%M\\:%S}':fontsize=24:fontcolor=white:x=10:y=10:box=1:boxcolor=black@0.5:boxborderw=5",
+            # '-vf', "drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf:text='%{pts\\:localtime\\:0\\:%Y-%m-%d %H\\:%M\\:%S}':fontsize=24:fontcolor=white:x=10:y=10:box=1:boxcolor=black@0.5:boxborderw=5",
+            '-vf', "drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf:text='%{localtime}':fontsize=48:fontcolor=white:x=10:y=h-th-10:box=1:boxcolor=black@0.5:boxborderw=5",
+            '-c:v', 'libx264', '-preset', 'ultrafast',    # software encoding (reliable fallback, no NVENC ABI dependency)
+            '-bf', '0',               # Disable B-frames for WebRTC compatibility
+            '-b:v', '2000k',          # Set the video bitrate
+            '-an',                    # Disable audio
             '-f', 'flv',
             _rtmp_url
-        ]
+        ]        
+
         # ffmpeg -hwaccel auto -stream_loop -1 -i ./SIM_Alpha.mp4 -c:v h264_nvenc -b:v 2000k -q:v 20 -r 30 -c:a aac -an -f flv rtmp://192.168.0.10/live/SIM_Alpha
         # ffmpeg -hwaccel auto -stream_loop -1 -re -i ./SIM_Alpha.mp4 -c:v h264_nvenc -b:v 2000k -c:a aac -an -f flv rtmp://192.168.0.10/live/SIM_Alpha
         try:

@@ -1,0 +1,59 @@
+services:
+    nginxr:
+        container_name: nginxr
+        image: nginx:latest
+        volumes:
+            - ./nginxr/nginx.conf:/etc/nginx/nginx.conf # Path to your Nginx configuration file
+            - ./nginxr/templates/default.conf.template:/etc/nginx/conf.d/default.conf.template
+            - ./media:/media
+        network_mode: host
+        env_file:
+            - ./.env
+        command: /bin/bash -c "envsubst '$$NGINXR_PORT $$LSCR_IP $$LSCR_API_PORT $$CVNR_IP $$CVNR_API_PORT $$NET_IP $$SUBNET $$MAIN_NET_IP $$MAIN_SUBNET' < /etc/nginx/conf.d/default.conf.template > /etc/nginx/conf.d/default.conf && exec nginx -g 'daemon off;'"
+
+    cvnr:
+        container_name: cvnr
+        runtime: nvidia # nvidia-runtime
+        deploy: # nvidia-runtime
+            resources: # nvidia-runtime
+                reservations: # nvidia-runtime
+                    devices: # nvidia-runtime
+                        - driver: nvidia # nvidia-runtime
+                          device_ids: ["0"] # nvidia-runtime
+                          capabilities: [gpu, video] # nvidia-runtime
+        build:
+            context: .
+            dockerfile: cvnr/Dockerfile.cvnr
+        volumes:
+            - ./cvnr/app:/app # Development
+            - ./_shared_code/database/connection.py:/app/database/connection.py
+            - ./db_states.txt:/db_states.txt
+            - ./media:/media:rw # django's media folder
+        networks:
+            aidersDockerNetworkRemote:
+                ipv4_address: ${CVNR_IP}
+        env_file:
+            - ./.env
+    lscr:
+        container_name: lscr
+        build:
+            context: .
+            dockerfile: lscr/Dockerfile.lscr
+        volumes:
+            - ./lscr/app:/app # Development
+            - ./_shared_code/database/connection.py:/app/database/connection.py
+            - ./db_states.txt:/db_states.txt
+            - ./media:/media:rw # django's media folder
+        networks:
+            aidersDockerNetworkRemote:
+                ipv4_address: ${LSCR_IP}
+        env_file:
+            - ./.env
+
+networks:
+    aidersDockerNetworkRemote:
+        driver: bridge
+        ipam:
+            config:
+                - subnet: ${SUBNET}
+                  gateway: ${GATEWAY}

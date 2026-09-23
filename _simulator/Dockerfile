@@ -1,33 +1,31 @@
-FROM ros:noetic
+FROM python:3.10-slim
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-#  install ROS and python dependencies and other required packages
-RUN apt update && apt-get install -y \
-    ros-noetic-gps-common \
-    ros-noetic-rosbridge-server \
-    ros-noetic-fkie-multimaster \
-    python3 \
-    python3-pip \
-    python3-rospy \
-    ffmpeg
+RUN apt-get update && apt-get install -y \
+    wget \
+    xz-utils \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    fonts-dejavu-core \
+    && rm -rf /var/lib/apt/lists/*
+        
+# Install FFmpeg 7.x static build — required for NVENC SDK 12.x (driver >= 520)
+# Ubuntu 20.04 ships FFmpeg 4.2 which uses the old preset GUID API, removed in SDK 12.
+RUN wget -q -O /tmp/ffmpeg-N-122607-g50bcc96a75-linux64-gpl.tar.xz \
+        "https://github.com/BtbN/FFmpeg-Builds/releases/download/autobuild-2026-01-31-12-57/ffmpeg-N-122607-g50bcc96a75-linux64-gpl.tar.xz" && \
+    tar -xf /tmp/ffmpeg-N-122607-g50bcc96a75-linux64-gpl.tar.xz -C /tmp && \
+    ffmpeg_dir="$(find /tmp -maxdepth 1 -type d -name 'ffmpeg-*linux64-gpl' | head -n 1)" && \
+    test -n "$ffmpeg_dir" && test -x "$ffmpeg_dir/bin/ffmpeg" && test -x "$ffmpeg_dir/bin/ffprobe" && \
+    mv "$ffmpeg_dir/bin/ffmpeg" /usr/local/bin/ffmpeg && \
+    mv "$ffmpeg_dir/bin/ffprobe" /usr/local/bin/ffprobe && \
+    rm -rf /tmp/ffmpeg*
 
 # Copy the python dependencies
 COPY requirements.txt /app/requirements.txt
 # Install Python dependencies
 RUN pip install -r /app/requirements.txt
-
-
-# Set the default Python version
-RUN ln -s /usr/bin/python3 /usr/bin/python    
-
-# Copy custom ROS message definitions
-COPY ros_msgs /opt/ros_ws/src/ros_msgs
-
-# Build custom ROS messages
-RUN . /opt/ros/$ROS_DISTRO/setup.sh && \
-    cd /opt/ros_ws && \
-    catkin_make
 
 # copy the entrypoint bash script
 COPY entrypoint.sh .
