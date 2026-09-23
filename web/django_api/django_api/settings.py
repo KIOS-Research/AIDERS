@@ -10,8 +10,9 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 
-from pathlib import Path
 import os
+from pathlib import Path
+
 from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -65,7 +66,16 @@ INSTALLED_APPS = [
     "logic",
     "django_extensions",
     "channels",
+
+    # allauth
+    'allauth',
+    'allauth.account',
+    # Optional -- requires install using `django-allauth[socialaccount]`.
+    'allauth.socialaccount',
+    # ... include the providers you want to enable:
+    'allauth.socialaccount.providers.openid_connect',
 ]
+
 CRISPY_TEMPLATE_PACK = "bootstrap4"
 # CRISPY_TEMPLATE_PACK = "bootstrap4"
 
@@ -77,16 +87,30 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+
+    # Add the account middleware:
+    "allauth.account.middleware.AccountMiddleware",    
 ]
-AUTHENTICATION_BACKENDS = ("django.contrib.auth.backends.ModelBackend", "guardian.backends.ObjectPermissionBackend")
+
+AUTHENTICATION_BACKENDS = (
+    'allauth.account.auth_backends.AuthenticationBackend',
+    "django.contrib.auth.backends.ModelBackend",
+    "guardian.backends.ObjectPermissionBackend",
+    # `allauth` specific authentication methods, such as login by email
+)
 
 AUTH_USER_MODEL = "aiders.User"
 ROOT_URLCONF = "django_api.urls"
 
+BASE_DIR = Path(__file__).resolve().parent.parent
+
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [
+            # os.path.join(BASE_DIR, "templates"),
+            BASE_DIR / "templates",  # For django-allauth templates
+        ],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -94,6 +118,8 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                'aiders.context_processors.platform_version',  # Custom context processor
+
             ],
         },
     },
@@ -126,15 +152,31 @@ DATABASES = {
     #     'PORT': '3306',
     # },
     "default": {
-        "ENGINE": os.environ.get("SQL_ENGINE", "django.db.backends.sqlite3"),
-        "NAME": os.environ.get("SQL_DATABASE", os.path.join(BASE_DIR, "db.sqlite3")),
-        "USER": os.environ.get("SQL_USER", "user"),
-        "PASSWORD": os.environ.get("SQL_PASSWORD", "password"),
-        "HOST": os.environ.get("SQL_HOST", "localhost"),
-        "PORT": os.environ.get("SQL_PORT", "5432"),
+        "ENGINE": os.environ.get("DB_ENGINE", "django.db.backends.sqlite3"),
+        "NAME": os.environ.get("DB_DATABASE", os.path.join(BASE_DIR, "db.sqlite3")),
+        "USER": os.environ.get("DB_USER", "user"),
+        "PASSWORD": os.environ.get("DB_PASSWORD", "password"),
+        "HOST": os.environ.get("DB_HOST", "localhost"),
+        "PORT": os.environ.get("DB_PORT", "5432"),
     }
 }
 
+# Timeout configurations for long-running operations like report generation
+# Database connection timeout
+DATABASES['default']['OPTIONS'] = {
+    'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+    'charset': 'utf8mb4',
+    'connect_timeout': 60,
+    'read_timeout': 600,
+    'write_timeout': 600,
+}
+
+# Request timeout for views (in seconds)
+REQUEST_TIMEOUT = 600  # 10 minutes
+
+# File upload settings for large files
+DATA_UPLOAD_MAX_MEMORY_SIZE = 100 * 1024 * 1024  # 100MB
+FILE_UPLOAD_MAX_MEMORY_SIZE = 100 * 1024 * 1024  # 100MB
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
@@ -227,7 +269,7 @@ OBJECT_3D_OUTPUTS_DIR = os.path.join(ALGORITHM_OUTPUTS_DIR, "3d_objects")
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Once user logs in, redirect them to the main html page of the aiders platform, which is the map
-LOGIN_REDIRECT_URL = "home"
+LOGIN_REDIRECT_URL = "manage_operations"
 LOGIN_URL = "login"
 DATA_UPLOAD_MAX_MEMORY_SIZE = 5242880
 """
@@ -249,3 +291,41 @@ A good use case is when an operator creates a new operation and is required to s
 # }
 
 # GOOGLE_MAPS_V3_APIKEY = "AIzaSyDaVSpIs0dsD28kR3H_2KoGc0zpEaeqsVo"
+
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend' # For development, print emails to console
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_HOST = 'smtp.example.com'  # Replace with your SMTP server
+# EMAIL_PORT = 587  # Common port for SMTP
+# EMAIL_USE_TLS = True
+# EMAIL_HOST_USER = 'your_email@example.com'
+# EMAIL_HOST_PASSWORD = 'your_password'
+
+# keycloak
+SOCIALACCOUNT_STORE_TOKENS = True # Store tokens in the database
+
+SOCIALACCOUNT_PROVIDERS = {
+    "openid_connect": {
+        "APPS": [
+            {
+                "provider_id": "keycloak",
+                "name": "Keycloak",
+                "client_id": os.environ.get("KEYCLOAK_DJANGO_CLIENT_ID"),
+                "secret": os.environ.get("KEYCLOAK_DJANGO_CLIENT_SECRET"),
+                "settings": {
+                    "server_url": "http://" + os.environ.get("NET_IP") + ":" + os.environ.get("KEYCLOAK_PORT") + "/realms/master/.well-known/openid-configuration",
+                    # "adapter": "aiders.adapters.CustomKeycloakOIDCAdapter",
+                },
+            }
+        ]
+    }
+}
+
+# REDIRECT_URI = http://192.168.1.112:8888/accounts/oidc/{provider_id}/login/callback/
+# provider_id = the same as the one in SOCIALACCOUNT_PROVIDERS
+
+
+# allauth callbacks original code:
+# /usr/local/lib/python3.9/site-packages/allauth/socialaccount/providers/openid_connect/views.py
+
+# GET allauth templates:
+# docker cp web:/usr/local/lib/python3.9/site-packages/allauth/templates/ /home/michalis/workspace/rostest/web/django_api/aiders/templates   

@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+
+{% load static %}
+{% load guardian_tags %}
+
+{% block title %}
+Aiders - Operation Report
+{% endblock %}
+
+{% block head_block %}
+    <link href="{% static 'libs/jquery-ui/http_ajax.googleapis.com_ajax_libs_jqueryui_1.12.1_themes_smoothness_jquery-ui.css' %}" rel="stylesheet">
+    <script src="{% static 'libs/jquery-ui/http_ajax.googleapis.com_ajax_libs_jqueryui_1.12.1_jquery-ui.js' %}"></script>
+    <link href="{% static 'libs/jquery.mCustomScrollbar/__malihu.github.io_custom-scrollbar_jquery.mCustomScrollbar.min.css' %}" rel="stylesheet">
+    <link href="{% static 'libs/jquery-ui/__code.jquery.com_ui_1.12.1_themes_base_jquery-ui.css' %}" rel="stylesheet">
+    <script src="{% static 'aiders/javascripts/constants/constants.js' %}"></script>
+    <script src="{% static 'aiders/javascripts/dutils/dutils.js' %}" type="text/javascript"></script>
+    <script src="{% static 'aiders/javascripts/dutils/dutils_conf_urls.js' %}" type="text/javascript"></script>
+    <!-- <link rel="stylesheet" href="{% static 'aiders/css/flying_report/flying_report.css' %}"> -->
+{% endblock %}
+
+{% block style_block %}
+<style>
+    .operation-info {
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 5px;
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+    .form-options {
+        background-color: #e9ecef;
+        border-radius: 5px;
+        padding: 10px;
+        margin: 10px 0;
+    }
+    .checkbox-group {
+        display: flex;
+        gap: 20px;
+        align-items: center;
+    }
+</style>
+{% endblock %}
+
+{% block body_block %}
+<div class="justify-content-center footer-margin header-margin col-md-6 offset-md-3">
+    <div class="row pt-5">
+        <h3 class="col float-start">Operation Report Generator</h3>
+    </div>
+    <br />
+    <!-- Operation Information -->
+    <div class="operation-info">
+        <p><strong>Operation:</strong> {{ operation.operation_name }}</p>
+        <p><strong>Description:</strong> {{ operation.description|default:"No description available" }}</p>
+        <p><strong>Operator:</strong> {{ operation.operator|default:"Not specified" }}</p>
+        <p><strong>Created:</strong> {{ operation.created_at|date:"Y-m-d H:i" }}</p>
+        <p><strong>UAVs in Operation:</strong> {{ operation.drone_set.count }}</p>
+    </div>
+
+    {% for error in form.non_field_errors %}
+    <div class="alert alert-danger">
+        <strong>{{ error|escape }}</strong>
+    </div>
+    {% endfor %}
+
+
+    <div class='table_form position-relative fade-item'>
+        <table cellpadding="10" cellspacing="2" align="center" style="width: 100%; max-width: 1000px;">
+            <tr><td colspan="3"><h4 class="d-flex justify-content-center">Generate Operation Report</h4></td></tr>
+            
+            <form id='operation_report_form' method="post" action="{% url 'operation_report' operation_name=operation_name %}">
+                {% csrf_token %}
+
+                <!-- Date Range -->
+                {% for field in form %}
+                    {% if field.name == 'start_date' or field.name == 'end_date' %}
+                        <tr>
+                            <td style="width: 30%;"><strong>{{ field.label }}</strong></td>
+                            <td colspan="2">
+                                {{ field }}
+                                {% if field.help_text %}
+                                    <small class="form-text text-muted">{{ field.help_text }}</small>
+                                {% endif %}
+                                {% for error in field.errors %}
+                                    <div class="text-danger"><small>{{ error|escape }}</small></div>
+                                {% endfor %}
+                            </td>
+                        </tr>
+                    {% endif %}
+                {% endfor %}
+
+                <tr>
+                    <td colspan="3">
+                        <div class="form-options">
+                            <div class="checkbox-group">
+                                {% for field in form %}
+                                    {% if field.name == 'include_flight_paths' or field.name == 'include_statistics' or field.name == 'enhanced_maps' %}
+                                        <label style="width: 33%;">
+                                            {{ field }} 
+                                            <strong>{{ field.label }}</strong>
+                                        </label>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                
+                <!-- Submit Button -->
+                <tr>
+                    <td colspan="3">
+                        <div class="d-flex justify-content-center">
+                            <a href="{% url 'manage_operations' %}" class="btn btn-danger">Back</a>
+                            &nbsp;&nbsp;
+                            <input class='btn btn-success' type="submit" value="Generate Report">
+                        </div>
+                    </td>
+                </tr>
+            </form> 
+        </table>
+    </div>
+</div>
+
+<script>
+function clear_form() {
+    document.getElementById('operation_report_form').reset();
+}
+</script>
+
+{% if not form.is_bound %}
+<!-- Defaults are only applied on a fresh form, so a re-render keeps the user's choices -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Date range defaults come from the server (the operation's own time range)
+
+    // Check all checkboxes by default
+    const flightPathsCheckbox = document.querySelector('input[name="include_flight_paths"]');
+    const statisticsCheckbox = document.querySelector('input[name="include_statistics"]');
+    const enhancedMapsCheckbox = document.querySelector('input[name="enhanced_maps"]');
+    
+    if (flightPathsCheckbox) {
+        flightPathsCheckbox.checked = true;
+    }
+    if (statisticsCheckbox) {
+        statisticsCheckbox.checked = true;
+    }
+    if (enhancedMapsCheckbox) {
+        enhancedMapsCheckbox.checked = true;
+    }
+});
+</script>
+{% endif %}
+{% endblock %}
+
+{% block script_block %}
+{% endblock %}

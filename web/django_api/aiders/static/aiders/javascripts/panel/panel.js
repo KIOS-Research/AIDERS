@@ -1,170 +1,188 @@
-
 /**********************/
 /******* DRONES *******/
 /**********************/
 
 
 // adds drones to the side-panel
-function addNewDronesToSidePanel(_droneNames) {
-    for (let i = 0; i < _droneNames.length; i++) {
-        let droneName = _droneNames[i];
-        console.log("Drone: " + droneName + " connected.");
-        let ul = document.getElementById('drone-selection-list');
+function addNewDronesToSidePanel(droneName) {
+    console.log("Drone: " + droneName + " connected.");
+    const droneType = getDroneAttributeValue(droneName, "droneType");
+    let ul = document.getElementById('drone-selection-list');
 
-        let li = document.createElement('li');
-        li.id = 'sidepanel-drone-' + droneName;
-        ul.append(li);
-        
-        // create the row element for this drone
-        let droneWrapperDiv = document.createElement('div');
-        // $(droneWrapperDiv).addClass('row');
-        droneWrapperDiv.style.fontSize = '13px';
-        droneWrapperDiv.style.marginBottom = '15px';
-        droneWrapperDiv.style.color = '#ffffff';
-        droneWrapperDiv.style.lineHeight = '2';
-        droneWrapperDiv.style.background = 'inherit';
-        li.append(droneWrapperDiv);
+    let li = document.createElement('li');
+    li.id = 'sidepanel-drone-' + droneName;
+    ul.append(li);
 
-        // create and add the drone's name
-        let droneHeader = document.createElement('div');
-        $(droneHeader).addClass('row client-header');
-        // $(droneHeader).addClass('');
+    // create the row element for this drone
+    let droneWrapperDiv = document.createElement('div');
+    // $(droneWrapperDiv).addClass('row');
+    droneWrapperDiv.style.fontSize = '13px';
+    droneWrapperDiv.style.marginBottom = '15px';
+    droneWrapperDiv.style.color = '#ffffff';
+    droneWrapperDiv.style.lineHeight = '2';
+    droneWrapperDiv.style.background = 'inherit';
+    li.append(droneWrapperDiv);
 
-        // let droneNameHtml = document.createTextNode(droneName);
-        let droneNameHeader = document.createElement('div');
-        droneNameHeader.id = 'sidepanel-drone-name-' + droneName;
-        $(droneNameHeader).addClass('col-md-6');
+    // create and add the drone's name
+    let droneHeader = document.createElement('div');
+    $(droneHeader).addClass('row client-header');
+    // $(droneHeader).addClass('');
 
-        let brandLogo = "";
-        if (getDroneAttributeValue(droneName, "droneType") == "MAVLINK") {
-            brandLogo = "<img src='/static/aiders/imgs/mavlink-logo.png' width='22' style='margin-right:6px;' title='MAVLink' />";
-        }
-        else {
-            brandLogo = "<img src='/static/aiders/imgs/dji-logo.png' width='22' style='margin-right:6px;' title='DJI' />";
-        }
+    // let droneNameHtml = document.createTextNode(droneName);
+    let droneNameHeader = document.createElement('div');
+    droneNameHeader.id = 'sidepanel-drone-name-' + droneName;
+    $(droneNameHeader).addClass('col-md-6');
 
-        droneNameHeader.innerHTML = "<a href='#' style='padding: 0px; opacity: 1;' onclick='zoomToClient(\"drone\", \""+droneName+"\")'>" + brandLogo + droneName + "</a>";
-
-        let droneAltitudeHeader = document.createElement('div');
-        droneAltitudeHeader.id = 'sidepanel-drone-altitude-' + droneName;
-        $(droneAltitudeHeader).addClass('col-md-2 client-header-data');
-        droneAltitudeHeader.innerHTML = "...m";
-        $(droneAltitudeHeader).attr("data-toggle", "tooltip");
-        $(droneAltitudeHeader).attr("title", "Altitude");
-
-        let droneBatteryHeader = document.createElement('div');
-        droneBatteryHeader.id = 'sidepanel-drone-battery-' + droneName;
-        $(droneBatteryHeader).addClass('col-md-2 client-header-data');
-        droneBatteryHeader.innerHTML = "...%";
-        $(droneBatteryHeader).attr("data-toggle", "tooltip");
-        $(droneBatteryHeader).attr("title", "Battery level");        
-
-        let droneStatusHeader = document.createElement('div');
-        droneStatusHeader.id = 'sidepanel-drone-status-' + droneName;
-        $(droneStatusHeader).addClass('col-md-2 client-header-data');
-        droneStatusHeader.innerHTML = "";
-        $(droneStatusHeader).attr("data-toggle", "tooltip");
-        $(droneStatusHeader).attr("title", "Status");
-
-        // icon = "bullseye";
-        // droneHeader.innerHTML = "<i class='fa fa-" + icon + "'></i> ";
-        droneHeader.appendChild(droneNameHeader);
-        droneHeader.appendChild(droneAltitudeHeader);
-        droneHeader.appendChild(droneBatteryHeader);
-        droneHeader.appendChild(droneStatusHeader);
-        
-        droneWrapperDiv.appendChild(droneHeader);
-        
-        // create the divs that will contain the toggle buttons
-        let togglesRow1 = document.createElement('div');
-        togglesRow1.style.marginBottom = '4px';
-        let togglesRow2 = document.createElement('div');
-        togglesRow2.style.marginBottom = '4px';
-        let togglesRow3 = document.createElement('div');
-        // $(togglesRow1).addClass('col-md-12');
-
-        // create and append the checkboxes
-        let selectCheckbox = createCheckbox('drone-select-toggle-' + droneName);
-        let gpsCheckbox = createCheckbox('drone-gps-toggle-' + droneName);
-        let routeCheckbox = createCheckbox('drone-route-toggle-' + droneName);
-        let videoCheckbox = createCheckbox('drone-video-toggle-' + droneName);
-        let cvCheckbox = createCheckbox('drone-cv-toggle-' + droneName);
-        let cvVideoCheckbox = createCheckbox('drone-cv-video-toggle-' + droneName);
-        // let weatherCheckbox = createCheckbox('drone-weather-toggle-' + droneName);
-
-        togglesRow1.appendChild(selectCheckbox);
-        togglesRow1.appendChild(gpsCheckbox);
-        togglesRow1.appendChild(routeCheckbox);
-        
-        togglesRow2.appendChild(videoCheckbox);
-        togglesRow2.appendChild(cvCheckbox);
-        togglesRow2.appendChild(cvVideoCheckbox);
-
-        // togglesRow2.appendChild(weatherCheckbox);
-
-        // append the div holding the checkboxes to the wrapper div
-        // this must be done before converting checkboxes to toggles
-        droneWrapperDiv.appendChild(togglesRow1);
-        droneWrapperDiv.appendChild(togglesRow2);
-        droneWrapperDiv.appendChild(togglesRow3);
-
-        convertCheckboxToToggleButton(selectCheckbox, droneName, "check", "SELECT", toggleSelectDrone, "off");
-        convertCheckboxToToggleButton(gpsCheckbox, droneName, "location-dot", "GPS", droneClickInfoBox, "off");
-        convertCheckboxToToggleButton(routeCheckbox, droneName, "route", "PATH", toggleLayerVisibility, "on");
-        convertCheckboxToToggleButton(videoCheckbox, droneName, "video", "LIVE", toggleVideoVisibility, "off");
-
-        convertCheckboxToToggleButton(cvVideoCheckbox, droneName, "arrows-to-eye", "DET. LIVE", toggleDetVideoVisibility, "off");
-        // convertCheckboxToToggleButton(weatherCheckbox, droneName, "cloud-sun", "WEATHER", droneClickWeatherBox, "off"); // TODO: make this appear conditionally
-        // createWeatherBoxForDrone(droneName);
-
-        // special treatment for detection toggle button
-        var detectionToggleState = "off";
-        var droneDetectionState = getDroneDetectionState(droneName);
-        // console.log(droneDetectionState);
-
-        if (droneDetectionState === DETECTION_CONNECTED) {
-            // start_detection_vid(droneName);
-            let allDrones = get_all_drone_info_array();
-            for (let i = 0; i < allDrones.length; i++) {
-                if (droneName === allDrones[i].droneID) {
-                    // update_drone_detection_status_locally(i, DETECTION_CONNECTED);
-                    setDroneAttributeValueByIndex(i, "droneDetectionStatus", DETECTION_CONNECTED);
-                    break;
-                }
-            }
-            detectionToggleState = "on";
-        }
-        
-        convertCheckboxToToggleButton(cvCheckbox, droneName, "eye", "DETECT", toggleDetectionFunctionality, detectionToggleState);
-
-
-        // MAVLINK Drones
-
-        if(getDroneAttributeValue(droneName, "droneType") == "MAVLINK") {
-            let mavlinkActions1 = document.createElement('div');
-            $(mavlinkActions1).addClass('mavlink-wrapper');
-
-            let mavlinkActions2 = document.createElement('div');
-            $(mavlinkActions2).addClass('mavlink-wrapper');
-
-            let takeoffBtn = createButton('primary', 'mavlink-takeoff-land-' + droneName, droneName, "plane-departure", "Takeoff", handleMavlinkTakeoffLand);
-            let returnHomeBtn = createButton('primary', 'mavlink-return-' + droneName, droneName, "house", "Return", handleMavlinkReturn);
-            let transitionBtn = createButton('primary', 'mavlink-transition-' + droneName, droneName, "shuffle", "Transition", handleMavlinkTransition);            
-            let armBtn = createButton('primary', 'mavlink-set-speed-' + droneName, droneName, "gauge-high", "Set Speed", handleMavlinkSetSpeed);
-            // let disarmBtn = createButton('warning', 'mavlink-disarm-' + droneName, droneName, "plug-circle-xmark", "Disarm", handleMavlinkReturn);
-            let killBtn = createButton('danger', 'mavlink-kill-' + droneName, droneName, "skull", "Kill", handleMavlinkKill);
-
-            mavlinkActions1.appendChild(takeoffBtn);
-            mavlinkActions1.appendChild(returnHomeBtn);
-            mavlinkActions1.appendChild(transitionBtn);
-            mavlinkActions2.appendChild(armBtn);
-            // mavlinkActions2.appendChild(disarmBtn);
-            mavlinkActions2.appendChild(killBtn);            
-            
-            droneWrapperDiv.appendChild(mavlinkActions1);
-            droneWrapperDiv.appendChild(mavlinkActions2);
-        }
+    let brandLogo = "";
+    if (droneType == "MAVLINK") {
+        brandLogo = "<img src='/static/aiders/imgs/mavlink-logo.png' width='22' style='margin-right:6px;' title='MAVLink' />";
     }
+    else {
+        brandLogo = "<img src='/static/aiders/imgs/dji-logo.png' width='22' style='margin-right:6px;' title='DJI' />";
+    }
+
+    droneNameHeader.innerHTML = "<a href='#' style='padding: 0px; opacity: 1;' onclick='zoomToClient(\"drone\", \"" + droneName + "\")'>" + brandLogo + droneName + "</a>";
+
+    let droneAltitudeHeader = document.createElement('div');
+    droneAltitudeHeader.id = 'sidepanel-drone-altitude-' + droneName;
+    $(droneAltitudeHeader).addClass('col-md-2 client-header-data');
+    droneAltitudeHeader.innerHTML = "...m";
+    $(droneAltitudeHeader).attr("data-toggle", "tooltip");
+    $(droneAltitudeHeader).attr("title", "Altitude");
+
+    let droneBatteryHeader = document.createElement('div');
+    droneBatteryHeader.id = 'sidepanel-drone-battery-' + droneName;
+    $(droneBatteryHeader).addClass('col-md-2 client-header-data');
+    droneBatteryHeader.innerHTML = "...%";
+    $(droneBatteryHeader).attr("data-toggle", "tooltip");
+    $(droneBatteryHeader).attr("title", "Battery level");
+
+    let droneStatusHeader = document.createElement('div');
+    droneStatusHeader.id = 'sidepanel-drone-status-' + droneName;
+    $(droneStatusHeader).addClass('col-md-2 client-header-data');
+    droneStatusHeader.innerHTML = "";
+    $(droneStatusHeader).attr("data-toggle", "tooltip");
+    $(droneStatusHeader).attr("title", "Status");
+
+    // icon = "bullseye";
+    // droneHeader.innerHTML = "<i class='fa fa-" + icon + "'></i> ";
+    droneHeader.appendChild(droneNameHeader);
+    droneHeader.appendChild(droneAltitudeHeader);
+    droneHeader.appendChild(droneBatteryHeader);
+    droneHeader.appendChild(droneStatusHeader);
+
+    droneWrapperDiv.appendChild(droneHeader);
+
+    // create the divs that will contain the toggle buttons
+    let togglesRow1 = document.createElement('div');
+    togglesRow1.style.marginBottom = '4px';
+    let togglesRow2 = document.createElement('div');
+    togglesRow2.style.marginBottom = '4px';
+    let togglesRow3 = document.createElement('div');
+    // $(togglesRow1).addClass('col-md-12');
+
+    // create and append the checkboxes
+    let selectCheckbox = createCheckbox('drone-select-toggle-' + droneName);
+    let gpsCheckbox = createCheckbox('drone-gps-toggle-' + droneName);
+    let routeCheckbox = createCheckbox('drone-route-toggle-' + droneName);
+    let videoCheckbox = createCheckbox('drone-video-toggle-' + droneName);
+    let cvCheckbox = createCheckbox('drone-cv-toggle-' + droneName);
+    let cvVideoCheckbox = createCheckbox('drone-cv-video-toggle-' + droneName);
+    // let weatherCheckbox = createCheckbox('drone-weather-toggle-' + droneName);
+    let pilotNotificationCheckbox = createCheckbox('pilot-notification-toggle-' + droneName);
+
+    
+    
+    togglesRow1.appendChild(selectCheckbox);
+    togglesRow1.appendChild(gpsCheckbox);
+    togglesRow1.appendChild(routeCheckbox);
+
+    togglesRow2.appendChild(videoCheckbox);
+    if (USER_EXECUTE_COMMAND_PERMISSION == "True" || USER_SUPERUSER_PERMISSION == "True") {
+        togglesRow2.appendChild(cvCheckbox)
+        if (droneType == "DJI") {
+            togglesRow3.appendChild(pilotNotificationCheckbox);
+        }        
+    }
+    togglesRow2.appendChild(cvVideoCheckbox);
+
+    // togglesRow2.appendChild(weatherCheckbox);
+
+
+    // append the div holding the checkboxes to the wrapper div
+    // this must be done before converting checkboxes to toggles
+    droneWrapperDiv.appendChild(togglesRow1);
+    droneWrapperDiv.appendChild(togglesRow2);
+    droneWrapperDiv.appendChild(togglesRow3);
+
+    convertCheckboxToToggleButton(selectCheckbox, droneName, "check", "SELECT", toggleSelectDrone, "off");
+    convertCheckboxToToggleButton(gpsCheckbox, droneName, "location-dot", "GPS", changeDroneTelemetryElementVisibility, "off");
+    convertCheckboxToToggleButton(routeCheckbox, droneName, "route", "PATH", toggleLayerVisibility, "on");
+    convertCheckboxToToggleButton(videoCheckbox, droneName, "video", "LIVE", toggleVideoVisibility, "off");
+
+    convertCheckboxToToggleButton(cvVideoCheckbox, droneName, "arrows-to-eye", "DET. LIVE", toggleDetVideoVisibility, "off");
+    // convertCheckboxToToggleButton(weatherCheckbox, droneName, "cloud-sun", "WEATHER", droneClickWeatherBox, "off"); // TODO: make this appear conditionally
+    // createWeatherBoxForDrone(droneName);
+
+    convertCheckboxToToggleButton(pilotNotificationCheckbox, droneName, "exclamation-triangle", "NOTIFY", sendMessageToPilot, "off");    
+
+
+    // special treatment for detection toggle button
+    var detectionToggleState = "off";
+    var droneDetectionState = getDroneDetectionState(droneName);
+    // console.log(droneDetectionState);
+
+    if (droneDetectionState === DETECTION_CONNECTED) {
+        // start_detection_vid(droneName);
+        let allDrones = get_all_drone_info_array();
+        for (let i = 0; i < allDrones.length; i++) {
+            if (droneName === allDrones[i].droneID) {
+                // update_drone_detection_status_locally(i, DETECTION_CONNECTED);
+                setDroneAttributeValueByIndex(i, "droneDetectionStatus", DETECTION_CONNECTED);
+                break;
+            }
+        }
+        detectionToggleState = "on";
+    }
+
+    convertCheckboxToToggleButton(cvCheckbox, droneName, "eye", "DETECT", toggleDetectionFunctionality, detectionToggleState);
+
+
+    // MAVLINK Drones
+
+    if (getDroneAttributeValue(droneName, "droneType") == "MAVLINK") {
+        let mavlinkActions1 = document.createElement('div');
+        $(mavlinkActions1).addClass('mavlink-wrapper');
+
+        let mavlinkActions2 = document.createElement('div');
+        $(mavlinkActions2).addClass('mavlink-wrapper');
+
+        let takeoffBtn = createButton('primary', 'mavlink-takeoff-land-' + droneName, droneName, "plane-departure", "Takeoff", handleMavlinkTakeoffLand);
+        let returnHomeBtn = createButton('primary', 'mavlink-return-' + droneName, droneName, "house", "Return", handleMavlinkReturn);
+        // let transitionBtn = createButton('primary', 'mavlink-transition-' + droneName, droneName, "shuffle", "Transition", handleMavlinkTransition);
+        let transitionBtnMC = createButton('primary', 'mavlink-transition-mc-' + droneName, droneName, "helicopter", "Trans. MC", handleMavlinkTransition, "MC");
+        let transitionBtnFW = createButton('primary', 'mavlink-transition-fw-' + droneName, droneName, "plane", "Trans. FW", handleMavlinkTransition, "FW");
+        let setSpeedBtn = createButton('primary', 'mavlink-set-speed-' + droneName, droneName, "gauge-high", "Set Speed", handleMavlinkSetSpeed);
+        // let disarmBtn = createButton('warning', 'mavlink-disarm-' + droneName, droneName, "plug-circle-xmark", "Disarm", handleMavlinkReturn);
+        let killBtn = createButton('danger', 'mavlink-kill-' + droneName, droneName, "skull", "Kill", handleMavlinkKill);
+
+        mavlinkActions1.appendChild(takeoffBtn);
+        mavlinkActions1.appendChild(returnHomeBtn);
+        mavlinkActions1.appendChild(setSpeedBtn);
+        if (getDroneAttributeValue(droneName, "droneConfiguration") == "VTOL") {
+            // mavlinkActions2.appendChild(transitionBtn);
+            mavlinkActions2.appendChild(transitionBtnMC);
+            mavlinkActions2.appendChild(transitionBtnFW);
+        }
+        // mavlinkActions2.appendChild(disarmBtn);
+        mavlinkActions2.appendChild(killBtn);
+
+        droneWrapperDiv.appendChild(mavlinkActions1);
+        droneWrapperDiv.appendChild(mavlinkActions2);
+    }
+
+    // console.log(getDroneAttributeValue(droneName, "droneConfiguration"));
+    
 }
 
 
@@ -194,11 +212,11 @@ function handleMavlinkTakeoff(_droneName) {
     let label = 'Take-Off Altitude:';
     let subtext = 'Enter a value between 10 and 120 meters.'
 
-    create_confirmation_dialog_with_input('number', confirmButton, 'Cancel', msg, title, label, subtext, "50").then(function (inputValue) {
+    create_confirmation_dialog_with_input('number', confirmButton, 'Cancel', msg, title, label, subtext, "10").then(function (inputValue) {
         if (inputValue !== null) {
             if (parseInt(inputValue) >= 10 && parseInt(inputValue) <= 120) { // validate takeoff altitude
                 console.log("Taking off to " + inputValue + "m.");
-                showPopupForALittle('#successBox', "Sending takeoff command to "+_droneName, 5000);
+                showPopupForALittle('#successBox', "Sending takeoff command to " + _droneName, 5000);
                 url = "mavlinkTakeoff"
                 data = {
                     droneName: _droneName,
@@ -258,7 +276,7 @@ function handleMavlinkReturn(_droneName) {
             data = {
                 droneName: _droneName,
             }
-            postMavlinkRequest(url, data);            
+            postMavlinkRequest(url, data);
         }
         else {
             console.log("Return to home cancelled!");
@@ -268,13 +286,17 @@ function handleMavlinkReturn(_droneName) {
 }
 
 
-function handleMavlinkTransition(_droneName) {
+function handleMavlinkTransition(_droneName, _tempTransitionMode) {
     let title = _droneName + ' Transition';
     let msg = '';
     let transitionTo = '';
 
-    getDroneAttributeValue(_droneName, "vtolState") == "MC" ? msg = 'Transition to Fixed-wing?' : msg = 'Transition to Multicopter?';
-    getDroneAttributeValue(_droneName, "vtolState") == "MC" ? transitionTo = 'FW' : transitionTo = 'MC';
+    // TODO: TEMP: until we have a better way to determine the current state of the drone
+    _tempTransitionMode == "FW" ? msg = 'Transition to Fixed-wing?' : msg = 'Transition to Multicopter?';
+    _tempTransitionMode == "FW" ? transitionTo = 'FW' : transitionTo = 'MC';
+
+    // getDroneAttributeValue(_droneName, "vtolState") == "MC" ? msg = 'Transition to Fixed-wing?' : msg = 'Transition to Multicopter?';
+    // getDroneAttributeValue(_droneName, "vtolState") == "MC" ? transitionTo = 'FW' : transitionTo = 'MC';
 
     create_confirmation_dialog('Transition', 'Cancel', msg, title).then(function (canProceed) {
         if (canProceed) {
@@ -383,11 +405,9 @@ async function postMavlinkRequest(_url, _data) {
 
 
 // removes drones from the side-panel
-function removeDronesFromSidePanel(_deletedDroneNames) {
-    for (let i = 0; i < _deletedDroneNames.length; i++) {
-        console.log("Drone: " + _deletedDroneNames[i] + " disconnected.");
-        $('#sidepanel-drone-' + _deletedDroneNames[i]).remove();
-    }
+function removeDronesFromSidePanel(_deleteDroneName) {
+    console.log("Drone: " + _deleteDroneName + " disconnected.");
+    $('#sidepanel-drone-' + _deleteDroneName).remove();
 }
 
 
@@ -409,7 +429,7 @@ function addNewDevicesToSidePanel(_deviceNames) {
         let li = document.createElement('li');
         li.id = 'mobile-device-' + deviceName;
         ul.append(li);
-        
+
         // create the row element for this device
         let deviceWrapperDiv = document.createElement('div');
         // $(deviceWrapperDiv).addClass('row');
@@ -426,38 +446,47 @@ function addNewDevicesToSidePanel(_deviceNames) {
         let deviceNameHeader = document.createElement('div');
         deviceNameHeader.id = 'mobile-device-name-' + deviceName;
         $(deviceNameHeader).addClass('col-md-6');
-        deviceNameHeader.innerHTML = "<a href='#' style='padding: 0px; opacity: 1;' onclick='zoomToClient(\"device\", \"" + deviceName + "\")'>" + deviceName + "</a>";            
+        deviceNameHeader.innerHTML = "<a href='#' style='padding: 0px; opacity: 1;' onclick='zoomToClient(\"device\", \"" + deviceName + "\")'>" + deviceName + "</a>";
 
         let deviceBatteryHeader = document.createElement('div');
         deviceBatteryHeader.id = 'mobile-device-battery-' + deviceName;
         $(deviceBatteryHeader).addClass('col-md-2 client-header-data');
         deviceBatteryHeader.innerHTML = "...%";
         $(deviceBatteryHeader).attr("data-toggle", "tooltip");
-        $(deviceBatteryHeader).attr("title", "Battery level");   
+        $(deviceBatteryHeader).attr("title", "Battery level");
 
         deviceHeader.appendChild(deviceNameHeader);
         deviceHeader.appendChild(deviceBatteryHeader);
         deviceWrapperDiv.appendChild(deviceHeader);
-        
+
         // create the divs that will contain the toggle buttons
         let togglesRow = document.createElement('div');
         togglesRow.style.marginBottom = '4px';
+        let togglesRow2 = document.createElement('div');
+        togglesRow2.style.marginBottom = '4px';
 
         // create and append the checkboxes
         let selectCheckbox = createCheckbox('device-select-toggle-' + deviceName);
         let gpsCheckbox = createCheckbox('device-gps-toggle-' + deviceName);
         let routeCheckbox = createCheckbox('device-route-toggle-' + deviceName);
+        let deviceNotificationCheckbox = createCheckbox('device-notification-toggle-' + deviceName);
+
         togglesRow.appendChild(selectCheckbox);
         togglesRow.appendChild(gpsCheckbox);
         togglesRow.appendChild(routeCheckbox);
+        togglesRow2.appendChild(deviceNotificationCheckbox);
 
         // append the div holding the checkboxes to the wrapper div
         // this must be done before converting checkboxes to toggles
         deviceWrapperDiv.appendChild(togglesRow);
+        deviceWrapperDiv.appendChild(togglesRow2);
 
         convertCheckboxToToggleButton(selectCheckbox, deviceName, "check", "SELECT", toggleSelectDevice, "off");
         convertCheckboxToToggleButton(gpsCheckbox, deviceName, "location-dot", "GPS", deviceClickInfoBox, "off");
         convertCheckboxToToggleButton(routeCheckbox, deviceName, "route", "PATH", toggleLayerVisibility, "on");
+
+        convertCheckboxToToggleButton(deviceNotificationCheckbox, deviceName, "exclamation-triangle", "NOTIFY", sendMessageToDevice, "off");    
+
 
     }
 }
@@ -490,7 +519,7 @@ function addNewBalorasToSidePanel(_baloraNames) {
         let li = document.createElement('li');
         li.id = 'lora-tracker-' + baloraName;
         ul.append(li);
-        
+
         // create the row element for this balora
         let baloraWrapperDiv = document.createElement('div');
         baloraWrapperDiv.style.fontSize = '13px';
@@ -513,12 +542,12 @@ function addNewBalorasToSidePanel(_baloraNames) {
         $(baloraBatteryHeader).addClass('col-md-2 client-header-data');
         baloraBatteryHeader.innerHTML = "...%";
         $(baloraBatteryHeader).attr("data-toggle", "tooltip");
-        $(baloraBatteryHeader).attr("title", "Battery level");   
+        $(baloraBatteryHeader).attr("title", "Battery level");
 
         baloraHeader.appendChild(baloraNameHeader);
         baloraHeader.appendChild(baloraBatteryHeader);
         baloraWrapperDiv.appendChild(baloraHeader);
-        
+
         // create the divs that will contain the toggle buttons
         let togglesRow = document.createElement('div');
         togglesRow.style.marginBottom = '4px';
@@ -584,14 +613,19 @@ function convertCheckboxToToggleButton(_cb, _clientName, _icon, _text, _callback
 }
 
 
-function createButton(_cssClass, _id, _clientName, _icon, _text, _callbackFunction) {
+function createButton(_cssClass, _id, _clientName, _icon, _text, _callbackFunction, _extraParam = null) {
     let btn = document.createElement('button');
     btn.id = _id;
     btn.innerHTML = "<i class='fa fa-" + _icon + "'></i> " + _text;
     btn.classList.add("btn", "btn-sm", "btn-" + _cssClass, "col", "mavlink-btn"); // , "col-md-4"
     // btn.setAttribute('data-width', '90')
     $(btn).on('click', function (event) {
-        _callbackFunction(_clientName);
+        if (_extraParam) {
+            _callbackFunction(_clientName, _extraParam);
+        }
+        else {
+            _callbackFunction(_clientName);
+        }
     });
     return btn;
 }
@@ -662,7 +696,7 @@ function toggleSelectBalora(toggleID, baloraid) {
 
 
 
-
+// NOT USED
 // function add_list_items_to_selected_device(device_ids) {
 //     for (let i = 0; i < device_ids.length; i++) {
 //         let deviceID = device_ids[i];
@@ -698,7 +732,7 @@ function toggleSelectBalora(toggleID, baloraid) {
 
 
 
-
+// NOT USED
 // function add_list_items_to_uav_missions(drone_ids) {
 //     for (let i = 0; i < drone_ids.length; i++) {
 //         let droneID = drone_ids[i];
@@ -784,189 +818,203 @@ function toggleSelectBalora(toggleID, baloraid) {
 //     }
 // }
 
+// NOT USED
+// function add_list_items_to_selected_balora(balora_ids) {
+//     for (let i = 0; i < balora_ids.length; i++) {
+//         let baloraID = balora_ids[i];
+//         let ul = document.getElementById('balora-selection-list');
+//         let li = document.createElement('li');
+//         let div = document.createElement('div');
+//         let toggle = document.createElement('input');
+//         let linkText = document.createTextNode('Balora ' + baloraID);
 
-function add_list_items_to_selected_balora(balora_ids) {
-    for (let i = 0; i < balora_ids.length; i++) {
-        let baloraID = balora_ids[i];
-        let ul = document.getElementById('balora-selection-list');
-        let li = document.createElement('li');
-        let div = document.createElement('div');
-        let toggle = document.createElement('input');
-        let linkText = document.createTextNode('Balora ' + baloraID);
+//         ul.append(li);
 
-        ul.append(li);
+//         $(div).addClass('d-flex justify-content-between');
+//         div.appendChild(linkText);
+//         div.style.fontSize = '13px';
+//         div.style.color = '#ffffff';
+//         div.style.lineHeight = '2';
+//         div.style.background = 'inherit';
 
-        $(div).addClass('d-flex justify-content-between');
-        div.appendChild(linkText);
-        div.style.fontSize = '13px';
-        div.style.color = '#ffffff';
-        div.style.lineHeight = '2';
-        div.style.background = 'inherit';
+//         toggle.id = 'balora-toggle' + baloraID;
+//         toggle.type = 'checkbox';
+//         div.appendChild(toggle);
 
-        toggle.id = 'balora-toggle' + baloraID;
-        toggle.type = 'checkbox';
-        div.appendChild(toggle);
+//         li.append(div);
+//         li.id = 'list-item-select-' + baloraID;
+//         li.style.width = '270px';
 
-        li.append(div);
-        li.id = 'list-item-select-' + baloraID;
-        li.style.width = '270px';
+//         $(toggle).bootstrapToggle('off');
+//         $(toggle).on('change', function (event) {
+//             toggleSelectBalora(this.id, baloraID);
+//         });
+//     }
+// }
 
-        $(toggle).bootstrapToggle('off');
-        $(toggle).on('change', function (event) {
-            toggleSelectBalora(this.id, baloraID);
-        });
+// NOT USED
+// function add_list_items_to_trajectories_balora(balora_ids) {
+//     for (let i = 0; i < balora_ids.length; i++) {
+//         let baloraID = balora_ids[i];
+//         let ul = document.getElementById('trajectory-list-balora');
+//         let li = document.createElement('li');
+//         let div = document.createElement('div');
+//         let toggle = document.createElement('input');
+//         let linkText = document.createTextNode(baloraID);
+
+//         // ul.style.background="#3d3e3f"
+//         ul.appendChild(li);
+
+//         $(div).addClass('d-flex justify-content-between');
+//         div.appendChild(linkText);
+
+//         toggle.id = 'trajectories-toggle-' + baloraID;
+//         toggle.type = 'checkbox';
+//         div.appendChild(toggle);
+
+//         li.append(div);
+//         li.style.paddingTop = '4px';
+//         li.style.paddingBottom = '4px';
+//         li.style.width = '250px';
+//         li.id = 'list-item-trajectories-' + baloraID;
+//         // li.style.background="inherit"
+
+//         $(toggle).bootstrapToggle('on');
+//         $(toggle).on('change', function (event) {
+//             toggleLayerVisibility(this.id, baloraID);
+//         });
+//     }
+// }
+
+
+
+
+function addDroneToPanelListWeatherStation(_droneID) {
+    document.getElementById('drone-weather-station-list-default').style.display = 'none';
+    let ul = document.getElementById('drone-weather-station-list');
+    let li = document.createElement('li');
+    let div = document.createElement('m1');
+    let toggle = document.createElement('input');
+
+    ul.appendChild(li);
+
+    $(div).addClass('d-flex justify-content-between');
+    div.appendChild(document.createTextNode(_droneID));
+
+    toggle.id = 'drone-weather-' + _droneID;
+    toggle.type = 'checkbox';
+    div.appendChild(toggle);
+
+    li.append(div);
+    li.id = 'list-item-drone-weather-' + _droneID;
+
+    $(toggle).bootstrapToggle('off');
+    $(toggle).on('change', function (event) {
+        droneClickWeatherBox(this.id, _droneID);
+    });
+    createWeatherBoxForDrone(_droneID);
+}
+
+function removeDroneToPanelListWeatherStation(_droneID) {
+    if (document.getElementById('list-item-drone-weather-' + _droneID)) {
+        document.getElementById('list-item-drone-weather-' + _droneID).remove();
+    }
+    if (document.querySelectorAll('#drone-weather-station-list li').length == 1) {
+        document.getElementById('drone-weather-station-list-default').style.display = 'block';
     }
 }
 
-function add_list_items_to_trajectories_balora(balora_ids) {
-    for (let i = 0; i < balora_ids.length; i++) {
-        let baloraID = balora_ids[i];
-        let ul = document.getElementById('trajectory-list-balora');
-        let li = document.createElement('li');
-        let div = document.createElement('div');
-        let toggle = document.createElement('input');
-        let linkText = document.createTextNode(baloraID);
 
-        // ul.style.background="#3d3e3f"
-        ul.appendChild(li);
+function addDroneToPanelListLidar(_droneName) {
+    document.getElementById('lidar-data-list-default').style.display = 'none';
+    let li = document.createElement('li');
+    let m1 = document.createElement('m1');
+    let m2 = document.createElement('m2');
+    li.id = 'drone-lidar-list-' + _droneName;
+    li.append(m1);
+    li.append(m2);
+    // m1.style.paddingLeft = '0px';
+    m1.innerHTML = _droneName;
+    m2.innerHTML =
+        `<button aria-pressed="false" class="btn btn-outline-success panel-btn bldmp" id="startLidarPointColection`+ _droneName +`" onclick="startLidarPoints('` +
+        _droneName +
+        `')" type="button">START</button>
+    <button aria-pressed="false" class="btn btn-outline-danger panel-btn bldmp" id="StopLidarPointColection`+ _droneName +`" onclick="stopLidarPoints('` +
+        _droneName +
+        `')" type="button">STOP</button>`;
+    document.getElementById('drone-lidar-list').appendChild(li);
+}
 
-        $(div).addClass('d-flex justify-content-between');
-        div.appendChild(linkText);
-
-        toggle.id = 'trajectories-toggle-' + baloraID;
-        toggle.type = 'checkbox';
-        div.appendChild(toggle);
-
-        li.append(div);
-        li.style.paddingTop = '4px';
-        li.style.paddingBottom = '4px';
-        li.style.width = '250px';
-        li.id = 'list-item-trajectories-' + baloraID;
-        // li.style.background="inherit"
-
-        $(toggle).bootstrapToggle('on');
-        $(toggle).on('change', function (event) {
-            toggleLayerVisibility(this.id, baloraID);
-        });
+function removeDroneToPanelListLidar(_droneName) {
+    if (document.getElementById('drone-lidar-list-' + _droneName)) {
+        document.getElementById('drone-lidar-list-' + _droneName).remove();
+    }
+    if (document.querySelectorAll('#drone-lidar-list li').length == 1) {
+        document.getElementById('lidar-data-list-default').style.display = 'block';
     }
 }
 
+// NOT USED
+// function add_list_items_to_multispectral_build_map() {
+//     let available_indices = MULTISPECTRAL_INDEX_NAMES;
+//     for (let i = 0; i < available_indices.length; i++) {
+//         let indice = available_indices[i];
+//         let ul = document.getElementById('uav-multispectral-build-map-list');
+//         let li = document.createElement('li');
+//         let div = document.createElement('div');
+//         let toggle = document.createElement('input');
 
+//         ul.append(li);
 
+//         $(div).addClass('d-flex justify-content-between');
+//         div.appendChild(linkText);
+//         div.style.fontSize = '13px';
+//         div.style.color = '#ffffff';
+//         div.style.padding = '.15rem 0.55rem';
+//         div.style.lineHeight = '2';
+//         div.style.background = 'inherit';
 
-function add_list_items_to_map_tools_weather(drone_ids) {
-    if (document.getElementById('drone-weather-station-list-default')) {
-        document.getElementById('drone-weather-station-list-default').remove();
-    }    
-    for (let i = 0; i < drone_ids.length; i++) {
-        let droneID = drone_ids[i];
-        let ul = document.getElementById('drone-weather-station-list');
-        let li = document.createElement('li');
-        let div = document.createElement('m1');
-        let toggle = document.createElement('input');
+//         toggle.id = 'build-map-index-toggle-' + indice;
+//         toggle.type = 'checkbox';
+//         div.appendChild(toggle);
 
-        ul.appendChild(li);
+//         li.append(div);
+//         li.id = 'list-item-build-map-' + indice;
 
-        $(div).addClass('d-flex justify-content-between');
-        div.appendChild(document.createTextNode(droneID));
+//         $(toggle).bootstrapToggle('on');
+//         $(toggle).on('change', function (event) {
+//             console.log('CHANGE DETECTED');
+//             toggleMultispectralPhotoLayer(this.id, indice);
+//         });
+//     }
+// }
+function addDroneToPanelListWaterSamper(_droneName) {
+    document.getElementById('water-sampler-data-list-default').style.display = 'none';
 
-        toggle.id = 'drone-weather-' + droneID;
-        toggle.type = 'checkbox';
-        div.appendChild(toggle);
-
-        li.append(div);
-        li.id = 'list-item-drone-weather-' + droneID;
-
-        $(toggle).bootstrapToggle('off');
-        $(toggle).on('change', function (event) {
-            droneClickWeatherBox(this.id, droneID);
-        });
-        createWeatherBoxForDrone(droneID);
-    }
+    // let ul = document.getElementById("drone-selection-list");
+    let li = document.createElement('li');
+    let m1 = document.createElement('m1');
+    let m2 = document.createElement('m2');
+    li.id = 'water-collector-list-' + _droneName;
+    li.append(m1);
+    li.append(m2);
+    m1.innerHTML = _droneName;
+    m2.innerHTML =
+        `<button aria-pressed="false" class="btn btn-outline-success panel-btn bldmp" id="water_sampler" onclick="activate_water_sampler('` +
+        _droneName +
+        `')" type="button">START</button>`;
+    document.getElementById('water-collector-list').appendChild(li);
 }
 
-
-
-function add_list_items_to_uav_missions_lidar(drone_ids) {
-    if (document.getElementById('lidar-data-list-default')) {
-        document.getElementById('lidar-data-list-default').remove();
+function removeDroneToPanelListWaterSamper(_droneName) {
+    if (document.getElementById('water-collector-list-' + _droneName)) {
+        document.getElementById('water-collector-list-' + _droneName).remove();
     }
-    for (let i = 0; i < drone_ids.length; i++) {
-        let droneID = drone_ids[i];
-        let li = document.createElement('li');
-        let m1 = document.createElement('m1');
-        let m2 = document.createElement('m2');
-        li.id = 'drone-lidar-list-' + drone_ids;
-        li.append(m1);
-        li.append(m2);
-        // m1.style.paddingLeft = '0px';
-        m1.innerHTML = droneID;
-        m2.innerHTML =
-            `<button aria-pressed="false" class="btn btn-outline-success panel-btn bldmp" id="startLidarPointColection" onclick="startLidarPoints('` +
-            droneID +
-            `')" type="button">START</button>
-        <button aria-pressed="false" class="btn btn-outline-danger panel-btn bldmp" id="StopLidarPointColection" onclick="stopLidarPoints('` +
-            droneID +
-            `')" type="button">STOP</button>`;
-        document.getElementById('drone-lidar-list').appendChild(li);
+    if (document.querySelectorAll('#water-collector-list li').length == 1) {
+        document.getElementById('water-sampler-data-list-default').style.display = 'block';
     }
 }
-
-function add_list_items_to_multispectral_build_map() {
-    let available_indices = MULTISPECTRAL_INDEX_NAMES;
-    for (let i = 0; i < available_indices.length; i++) {
-        let indice = available_indices[i];
-        let ul = document.getElementById('uav-multispectral-build-map-list');
-        let li = document.createElement('li');
-        let div = document.createElement('div');
-        let toggle = document.createElement('input');
-
-        ul.append(li);
-
-        $(div).addClass('d-flex justify-content-between');
-        div.appendChild(linkText);
-        div.style.fontSize = '13px';
-        div.style.color = '#ffffff';
-        div.style.padding = '.15rem 0.55rem';
-        div.style.lineHeight = '2';
-        div.style.background = 'inherit';
-
-        toggle.id = 'build-map-index-toggle-' + indice;
-        toggle.type = 'checkbox';
-        div.appendChild(toggle);
-
-        li.append(div);
-        li.id = 'list-item-build-map-' + indice;
-
-        $(toggle).bootstrapToggle('on');
-        $(toggle).on('change', function (event) {
-            console.log('CHANGE DETECTED');
-            toggleMultispectralPhotoLayer(this.id, indice);
-        });
-    }
-}
-function add_list_items_to_uav_missions_water_sampler(drone_ids) {
-    for (let i = 0; i < drone_ids.length; i++) {
-        if (document.getElementById('water-sampler-data-list-default')) {
-            document.getElementById('water-sampler-data-list-default').remove();
-        }
-        let droneID = drone_ids[i];
-
-        // let ul = document.getElementById("drone-selection-list");
-        let li = document.createElement('li');
-        let m1 = document.createElement('m1');
-        let m2 = document.createElement('m2');
-        li.append(m1);
-        li.append(m2);
-        m1.innerHTML = droneID;
-        m2.innerHTML =
-            `<button aria-pressed="false" class="btn btn-outline-success panel-btn bldmp" id="water_sampler" onclick="activate_water_sampler('` +
-            droneID +
-            `')" type="button">START</button>`;
-        document.getElementById('water-collector-list').appendChild(li);
-    }
-}
-
+// NOT USED
 // function add_list_items_to_video_feeds(drone_ids) {
 //     for (let i = 0; i < drone_ids.length; i++) {
 //         let droneID = drone_ids[i];
@@ -999,7 +1047,7 @@ function add_list_items_to_uav_missions_water_sampler(drone_ids) {
 //         });
 //     }
 // }
-
+// NOT USED
 // function add_list_items_to_det_video_feeds(drone_ids) {
 //     for (let i = 0; i < drone_ids.length; i++) {
 //         let droneID = drone_ids[i];
@@ -1032,7 +1080,7 @@ function add_list_items_to_uav_missions_water_sampler(drone_ids) {
 //         });
 //     }
 // }
-
+// NOT USED
 // function add_list_items_to_map_tools_drones(listOfDroneNames) {
 //     listOfDroneNames.forEach((droneName) => {
 //         let ul = document.getElementById('drone-tools-list');
@@ -1061,6 +1109,7 @@ function add_list_items_to_uav_missions_water_sampler(drone_ids) {
 //         });
 //     });
 // }
+// NOT USED
 // function add_list_items_to_map_tools_devices(listOfDeviceNames) {
 //     listOfDeviceNames.forEach((deviceName) => {
 //         if ((get_all_device_info_array().find((device) => device.deviceID === deviceName) || null) !== null) {
@@ -1173,98 +1222,387 @@ function remove_no_baloras_text_from_panel_sections(section_element_ids) {
         $('#no-balora-list-' + element_id).remove();
         if (element_id === 'balora-sensors-list') {
             let ul = document.getElementById('balora-sensors-list');
-            let li = document.createElement('li');
-            let div = document.createElement('div');
-            let toggle = document.createElement('input');
-            let linkText = document.createTextNode('PM2.5');
 
-            ul.append(li);
+            // PM2.5 Sensor
+            let liPM25 = document.createElement('li');
+            let divPM25 = document.createElement('div');
+            let radioPM25 = document.createElement('input');
+            let linkTextPM25 = document.createTextNode('PM2.5');
 
-            $(div).addClass('d-flex justify-content-between');
-            div.appendChild(linkText);
-            div.style.fontSize = '13px';
-            div.style.color = '#ffffff';
-            div.style.lineHeight = '2';
-            div.style.background = 'inherit';
+            ul.append(liPM25);
 
-            toggle.id = 'balora-pm25-toggle';
-            toggle.type = 'checkbox';
-            div.appendChild(toggle);
+            $(divPM25).addClass('d-flex justify-content-between');
+            divPM25.appendChild(linkTextPM25);
+            divPM25.style.fontSize = '13px';
+            divPM25.style.color = '#ffffff';
+            divPM25.style.lineHeight = '2';
+            divPM25.style.background = 'inherit';
 
-            li.append(div);
-            li.id = 'list-sensor-select-pm25';
-            li.style.width = '270px';
+            radioPM25.id = 'balora-pm25-radio';
+            radioPM25.type = 'radio';
+            radioPM25.name = 'balora-sensors'; // Shared name for radio group
+            divPM25.appendChild(radioPM25);
 
-            $(toggle).bootstrapToggle('off');
-            $(toggle).on('change', function (event) {
+            liPM25.append(divPM25);
+            liPM25.id = 'list-sensor-select-pm25';
+            liPM25.style.width = '270px';
+
+            $(radioPM25).on('change', function () {
+                if (activePopup) {
+                    activePopup.remove();
+                    activePopup = null;
+                }
                 getBaloraPM25SensorData(this);
+                $('.mapboxgl-popup').remove();
+            });
+
+            // PM1 Sensor
+            let liPM1 = document.createElement('li');
+            let divPM1 = document.createElement('div');
+            let radioPM1 = document.createElement('input');
+            let linkTextPM1 = document.createTextNode('PM1');
+
+            ul.append(liPM1);
+
+            $(divPM1).addClass('d-flex justify-content-between');
+            divPM1.appendChild(linkTextPM1);
+            divPM1.style.fontSize = '13px';
+            divPM1.style.color = '#ffffff';
+            divPM1.style.lineHeight = '2';
+            divPM1.style.background = 'inherit';
+
+            radioPM1.id = 'balora-pm1-radio';
+            radioPM1.type = 'radio';
+            radioPM1.name = 'balora-sensors'; // Shared name for radio group
+            divPM1.appendChild(radioPM1);
+
+            liPM1.append(divPM1);
+            liPM1.id = 'list-sensor-select-pm1';
+            liPM1.style.width = '270px';
+
+            $(radioPM1).on('change', function () {
+                if (activePopup) {
+                    activePopup.remove();
+                    activePopup = null;
+                }
+                getBaloraPM1SensorData(this);
+                $('.mapboxgl-popup').remove();
+            });
+
+            // NOx Sensor
+            let liNOX = document.createElement('li');
+            let divNOX = document.createElement('div');
+            let radioNOX = document.createElement('input');
+            let linkTextNOX = document.createTextNode('NOx');
+
+            ul.append(liNOX);
+
+            $(divNOX).addClass('d-flex justify-content-between');
+            divNOX.appendChild(linkTextNOX);
+            divNOX.style.fontSize = '13px';
+            divNOX.style.color = '#ffffff';
+            divNOX.style.lineHeight = '2';
+            divNOX.style.background = 'inherit';
+
+            radioNOX.id = 'balora-nox-radio';
+            radioNOX.type = 'radio';
+            radioNOX.name = 'balora-sensors'; // Shared name for radio group
+            divNOX.appendChild(radioNOX);
+
+            liNOX.append(divNOX);
+            liNOX.id = 'list-sensor-select-nox';
+            liNOX.style.width = '270px';
+
+            $(radioNOX).on('change', function () {
+                if (activePopup) {
+                    activePopup.remove();
+                    activePopup = null;
+                }
+                getBaloraNOxSensorData(this);
+                $('.mapboxgl-popup').remove();
+            });
+
+            // VOC Sensor
+            let liVOC = document.createElement('li');
+            let divVOC = document.createElement('div');
+            let radioVOC = document.createElement('input');
+            let linkTextVOC = document.createTextNode('VOC');
+
+            ul.append(liVOC);
+
+            $(divVOC).addClass('d-flex justify-content-between');
+            divVOC.appendChild(linkTextVOC);
+            divVOC.style.fontSize = '13px';
+            divVOC.style.color = '#ffffff';
+            divVOC.style.lineHeight = '2';
+            divVOC.style.background = 'inherit';
+
+            radioVOC.id = 'balora-voc-radio';
+            radioVOC.type = 'radio';
+            radioVOC.name = 'balora-sensors'; // Shared name for radio group
+            divVOC.appendChild(radioVOC);
+
+            liVOC.append(divVOC);
+            liVOC.id = 'list-sensor-select-voc';
+            liVOC.style.width = '270px';
+
+            $(radioVOC).on('change', function () {
+                if (activePopup) {
+                    console.log("ABCD");
+                    activePopup.remove();
+                    activePopup = null;
+                }
+                getBaloraVOCSensorData(this);
+                $('.mapboxgl-popup').remove();
             });
         }
     });
 }
 
-function remove_list_items_to_map_tools(deleted_ids, element_id) {
-    for (let i = 0; i < deleted_ids.length; i++) {
-        $('#list-item-' + element_id + deleted_ids[i]).remove();
-    }
-}
-function remove_list_items_to_map_lidar(deleted_ids) {
-    for (let i = 0; i < deleted_ids.length; i++) {
-        $('#drone-lidar-list-' + deleted_ids[i]).remove();
-    }
-}
 
-function remove_list_items_from_trajectories(deleted_ids) {
-    for (let i = 0; i < deleted_ids.length; i++) {
-        $('#list-item-trajectories-' + deleted_ids[i]).remove();
-    }
-}
+// function remove_no_baloras_text_from_panel_sections(section_element_ids) {
+//     section_element_ids.forEach((element_id) => {
+//         $('#no-balora-list-' + element_id).remove();
+//         if (element_id === 'balora-sensors-list') {
+//             let ul = document.getElementById('balora-sensors-list');
+//             let li = document.createElement('li');
+//             let div = document.createElement('div');
+//             let toggle = document.createElement('input');
+//             let linkText = document.createTextNode('PM2.5');
 
-function remove_list_items_from_uav_missions(deleted_drones_ids) {
-    for (let i = 0; i < deleted_drones_ids.length; i++) {
-        $('#drone-selection-list' + deleted_drones_ids[i]).remove();
-    }
-}
+//             ul.append(li);
 
-function remove_list_items_from_video_feeds(deleted_drones_ids) {
-    for (let i = 0; i < deleted_drones_ids.length; i++) {
-        $('#list-item-video-' + deleted_drones_ids[i]).remove();
-    }
-}
+//             $(div).addClass('d-flex justify-content-between');
+//             div.appendChild(linkText);
+//             div.style.fontSize = '13px';
+//             div.style.color = '#ffffff';
+//             div.style.lineHeight = '2';
+//             div.style.background = 'inherit';
 
-function remove_list_items_from_det_video_feeds(deleted_drones_ids) {
-    for (let i = 0; i < deleted_drones_ids.length; i++) {
-        $('#list-item-det-video-' + deleted_drones_ids[i]).remove();
-    }
-}
+//             toggle.id = 'balora-pm25-toggle';
+//             toggle.type = 'checkbox';
+//             div.appendChild(toggle);
 
-function remove_list_items_from_detection_types() {
-    let prototypeModels = get_prototype_models();
+//             li.append(div);
+//             li.id = 'list-sensor-select-pm25';
+//             li.style.width = '270px';
 
-    for (let i = 0; i < prototypeModels.length; i++) {
-        $('#list-item-detection-types-' + prototypeModels[i].type).remove();
-    }
+//             $(toggle).bootstrapToggle('off');
+//             $(toggle).on('change', function (event) {
+//                 getBaloraPM25SensorData(this);
+//             });
 
-    $('#list-item-detection-types-All').remove();
-}
+//             // PM1 Sensor
 
-function remove_list_items_from_select_drones(deleted_drones_ids) {
-    for (let i = 0; i < deleted_drones_ids.length; i++) {
-        $('#list-item-build-map-' + deleted_drones_ids[i]).remove();
-    }
-}
+//             let liPM1 = document.createElement('li');
+//             let divPM1 = document.createElement('div');
+//             let togglePM1 = document.createElement('input');
+//             let linkTextPM1 = document.createTextNode('PM1');
 
-function remove_list_items_from_selected_device(deleted_devices_ids) {
-    for (let i = 0; i < deleted_devices_ids.length; i++) {
-        $('#list-item-select-' + deleted_devices_ids[i]).remove();
-    }
-}
+//             ul.append(liPM1);
 
-function remove_list_items_from_selected_balora(deleted_baloras_ids) {
-    for (let i = 0; i < deleted_baloras_ids.length; i++) {
-        $('#list-item-select-' + deleted_baloras_ids[i]).remove();
-    }
-}
+//             $(divPM1).addClass('d-flex justify-content-between');
+//             divPM1.appendChild(linkTextPM1);
+//             divPM1.style.fontSize = '13px';
+//             divPM1.style.color = '#ffffff';
+//             divPM1.style.lineHeight = '2';
+//             divPM1.style.background = 'inherit';
+
+//             togglePM1.id = 'balora-pm1-toggle';
+//             togglePM1.type = 'checkbox';
+//             divPM1.appendChild(togglePM1);
+
+//             liPM1.append(divPM1);
+//             liPM1.id = 'list-sensor-select-pm1';
+//             liPM1.style.width = '270px';
+
+//             $(togglePM1).bootstrapToggle('off');
+//             $(togglePM1).on('change', function (event) {
+//                 getBaloraPM1SensorData(this);
+//             });
+
+
+//             // NOX Sensor
+//             let liNOX = document.createElement('li');
+//             let divNOX = document.createElement('div');
+//             let toggleNOX = document.createElement('input');
+//             let linkTextNOX = document.createTextNode('NOx');
+
+//             ul.append(liNOX);
+
+//             $(divNOX).addClass('d-flex justify-content-between');
+//             divNOX.appendChild(linkTextNOX);
+//             divNOX.style.fontSize = '13px';
+//             divNOX.style.color = '#ffffff';
+//             divNOX.style.lineHeight = '2';
+//             divNOX.style.background = 'inherit';
+
+//             toggleNOX.id = 'balora-nox-toggle';
+//             toggleNOX.type = 'checkbox';
+//             divNOX.appendChild(toggleNOX);
+
+//             liNOX.append(divNOX);
+//             liNOX.id = 'list-sensor-select-nox';
+//             liNOX.style.width = '270px';
+
+//             $(toggleNOX).bootstrapToggle('off');
+//             $(toggleNOX).on('change', function (event) {
+//                 getBaloraNOxSensorData(this);
+//             });
+
+//             // VOC Sensor
+//             let liVOC = document.createElement('li');
+//             let divVOC = document.createElement('div');
+//             let toggleVOC = document.createElement('input');
+//             let linkTextVOC = document.createTextNode('VOC');
+
+//             ul.append(liVOC);
+
+//             $(divVOC).addClass('d-flex justify-content-between');
+//             divVOC.appendChild(linkTextVOC);
+//             divVOC.style.fontSize = '13px';
+//             divVOC.style.color = '#ffffff';
+//             divVOC.style.lineHeight = '2';
+//             divVOC.style.background = 'inherit';
+
+//             toggleVOC.id = 'balora-voc-toggle';
+//             toggleVOC.type = 'checkbox';
+//             divVOC.appendChild(toggleVOC);
+
+//             liVOC.append(divVOC);
+//             liVOC.id = 'list-sensor-select-voc';
+//             liVOC.style.width = '270px';
+
+//             $(toggleVOC).bootstrapToggle('off');
+//             $(toggleVOC).on('change', function (event) {
+//                 getBaloraVOCSensorData(this);
+//             });
+
+//             // Temperature Sensor
+//             // let liTemp = document.createElement('li');
+//             // let divTemp = document.createElement('div');
+//             // let toggleTemp = document.createElement('input');
+//             // let linkTextTemp = document.createTextNode('Temperature');
+
+//             // ul.append(liTemp);
+
+//             // $(divTemp).addClass('d-flex justify-content-between');
+//             // divTemp.appendChild(linkTextTemp);
+//             // divTemp.style.fontSize = '13px';
+//             // divTemp.style.color = '#ffffff';
+//             // divTemp.style.lineHeight = '2';
+//             // divTemp.style.background = 'inherit';
+
+//             // toggleTemp.id = 'balora-temperature-toggle';
+//             // toggleTemp.type = 'checkbox';
+//             // divTemp.appendChild(toggleTemp);
+
+//             // liTemp.append(divTemp);
+//             // liTemp.id = 'list-sensor-select-temperature';
+//             // liTemp.style.width = '270px';
+
+//             // $(toggleTemp).bootstrapToggle('off');
+//             // $(toggleTemp).on('change', function (event) {
+//             //     getBaloraTemperatureSensorData(this);
+//             // });
+
+//             // Humidity Sensor
+//             // let liHumidity = document.createElement('li');
+//             // let divHumidity = document.createElement('div');
+//             // let toggleHumidity = document.createElement('input');
+//             // let linkTextHumidity = document.createTextNode('Humidity');
+
+//             // ul.append(liHumidity);
+
+//             // $(divHumidity).addClass('d-flex justify-content-between');
+//             // divHumidity.appendChild(linkTextHumidity);
+//             // divHumidity.style.fontSize = '13px';
+//             // divHumidity.style.color = '#ffffff';
+//             // divHumidity.style.lineHeight = '2';
+//             // divHumidity.style.background = 'inherit';
+
+//             // toggleHumidity.id = 'balora-humidity-toggle';
+//             // toggleHumidity.type = 'checkbox';
+//             // divHumidity.appendChild(toggleHumidity);
+
+//             // liHumidity.append(divHumidity);
+//             // liHumidity.id = 'list-sensor-select-humidity';
+//             // liHumidity.style.width = '270px';
+
+//             // $(toggleHumidity).bootstrapToggle('off');
+//             // $(toggleHumidity).on('change', function (event) {
+//             //     getBaloraHumiditySensorData(this);
+//             // });
+
+
+//         }
+//     });
+// }
+// NOT USED
+// function remove_list_items_to_map_tools(deleted_ids, element_id) {
+//     for (let i = 0; i < deleted_ids.length; i++) {
+//         $('#list-item-' + element_id + deleted_ids[i]).remove();
+//     }
+// }
+// NOT USED
+// function remove_list_items_to_map_lidar(deleted_ids) {
+//     for (let i = 0; i < deleted_ids.length; i++) {
+//         $('#drone-lidar-list-' + deleted_ids[i]).remove();
+//     }
+// }
+// NOT USED
+// function remove_list_items_from_trajectories(deleted_ids) {
+//     for (let i = 0; i < deleted_ids.length; i++) {
+//         $('#list-item-trajectories-' + deleted_ids[i]).remove();
+//     }
+// }
+// NOT USED
+// function remove_list_items_from_uav_missions(deleted_drones_ids) {
+//     for (let i = 0; i < deleted_drones_ids.length; i++) {
+//         $('#drone-selection-list' + deleted_drones_ids[i]).remove();
+//     }
+// }
+// NOT USED
+// function remove_list_items_from_video_feeds(deleted_drones_ids) {
+//     for (let i = 0; i < deleted_drones_ids.length; i++) {
+//         $('#list-item-video-' + deleted_drones_ids[i]).remove();
+//     }
+// }
+// NOT USED
+// function remove_list_items_from_det_video_feeds(deleted_drones_ids) {
+//     for (let i = 0; i < deleted_drones_ids.length; i++) {
+//         $('#list-item-det-video-' + deleted_drones_ids[i]).remove();
+//     }
+// }
+// NOT USED
+// function remove_list_items_from_detection_types() {
+//     let prototypeModels = get_prototype_models();
+
+//     for (let i = 0; i < prototypeModels.length; i++) {
+//         $('#list-item-detection-types-' + prototypeModels[i].type).remove();
+//     }
+
+//     $('#list-item-detection-types-All').remove();
+// }
+
+// function remove_list_items_from_select_drones(deleted_drones_ids) {
+//     for (let i = 0; i < deleted_drones_ids.length; i++) {
+//         $('#list-item-build-map-' + deleted_drones_ids[i]).remove();
+//     }
+// }
+// NOT USED
+// function remove_list_items_from_selected_device(deleted_devices_ids) {
+//     for (let i = 0; i < deleted_devices_ids.length; i++) {
+//         $('#list-item-select-' + deleted_devices_ids[i]).remove();
+//     }
+// }
+
+// NOT USED
+// function remove_list_items_from_selected_balora(deleted_baloras_ids) {
+//     for (let i = 0; i < deleted_baloras_ids.length; i++) {
+//         $('#list-item-select-' + deleted_baloras_ids[i]).remove();
+//     }
+// }
 
 /*
  * Fired when any radio button is selected. The map's style is then changed according to the chosen button
@@ -1287,11 +1625,6 @@ function changeMapStyle(layerid, layer_type) {
         currentStyle = urlVector.replace('<>', layerid);
         map.setStyle(currentStyle);
     }
-    // else if (layer_type === OWN_LAYER)
-    // {
-    //     currentStyle = offlineStyle
-    //     map.setStyle(offlineStyle)
-    // }
 
     sessionStorage.setItem('currentStyle', currentStyle);
     sessionStorage.setItem('currentStyleRadioBtn', layerid);
@@ -1348,7 +1681,7 @@ function toggleVideoVisibility(toggleID, droneID) {
         x.style.position = 'absolute';
         let offset = getNumberOfOverlayPanels() * 20;
         x.style.top = offset + 'px';
-        x.style.left = offset + 'px';        
+        x.style.left = offset + 'px';
         x.style.display = 'block';
         // start_live_stream(droneID);
     } else {
@@ -1496,7 +1829,7 @@ function toggleLayerVisibility(toggleID, ID) {
                             icon_path: 'platform_geojson_files_dam_icon.png',
                         }),
                         '#000000',
-                        0.5,
+                        0.4,
                         true
                     );
                 }
@@ -1518,9 +1851,185 @@ function toggleLayerVisibility(toggleID, ID) {
                             icon_path: 'platform_geojson_files_hospital_icon.png',
                         }),
                         '#ff0000',
+                        0.4,
+                        true
+                    );
+                }
+                break;
+
+            case 'fireStationsLayerToggle':
+                selectedLayer = layerFireStations;
+                if (pressed) {
+                    postElementId('Layer Fire Stations', pressed);
+                    add_layer_on_map(
+                        layerFireStations.source,
+                        dutils.urls.resolve('cyprus_geolocation', {
+                            geolocation_path: 'platform_geojson_files_cyprus_fire_stations.geojson',
+                        }),
+                        layerFireStations,
+                        'geojson',
+                        dutils.urls.resolve('cyprus_geolocation_icons', {
+                            icon_path: 'platform_geojson_files_cyprus_fire_stations.png',
+                        }),
+                        '#d62828',
                         0.5,
                         true
                     );
+                }
+                break;
+
+            case 'sheltersLayerToggle':
+                selectedLayer = layerShelters;
+                if (pressed) {
+                    postElementId('Layer Shelters', pressed);
+                    add_shelters_on_map(
+                        dutils.urls.resolve('cyprus_geolocation', {
+                            geolocation_path: 'platform_geojson_files_cyprus_shelters.geojson',
+                        }),
+                        dutils.urls.resolve('cyprus_geolocation_icons', {
+                            icon_path: 'shelter.png',
+                        })
+                    );
+                } else {
+                    /*The shelters and their clusters are three layers of the same toggle*/
+                    remove_shelters_from_map();
+                }
+                break;
+
+            case 'policeStationsLayerToggle':
+                selectedLayer = layerPoliceStations;
+                if (pressed) {
+                    postElementId('Layer Police Stations', pressed);
+                    add_police_stations_on_map(
+                        dutils.urls.resolve('cyprus_geolocation', {
+                            geolocation_path: 'platform_geojson_files_cyprus_police_stations_new.geojson',
+                        }),
+                        dutils.urls.resolve('cyprus_geolocation_icons', {
+                            icon_path: 'police-station.png',
+                        })
+                    );
+                } else {
+                    /*The stations and their boundaries are three layers of the same toggle*/
+                    remove_police_stations_from_map();
+                }
+                break;
+
+            case 'firebreaksLayerToggle':
+                selectedLayer = layerFirebreaks;
+                if (pressed) {
+                    postElementId('Layer Firebreaks', pressed);
+                    add_layer_on_map(
+                        layerFirebreaks.source,
+                        dutils.urls.resolve('cyprus_geolocation', {
+                            geolocation_path: 'platform_geojson_files_cyprus_firebreaks.geojson',
+                        }),
+                        layerFirebreaks,
+                        'geojson',
+                        'None',
+                        'None',
+                        0.1,
+                        true
+                    );
+                }
+                break;
+
+            case 'forestStationsLayerToggle':
+                selectedLayer = layerForestStations;
+                if (pressed) {
+                    postElementId('Layer Forest Stations', pressed);
+                    add_clustered_layer_on_map(
+                        layerForestStations,
+                        forestStationClusterLayers,
+                        dutils.urls.resolve('cyprus_geolocation', {
+                            geolocation_path: 'platform_geojson_files_cyprus_forest_stations.geojson',
+                        }),
+                        dutils.urls.resolve('cyprus_geolocation_icons', {
+                            icon_path: 'forest-station.png',
+                        })
+                    );
+                } else {
+                    /*The stations and their clusters are three layers of the same toggle*/
+                    remove_clustered_layer_from_map(layerForestStations, forestStationClusterLayers);
+                }
+                break;
+
+            case 'fireLookoutsLayerToggle':
+                selectedLayer = layerFireLookouts;
+                if (pressed) {
+                    postElementId('Layer Fire Lookouts', pressed);
+                    add_clustered_layer_on_map(
+                        layerFireLookouts,
+                        fireLookoutClusterLayers,
+                        dutils.urls.resolve('cyprus_geolocation', {
+                            geolocation_path: 'platform_geojson_files_cyprus_fire_lookouts.geojson',
+                        }),
+                        dutils.urls.resolve('cyprus_geolocation_icons', {
+                            icon_path: 'fire-lookout.png',
+                        })
+                    );
+                } else {
+                    /*The lookouts and their clusters are three layers of the same toggle*/
+                    remove_clustered_layer_from_map(layerFireLookouts, fireLookoutClusterLayers);
+                }
+                break;
+
+            case 'heliportsLayerToggle':
+                selectedLayer = layerHeliports;
+                if (pressed) {
+                    postElementId('Layer Heliports', pressed);
+                    add_clustered_layer_on_map(
+                        layerHeliports,
+                        heliportClusterLayers,
+                        dutils.urls.resolve('cyprus_geolocation', {
+                            geolocation_path: 'platform_geojson_files_cyprus_heliports.geojson',
+                        }),
+                        dutils.urls.resolve('cyprus_geolocation_icons', {
+                            icon_path: 'heliport.png',
+                        })
+                    );
+                } else {
+                    /*The heliports and their clusters are three layers of the same toggle*/
+                    remove_clustered_layer_from_map(layerHeliports, heliportClusterLayers);
+                }
+                break;
+
+            case 'fireHydrantsLayerToggle':
+                selectedLayer = layerFireHydrants;
+                if (pressed) {
+                    postElementId('Layer Fire Hydrants', pressed);
+                    add_clustered_layer_on_map(
+                        layerFireHydrants,
+                        fireHydrantClusterLayers,
+                        dutils.urls.resolve('cyprus_geolocation', {
+                            geolocation_path: 'platform_geojson_files_cyprus_fire_hydrants.geojson',
+                        }),
+                        dutils.urls.resolve('cyprus_geolocation_icons', {
+                            icon_path: 'fire-hydrant.png',
+                        })
+                    );
+                } else {
+                    /*The hydrants and their clusters are three layers of the same toggle*/
+                    remove_clustered_layer_from_map(layerFireHydrants, fireHydrantClusterLayers);
+                }
+                break;
+
+            case 'explosivesStoresLayerToggle':
+                selectedLayer = layerExplosivesStores;
+                if (pressed) {
+                    postElementId('Layer Explosives Stores', pressed);
+                    add_clustered_layer_on_map(
+                        layerExplosivesStores,
+                        explosivesStoreClusterLayers,
+                        dutils.urls.resolve('cyprus_geolocation', {
+                            geolocation_path: 'platform_geojson_files_cyprus_explosives_stores.geojson',
+                        }),
+                        dutils.urls.resolve('cyprus_geolocation_icons', {
+                            icon_path: 'explosives-store.png',
+                        })
+                    );
+                } else {
+                    /*The stores and their clusters are three layers of the same toggle*/
+                    remove_clustered_layer_from_map(layerExplosivesStores, explosivesStoreClusterLayers);
                 }
                 break;
 
@@ -1539,7 +2048,7 @@ function toggleLayerVisibility(toggleID, ID) {
                     add_layer_on_map(
                         layerPoles.source,
                         dutils.urls.resolve('cyprus_geolocation', {
-                            geolocation_path: 'platform_geojson_files_aikpilwnes.geojson',
+                            geolocation_path: 'platform_geojson_files_aikpilwnes_new.geojson',
                         }),
                         layerPoles,
                         'geojson',
@@ -1547,7 +2056,7 @@ function toggleLayerVisibility(toggleID, ID) {
                             icon_path: 'platform_geojson_files_mv_pole.png',
                         }),
                         '#000000',
-                        0.5,
+                        0.3,
                         true
                     );
                 }
@@ -1583,6 +2092,21 @@ function toggleLayerVisibility(toggleID, ID) {
                 }
                 break;
 
+            case 'geoZonesToggle':
+                selectedLayer = layerGeoZones;
+                if (pressed) {
+                    postElementId('Layer Geo Zones', pressed);
+                    add_layer_on_map(
+                        layerGeoZones.source,
+                        dutils.urls.resolve('cyprus_geolocation', {
+                            geolocation_path: 'cyprus_geo_zones.geojson',
+                        }),
+                        layerGeoZones,
+                        'geojson'
+                    );
+                }
+                break;
+
             case 'cyprusFirToggle':
                 selectedLayer = layercyprusFir;
                 if (pressed) {
@@ -1612,22 +2136,37 @@ function toggleLayerVisibility(toggleID, ID) {
                     );
                 }
                 break;
-                // case '3DTerrainToggle':
-                //     selectedLayer = layerTerrainLines;
-                //     if (pressed) {
 
-                //         // map.addLayer( {
-                //         //     id: 'hills',
-                //         //     type: 'hillshade',
-                //         //     source: 'hillshadeSource',
-                //         //     layout: { visibility: 'visible' },
-                //         //     paint: { 'hillshade-shadow-color': '#473B24' }
-                //         // },
-                //         // 'osm' );
-                
-                //         map.setTerrain( { source: 'terrainSource' ,  exaggeration: 3 } )
-                //     }
-                //     break;
+            case 'populationLayerToggle':
+                selectedLayer = layerPopulation;
+                if (pressed) {
+                    postElementId('Layer Population', pressed);
+                    add_layer_on_map(
+                        layerPopulation.source,
+                        dutils.urls.resolve('cyprus_geolocation', {
+                            geolocation_path: 'postcodes_with_population.geojson',
+                        }),
+                        layerPopulation,
+                        'geojson'
+                    );
+                }
+                break;
+            // case '3DTerrainToggle':
+            //     selectedLayer = layerTerrainLines;
+            //     if (pressed) {
+
+            //         // map.addLayer( {
+            //         //     id: 'hills',
+            //         //     type: 'hillshade',
+            //         //     source: 'hillshadeSource',
+            //         //     layout: { visibility: 'visible' },
+            //         //     paint: { 'hillshade-shadow-color': '#473B24' }
+            //         // },
+            //         // 'osm' );
+
+            //         map.setTerrain( { source: 'terrainSource' ,  exaggeration: 3 } )
+            //     }
+            //     break;
         }
         if (pressed) {
             let msg = 'Layer is loading. Please wait...';
@@ -1637,7 +2176,9 @@ function toggleLayerVisibility(toggleID, ID) {
                 removeEl('#tempPopup');
                 create_popup_for_a_little(SUCCESS_ALERT, successMsg, 1000);
             });
-        } else if (map.getLayer(selectedLayer.id)) {
+        } else if (selectedLayer !== undefined && map.getLayer(selectedLayer.id)) {
+            /*Toggles that belong to no layer of the switch above (e.g. a drone's PATH toggle
+             * whose drone was not found) leave selectedLayer undefined*/
             map.removeLayer(selectedLayer.id);
         }
     }
@@ -1658,198 +2199,53 @@ function toggleLayerVisibility(toggleID, ID) {
     }
 }
 
-function layer_loading() {}
-
-var canVisualizeObjects = true;
-
-function handle_layer_loading_popup(layer_id, pressed) {
-    let okButton = 'OK';
-
-    let dialogTitle = 'Warning';
-    // if(layerExists(layer_id) && pressed)
-    // {
-    //     let message = "Please wait a few seconds until the layer is done loading!"
-    //     showPopupForALittle('#box_layerLoading',message,2000)
-    // }
-    if (!layerExists(layer_id) && pressed) {
-        //Layer did not load yet.
-        let message = 'Layer needs a few seconds to load. Please try again in a few seconds';
-        create_dialog_with_one_button(okButton, message, dialogTitle, 750, 'auto');
-        return false;
-    }
-    return true;
-}
-function checkPrototypeCheckbox(toggleID) {
-    let detection_arrays = get_detected_objs();
-    let detected_models = detection_arrays[0];
-    let detected_api_objs = detection_arrays[1];
-    var pressed = $('#' + toggleID).is(':checked');
-
-    var all_dets_toggle_pressed = $('#' + ALL_DETS_TOGGLE_ID).is(':checked');
-    var person_toggle_pressed = $('#' + PERSON_DETS_TOGGLE_ID).is(':checked');
-    var car_toggle_pressed = $('#' + CAR_DETS_TOGGLE_ID).is(':checked');
-    var motor_toggle_pressed = $('#' + MOTOR_DETS_TOGGLE_ID).is(':checked');
-    console.log('TOGGLE ID: ' + toggleID);
-    console.log('IS IT PRESSED? ' + pressed);
-
-    if (pressed) {
-        if (toggleID === SHOW_DETS_TOGGLE_ID) {
-            document.getElementById(ALL_DETS_TOGGLE_ID).disabled = false;
-            document.getElementById(CAR_DETS_TOGGLE_ID).disabled = false;
-            document.getElementById(MOTOR_DETS_TOGGLE_ID).disabled = false;
-            document.getElementById(PERSON_DETS_TOGGLE_ID).disabled = false;
-        }
-        console.log('all dets pressed: ' + all_dets_toggle_pressed);
-        console.log('person_dets_pressed: ' + person_toggle_pressed);
-        console.log('car_dets_pressed: ' + car_toggle_pressed);
-        console.log('tree_dets_pressed: ' + motor_toggle_pressed);
-
-        // canVisualizeObjects = true
-        // for (let i=0; i<detected_objs.length; i++)
-        // {
-        //     detected_objs[i].visibility = true
-        // }
-
-        for (let i = 0; i < detected_models.length; i++) {
-            if (car_toggle_pressed && detected_api_objs[i].type === CAR) {
-                console.log('OVER_IN_CARS');
-                detected_models[i].visibility = true;
-            } else if (person_toggle_pressed && detected_api_objs[i].type === PERSON) {
-                detected_models[i].visibility = true;
-            } else if (motor_toggle_pressed && detected_api_objs[i].type === MOTORBIKE) {
-                detected_models[i].visibility = true;
-            } else if (all_dets_toggle_pressed) {
-                detected_models[i].visibility = true;
-            }
-        }
-    } else {
-        if (toggleID === SHOW_DETS_TOGGLE_ID) {
-            document.getElementById(ALL_DETS_TOGGLE_ID).disabled = true;
-            document.getElementById(CAR_DETS_TOGGLE_ID).disabled = true;
-            document.getElementById(MOTOR_DETS_TOGGLE_ID).disabled = true;
-            document.getElementById(PERSON_DETS_TOGGLE_ID).disabled = true;
-        }
-
-        // console.log("OVER_OVER")
-        // canVisualizeObjects = false
-        // for (let i=0; i<detected_objs.length; i++)
-        // {
-        //     detected_objs[i].visibility = false
-        // }
-
-        for (let i = 0; i < detected_models.length; i++) {
-            if (toggleID === CAR_DETS_TOGGLE_ID && detected_api_objs[i].type === CAR) {
-                detected_models[i].visibility = false;
-            } else if (toggleID === PERSON_DETS_TOGGLE_ID && detected_api_objs[i].type === PERSON) {
-                detected_models[i].visibility = false;
-            } else if (toggleID === MOTOR_DETS_TOGGLE_ID && detected_api_objs[i].type === MOTORBIKE) {
-                detected_models[i].visibility = false;
-            } else if (toggleID === ALL_DETS_TOGGLE_ID) {
-                //User wants to remove all detected objects from map
-                detected_models[i].visibility = false;
-
-                // console.log("car_dets_pressed: " + car_toggle_pressed)
-                // console.log("object type: " + detected_api_objs[i].type)
-                // let none_from_above = true
-
-                // if (person_toggle_pressed && detected_api_objs[i].type === PERSON) //Don't remove people if people toggle is ON
-                // {
-                //     detected_models[i].visibility = true
-                // }
-                // else if (car_toggle_pressed && detected_api_objs[i].type === CAR)
-                // {
-                //     detected_models[i].visibility = true
-                // }
-                // else if (motor_toggle_pressed && detected_api_objs[i].type === MOTORBIKE)
-                // {
-                //     detected_models[i].visibility = true
-                // }
-                // else
-                // {
-                //     detected_models[i].visibility = false
-                // }
-            } else if (toggleID === SHOW_DETS_TOGGLE_ID) {
-                detected_models[i].visibility = false;
-            }
-        }
-    }
-}
 
 function toggleCrowdLocalization(_checked) {
-	showOrHideCrowdLocalizationResultsLayer(_checked);
-	manageWebsocketForCrowdLocalization(_checked);
+    showOrHideCrowdLocalizationResultsLayer(_checked);
+    manageWebsocketForCrowdLocalizationVisualization(_checked);
 }
+
 function toggleDissasterClassification(_checked) {
-	showOrHideDisasterClassificationResultsLayer(_checked);
-	manageWebsocketForDisasterClassification(_checked);
-}
-function toggleVechicleAndPersonTracker(_checked) {
-	// vehicle-and-person-tracker-visual-option class allow selected
-	var elements = document.getElementsByClassName("vehicle-and-person-tracker-visual-option");
-	// Loop through each element
-	for (var i = 0; i < elements.length; i++) {
-		// If the element is a checkbox
-		if (elements[i].type === "checkbox") {
-			elements[i].disabled = !_checked;
-		}
-	}
-	if (!_checked) {
-		let options = Array.from(document.getElementsByClassName("vehicle-and-person-tracker-visual-option"));
-		for (let i = 0; i < options.length; i++) {
-			let option = options[i];
-			option.checked = false;
-			vechicleAndPersonTrackerOptionClick();
-		}
-	}
-	manageWebsocketForVehicleAndPersonTracker(_checked);
+    showOrHideDisasterClassificationResultsLayer(_checked);
+    manageWebsocketForDisasterClassificationVisualization(_checked);
 }
 
-function vechicleAndPersonTrackerOptionClick() {
-	let detection_arrays = get_detected_objs()[0];
-	let detected_api_objs = get_detected_objs()[1];
-	let prototypeModels = get_prototype_models();
-
-	if (detection_arrays) {
-		let options = Array.from(document.getElementsByClassName("vehicle-and-person-tracker-visual-option"));
-		let isAnyOptionChecked = false;
-
-		for (let i = 0; i < options.length; i++) {
-			let option = options[i];
-
-			if (option.checked) {
-				isAnyOptionChecked = true;
-
-				if (option.value == "all") {
-					detection_arrays.forEach((detectedObject) => {
-						detectedObject.visibility = true;
-					});
-					break;
-				} else {
-					for (let j = 0; j < detected_api_objs.length; j++) {
-						let objType = detected_api_objs[j].label;
-						let checkboxID = getCheckboxID(objType, prototypeModels);
-						let isCBchecked = $("#" + checkboxID).is(":checked");
-						detection_arrays[j].visibility = isCBchecked;
-					}
-				}
-			}
-		}
-
-		if (!isAnyOptionChecked) {
-			detection_arrays.forEach((detectedObject) => {
-				detectedObject.visibility = false;
-			});
-		}
-	} else {
-		console.error("No detected objects found.");
-	}
+function toggleVehicleAndPersonTrackerVisualization(isChecked) {
+    const checkboxes = Array.from(document.getElementsByClassName('vehicle-and-person-tracker-visual-option'));
+    checkboxes.forEach((checkbox) => {
+        checkbox.disabled = !isChecked;
+        if (!isChecked) {
+            checkbox.checked = false;
+            vechicleAndPersonTrackerOptionClick(checkbox);
+        }
+    });
+    manageWebsocketForVehicleAndPersonTrackerVisualization(isChecked);
 }
 
+
+function vechicleAndPersonTrackerOptionClick(_element) {
+    if (_element.checked) {
+        toggleModelVisibility(_element.value, true)
+    } else {
+        toggleModelVisibility(_element.value, false)
+    }
+}
+
+function detectionObjectsAllButtonClick(_element) {
+    document.querySelectorAll('.vehicle-and-person-tracker-visual-option').forEach(checkBox => {
+        if (checkBox.value != 'all') {
+            checkBox.checked = _element.checked
+            checkBox.disabled = _element.checked
+            vechicleAndPersonTrackerOptionClick(checkBox)
+        }
+    });
+}
 function getCheckboxID(objType, protModels) {
-	for (let i = 0; i < protModels.length; i++) {
-		if (objType === protModels[i].type) {
-			return protModels[i].checkboxID;
-		}
-	}
-	return "NO CHECKBOX ID FOUND";
+    for (let i = 0; i < protModels.length; i++) {
+        if (objType === protModels[i].type) {
+            return protModels[i].checkboxID;
+        }
+    }
+    return "NO CHECKBOX ID FOUND";
 }
+

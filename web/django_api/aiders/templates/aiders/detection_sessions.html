@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% load static %}
+{% load tags %}
+
+{% block title %}
+Aiders - Detection Sessions
+{% endblock %}
+
+{% block head_block %}
+    <link href="{% static 'libs/jquery.dataTables/http_cdn.datatables.net_1.10.2_css_jquery.dataTables.css' %}" rel="stylesheet">
+    <script src="{% static 'libs/jquery.dataTables/http_cdn.datatables.net_1.10.2_js_jquery.dataTables.js' %}"></script>
+{% endblock %}
+
+{% block body_block %}
+<div class="justify-content-center ms-5 me-5 footer-margin header-margin">
+    <div class="row pt-5">
+        <h3 class="col float-start">{{operation_name}} - Detection Sessions</h3>
+    </div>
+    <div class="row mb-5">
+        <div class="col-sm" style="color: black">
+            <div><br/></div>
+            
+            <table id="Table" class="table table-striped">
+                <thead>
+                <tr>
+                    <th>Session ID</th>
+                    <th>Drone Name</th>
+                    <th>Start Time</th>
+                    <th>End Time</th>
+                    <th>Duration</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% if sessions_with_duration %}
+                    {% for session_data in sessions_with_duration %}
+                    <tr>
+                        <td class="align-middle">{{session_data.session.id}}</td>
+                        <td class="align-middle">{{session_data.session.drone.drone_name}}</td>
+                        <td class="align-middle">{{session_data.session.start_time|date:"Y-m-d H:i:s"}}</td>
+                        <td class="align-middle">
+                            {% if session_data.session.end_time %}
+                                {{session_data.session.end_time|date:"Y-m-d H:i:s"}}
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td class="align-middle">
+                            {% if session_data.duration_str %}
+                                <span class="text-success">{{session_data.duration_str}}</span>
+                            {% else %}
+                                <span class="text-info">Ongoing</span>
+                            {% endif %}
+                        </td>
+                        <td class="align-middle">
+                            {% if session_data.session.is_active %}
+                                <span class="badge bg-success">Active</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Inactive</span>
+                            {% endif %}
+                        </td>
+                        <td class="align-middle">
+                            <a href="{% url 'drone-session-replay' stream_type='detection' session_id=session_data.session.id %}" target="_blank" class="btn btn-sm btn-primary">
+                                <i class="fas fa-redo"></i> Session Replay
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% endif %}
+                </tbody>
+            </table>
+
+            <br />
+
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+
+{% block script_block %}
+    $(document).ready(function(){
+        $('#Table').dataTable({
+            "order": [[ 2, "desc" ]], // Sort by Start Time column descending
+            "pageLength": 25
+        });
+    });
+{% endblock %}

@@ -1,0 +1,88 @@
+{% comment %} this form appears in a modal when the user clicks to load a KMZ file {% endcomment %}
+<div id="loadKmzFormWrapper" title="Upload KMZ File" style="display: none;">
+  <form id="loadKmzForm">
+      
+
+      <input type="file" id="fileInput" name="fileInput" required>
+
+
+  </form> 
+</div>
+
+
+<script>
+
+$(document).ready(function () {
+
+    // Initialize dialog for the form
+    $("#loadKmzFormWrapper").dialog({
+        autoOpen: false,
+        width: 350,
+        modal: true,
+        buttons: {
+            "Submit": async function () {
+                // Get form values
+                const fileInput = document.getElementById('fileInput');
+                const file = fileInput.files[0];
+                if (file) {
+                    console.log('File uploaded:', file.name);
+                    try {
+                        const zip = await JSZip.loadAsync(file);
+                        const kmlFile = Object.keys(zip.files).find(name => name.endsWith('.kml'));
+                        if (kmlFile) {
+                            const kmlText = await zip.files[kmlFile].async('text');
+                            const parser = new DOMParser();
+                            const kml = parser.parseFromString(kmlText, 'application/xml');
+                            const geojsonData = toGeoJSON.kml(kml); // Convert KML to GeoJSON
+                            
+                            addGeoJSONToMap(geojsonData); // Add GeoJSON data to the map
+
+                            // Send GeoJSON data to the server
+                            const response = await fetch('/save_kmz_results/'+CURRENT_OP, {
+                                method: 'POST',
+                                headers: {
+                                    "Content-Type": "application/json",
+                                    "X-CSRFToken": CSRF_TOKEN,
+                                },
+                                body: JSON.stringify({
+                                    title: file.name,
+                                    geoJson: JSON.stringify(geojsonData),
+                                })
+                            });
+
+                            if (response.ok) {
+                                console.log('GeoJSON data successfully sent to the server.');
+                            } else {
+                                console.error('Failed to send GeoJSON data to the server.');
+                            }
+
+                        } 
+                        else {
+                            alert('No KML file found in the KMZ archive.');
+                        }
+                    } catch (error) {
+                        console.error('Error processing KMZ file:', error);
+                        alert('An error occurred while processing the KMZ file.');
+                    }
+                } else {
+                    alert('No file selected.');
+                }
+    
+                $(this).dialog("close"); // Close dialog
+            },
+            Cancel: function () {
+                $(this).dialog("close");
+            }
+        }
+    });
+    // Open dialog when button is clicked
+    $("#loadKmzShowBtn").click(function () {
+        $("#loadKmzFormWrapper").dialog("open");
+    });
+
+
+ 
+    
+});
+
+</script>

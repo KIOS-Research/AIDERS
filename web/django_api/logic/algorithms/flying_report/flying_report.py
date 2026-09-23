@@ -412,16 +412,37 @@ def _notams(story, d):
     #notams, indexes = get_notams(d)
 
     #story = []
-    if not d['notam_error']:
-        for notam in d['notams']:
-            x = notam
-            c = x.replace('\n', '<br />&nbsp;&nbsp;&nbsp;&nbsp;')
-            #c = '<p />' + c + '<p />'
-            story.append(Paragraph(c, courier_text))
+    if d.get('notam_error') is None:
+        # No error occurred
+        if d.get('notams') and len(d['notams']) > 0:
+            # We have NOTAMs to display
+            story.append(Paragraph('RELEVANT NOTAMs:', courier_text))
+            story.append(Spacer(1, 8))
+            for notam in d['notams']:
+                # Ensure notam is a string
+                if isinstance(notam, str):
+                    x = notam
+                else:
+                    x = str(notam)  # Convert to string if it's not already
+                c = x.replace('\n', '<br />&nbsp;&nbsp;&nbsp;&nbsp;')
+                #c = '<p />' + c + '<p />'
+                story.append(Paragraph(c, courier_text))
+                story.append(Spacer(1, 8))
+        else:
+            # No NOTAMs found that match criteria
+            story.append(Paragraph('NO RELEVANT NOTAMs FOUND FOR THIS OPERATION', courier_text))
             story.append(Spacer(1, 8))
     #        story.append(PageBreak())
     else:
-        story.append(Paragraph(d['notams'], courier_text))
+        # Error occurred while fetching NOTAMs
+        story.append(Paragraph('NOTAM ERROR:', courier_text))
+        story.append(Spacer(1, 8))
+        # Handle the case where d['notams'] might be a list or string
+        if isinstance(d['notams'], list):
+            for error_msg in d['notams']:
+                story.append(Paragraph(str(error_msg), courier_text))
+        else:
+            story.append(Paragraph(str(d['notams']), courier_text))
 
     return story
 
@@ -498,35 +519,81 @@ def get_weather(d):
     airports = 'LCLK,LCPH'
 
     # url_sigmet =
-    url_metar = 'https://www.aviationweather.gov/adds/dataserver_current/httpparam?datasource=metars&requestType=retrieve&format=xml&mostRecentForEachStation=constraint&hoursBeforeNow=1.25&stationString=LCLK LCPH'
-    url_taf = 'https://www.aviationweather.gov/adds/dataserver_current/httpparam?datasource=tafs&requestType=retrieve&format=xml&mostRecentForEachStation=true&hoursBeforeNow=2&stationString=LCLK LCPH'
+    url_metar = 'https://aviationweather.gov/api/data/metar?ids=LCLK%2CLCPH&hours=0&order=id%2C-obs&sep=true'
+    url_taf = 'https://aviationweather.gov/api/data/taf?ids=LCLK%2CLCPH&hours=0&order=id%2C-obs&sep=true'
 
-    xml_download_metar = requests.get(url_metar, allow_redirects=True)
-    xml_download_taf = requests.get(url_taf,   allow_redirects=True)
+    try:
+        # Download METAR data
+        metar_response = requests.get(url_metar, allow_redirects=True)
+        taf_response = requests.get(url_taf, allow_redirects=True)
 
-    with open(d['source'] + 'metar.xml', 'wb') as file:
-        file.write(xml_download_metar.content)
-    with open(d['source'] + 'taf.xml', 'wb') as file:
-        file.write(xml_download_taf.content)
+        # Save raw text data for debugging
+        with open(d['source'] + 'metar.txt', 'wb') as file:
+            file.write(metar_response.content)
+        with open(d['source'] + 'taf.txt', 'wb') as file:
+            file.write(taf_response.content)
 
-    tree = ET.parse(d['source'] + 'metar.xml')
-    root_metar = tree.getroot()
+        # Parse METAR data (plain text format)
+        metar_text = metar_response.text.strip()
+        metar_lines = [line.strip() for line in metar_text.split('\n') if line.strip()]
+        
+        # Find METAR data for each airport
+        metar_LCLK = ""
+        metar_LCPH = ""
+        
+        for line in metar_lines:
+            if line.startswith('LCLK'):
+                metar_LCLK = line
+            elif line.startswith('LCPH'):
+                metar_LCPH = line
 
-    metar_LCLK = root_metar[6][0][0].text
-    metar_LCPH = root_metar[6][1][0].text
+        # Parse TAF data (plain text format)
+        taf_text = taf_response.text.strip()
+        taf_lines = [line.strip() for line in taf_text.split('\n') if line.strip()]
+        
+        # Find TAF data for each airport (TAF can span multiple lines)
+        taf_LCLK = ""
+        taf_LCPH = ""
+        current_taf = ""
+        current_airport = ""
+        
+        for line in taf_lines:
+            if line.startswith('TAF LCLK'):
+                if current_taf and current_airport == 'LCLK':
+                    taf_LCLK = current_taf.strip()
+                current_taf = line
+                current_airport = 'LCLK'
+            elif line.startswith('TAF LCPH'):
+                if current_taf and current_airport == 'LCLK':
+                    taf_LCLK = current_taf.strip()
+                current_taf = line
+                current_airport = 'LCPH'
+            else:
+                # This is a continuation line
+                if current_taf:
+                    current_taf += " " + line
+        
+        # Don't forget the last TAF
+        if current_taf and current_airport == 'LCPH':
+            taf_LCPH = current_taf.strip()
+        elif current_taf and current_airport == 'LCLK' and not taf_LCLK:
+            taf_LCLK = current_taf.strip()
 
-    tree = ET.parse(d['source'] + 'taf.xml')
-    root_taf = tree.getroot()
+        d.update({
+            'metar_LCLK': 'METAR ' + metar_LCLK if metar_LCLK else 'METAR LCLK - No data available',
+            'taf_LCLK': taf_LCLK if taf_LCLK else 'TAF LCLK - No data available',
+            'metar_LCPH': 'METAR ' + metar_LCPH if metar_LCPH else 'METAR LCPH - No data available',
+            'taf_LCPH': taf_LCPH if taf_LCPH else 'TAF LCPH - No data available'
+        })
 
-    taf_LCLK = root_taf[6][0][0].text
-    taf_LCPH = root_taf[6][1][0].text
-
-    d.update({
-        'metar_LCLK': 'METAR ' + metar_LCLK,
-        'taf_LCLK': taf_LCLK,
-        'metar_LCPH': 'METAR ' + metar_LCPH,
-        'taf_LCPH': taf_LCPH
-    })
+    except Exception as e:
+        # Fallback in case of any errors
+        d.update({
+            'metar_LCLK': f'METAR LCLK - Error retrieving data: {str(e)}',
+            'taf_LCLK': f'TAF LCLK - Error retrieving data: {str(e)}',
+            'metar_LCPH': f'METAR LCPH - Error retrieving data: {str(e)}',
+            'taf_LCPH': f'TAF LCPH - Error retrieving data: {str(e)}'
+        })
 
     return d
 
@@ -539,31 +606,17 @@ def get_notams(d):
     end_datetime = d['op_end']
     max_altitude = d['max_altitude']
 
-    # lat = 35
-    # lon = 32
-    # start_datetime = datetime.datetime.now()
-    # end_datetime = datetime.datetime.now()
-    # max_altitude = 400
-
     operational_radius = 2
     operational_buffer = 5
-
-    regex_location = "/\d{3}/\d{3}/\d{4}[NS]\d{5}[EW]\d{3}"
-    regex_start = "B\) \d{10}"
-    regex_end = "C\) \d{10}"
     original_point = np.array((float(lat), float(lon)))
 
     filename = datetime.now().strftime('%Y-%m-%d') + '.json'
-    # print(filename)
 
     try:
         if path.exists(d['source']+filename):
             with open(d['source']+filename) as f:
                 notams = json.load(f)
         else:
-            #		https://applications.icao.int/dataservices/apis.html
-            #			url = 'https://v4p4sz5ijk.execute-api.us-east-1.amazonaws.com/anbdata/states/notams/notams-list?format=json&api_key=c692bc20-7ad5-11eb-bd95-d9a31e532e02&states=CYP'
-
             url = 'https://applications.icao.int/dataservices/api/notams-realtime-list?api_key=c692bc20-7ad5-11eb-bd95-d9a31e532e02&format=json&criticality=&locations=LCCC'
 
             notam_download = requests.get(url, allow_redirects=True)
@@ -573,73 +626,67 @@ def get_notams(d):
 
             with open(d['source']+filename) as f:
                 notams = json.load(f)
+        
+        # Debug: Check if notams is actually a list
+        if not isinstance(notams, list):
+            raise ValueError("Expected list but got " + str(type(notams)) + ": " + str(notams)[:200] + "...")
+                
         indexes = []
+        relevant_notams = []
+        
+        # Simplified approach - just include NOTAMs that are active during operation time
         for i, notam in enumerate(notams):
-            notam_all = notam['all']
-
-            location = re.findall(regex_location, notam_all)[0]
-
-            start = re.findall(regex_start, notam_all)[0]
-            end = re.findall(regex_end, notam_all)
-            notam_start_datetime = datetime(
-                year=int('20' + start[3:5]),
-                month=int(start[5:7]),
-                day=int(start[7:9]),
-                hour=int(start[9:11]),
-                minute=int(start[11:13]),
-                second=0
-            )
-
-            if end == []:
-                notam_end_datetime = datetime.max
-            # notam_end_datetime = datetime.max.strftime("%Y-%m-%d %H:%M:%S")
-            else:
-                end = end[0]
-                notam_end_datetime = datetime(
-                    year=int('20' + end[3:5]),
-                    month=int(end[5:7]),
-                    day=int(end[7:9]),
-                    hour=int(end[9:11]),
-                    minute=int(end[11:13]),
-                    second=0
-                )
-            min_alt = int(location[1:4])
-            max_alt = int(location[5:8])
-            latitude = float(location[9:11]) + float(location[11:13]) / 60
-            longitude = float(location[14:17]) + \
-                float(location[17:19]) / 60
-            distance = int(location[20:23])
-            h_distances = haversine(
-                original_point, np.array([latitude, longitude]))
-            # h_distances = h_distances - distances - operational_radius
-            loc_good = 0
-            datetime_good = 0
-            alt_good = 0
-            if h_distances - distance - operational_radius < 0:
-                loc_good = 1
-
-            if start_datetime < notam_end_datetime or notam_start_datetime < end_datetime:
-                datetime_good = 1
-            if min_alt < 15:
-                alt_good = 1
-            if loc_good and datetime_good and alt_good:
-                indexes.append(i)
-            # print(notams)
-        new_notams = [notams[i]['all'] for i in indexes]
+            try:
+                # Get basic info safely
+                notam_id = str(notam.get('id', 'N/A'))
+                notam_message = str(notam.get('message', 'No message available'))
+                notam_start_str = str(notam.get('startdate', ''))
+                notam_end_str = str(notam.get('enddate', ''))
+                
+                # Simple time check
+                time_relevant = True  # Default to include if we can't parse dates
+                
+                if notam_start_str and notam_end_str:
+                    try:
+                        notam_start = datetime.fromisoformat(notam_start_str.replace('Z', '+00:00')).replace(tzinfo=None)
+                        notam_end = datetime.fromisoformat(notam_end_str.replace('Z', '+00:00')).replace(tzinfo=None)
+                        time_relevant = (start_datetime < notam_end and notam_start < end_datetime)
+                    except:
+                        time_relevant = True  # Include if date parsing fails
+                
+                # For now, include all time-relevant NOTAMs (we can add location filtering later)
+                if time_relevant:
+                    indexes.append(i)
+                    formatted_notam = "NOTAM " + notam_id + " - " + notam_message
+                    relevant_notams.append(formatted_notam)
+                    
+            except Exception as individual_error:
+                # Skip individual NOTAMs with errors but continue processing
+                continue
+        
+        # If no NOTAMs match filtering criteria, provide summary
+        if len(relevant_notams) == 0:
+            summary = ("Total NOTAMs downloaded: " + str(len(notams)) + 
+                      ". None match operation time criteria.")
+            relevant_notams = [summary]
+            
         d.update({
             'notam_error': None,
-            'notams': new_notams,
-            'notam_indexes': str(indexes)
+            'notams': relevant_notams,
+            'notam_indexes': str(indexes),
+            'total_notams_downloaded': len(notams)
         })
-    except:
-        notam_error = '''
-			Error producing NOTAMs
-			\n Please visit:
-			\n http://www.mcw.gov.cy/mcw/DCA/AIS/ais.nsf/All/EE69411919A34B0CC2257D5C001C503E?OpenDocument
-			\n or
-			\n https://www.notams.faa.gov/dinsQueryWeb/
-			\n using Nicosia FIR LCCC
-			'''
+        
+    except Exception as e:
+        notam_error = ('Error producing NOTAMs: ' + str(e) + 
+                      ' Please visit: http://www.mcw.gov.cy/mcw/DCA/AIS/ais.nsf/All/EE69411919A34B0CC2257D5C001C503E?OpenDocument'
+                      ' or https://www.notams.faa.gov/dinsQueryWeb/'
+                      ' using Nicosia FIR LCCC')
+        d.update({
+            'notam_error': notam_error,
+            'notams': [notam_error],
+            'notam_indexes': '[]'
+        })
     return d
 
 

@@ -21,14 +21,6 @@
 <div class="justify-content-center ms-5 me-5 footer-margin header-margin">
     <div class="row pt-5">
         <h3 class="col float-start">Balora</h3>
-        <div class="col">
-            <a
-                class="btn btn-primary float-end mx-1 {% if not perms.aiders.edit_permissions %}disabled{% endif %}"
-                href="{% url 'manage_permissions' %}">
-                <i class="far fa-plus-square"></i>
-                Edit Permissions
-            </a>
-        </div>
     </div>
     <div class="row mb-5">
         <div class="col-sm" style="color: black">
@@ -37,27 +29,27 @@
             <table id="Table" class="table table-striped">
                 <thead>
                     <tr>
-                        <th>ID</th>
+                        <th style="width: 5%" class="text-center">ID</th>
                         <th>Balora Name</th>
                         <th>Operation</th>
-                        <th>Connected</th>
+                        <th class="text-center">Connected</th>
                         <th style="width: 14%">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% if loras %} {% for lora in loras %}
-                    <tr>
-                        <td class="align-middle">{{lora.id}}</td>
+                    <tr {% if not lora.is_connected_with_platform == True %} style="background-color: #ffe5e5;"{%else%} style="background-color: #e3fde3;"{% endif %}>
+                        <td class="align-middle text-center">{{lora.id}}</td>
                         <td class="align-middle">{{lora.name}}</td>
                         <td class="align-middle">{{lora.operation}}</td>
-                        <td class="align-middle">{{lora.is_connected_with_platform}}</td>
+                        <td class="align-middle text-center"> {% if lora.is_connected_with_platform == True %}<i class="fa-solid fa-check"></i>{% else %}<i class="fa-solid fa-xmark"></i>{% endif %}</td>
                         <td>
-                            <div>
+                            {% comment %} <div>
                                 <form class="m-1" style="float: left" method="post" action="{% url 'join_operation' operation_name=lora.operation %}">
                                     {% csrf_token %} {% get_obj_perms request.user for lora.operation as "permission_list" %}
                                     <button type="submit" title="Open map for this lora's operation" class="btn btn-success" {% if not "join_operation" in permission_list or not lora.operation.active or lora.operation == None %} disabled {% endif %}><i class="fa-solid fa-right-to-bracket"></i></button>
                                 </form>
-                            </div>
+                            </div> {% endcomment %}
                             <div>
                                 <form class='m-1' style='float: left;'>
                                     <button type="Button" title="Assign this lora to an operation"  onclick="Edit_lora_operation('{{lora.name}}')" class="btn btn-warning"><i style="color:white;" class="fa-solid fa-gear"></i></button>

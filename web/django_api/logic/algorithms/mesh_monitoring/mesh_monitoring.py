@@ -148,7 +148,7 @@ def get_object_info(results_folder_path):
 def start():
     global NET_IP
     prev_tasks_status = []
-    n = Node(NET_IP, 4000)
+    n = Node(os.environ.get("ODM_HOST"), os.environ.get("ODM_PORT"))
 
     # updateObjectApiIP(ALL_RESULT_FOLDERS_DIR,OBJECT_INFO_FILE_NAME)
     while (True):
@@ -218,25 +218,13 @@ def start():
             # url = API_URL + "/odm/results"
             # requests.request("POST", url, headers={'Content-Type': 'application/json'}, data=payload)
         # for uuid in task_uuids:
-        time.sleep(10)
+        time.sleep(15)
 
 
 def main():
     global NODE_ODM_API_URL, NET_IP
-
-    if (len(sys.argv) < 2):
-        print("\nPlease make sure you provide the following arguments:"
-              "\n1)NODE_ODM_API_URL "
-
-              )
-        exit()
-    else:
-        # API_URL = sys.argv[1]
-        NODE_ODM_API_URL = sys.argv[1]
-        NET_IP = sys.argv[2]
-        # ALL_RESULT_FOLDERS_DIR = sys.argv[4]
-        # PROJECT_DIR = sys.argv[5]
-        # WEBSERVER_URL = sys.argv[6]
+    NET_IP = os.getenv('NET_IP')
+    NODE_ODM_API_URL = "http://" + NET_IP + ":" + os.environ.get("NGINX_PORT") + "/odm"
     logger.info('Waiting for a 3D object to be created.')
     start()
 

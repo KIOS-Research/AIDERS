@@ -1,0 +1,303 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block title %}
+About Us - AIDERS Platform
+{% endblock %}
+
+{% block head_block %}
+<style>
+    .about-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+    
+    .hero-section {
+        text-align: center;
+        margin-bottom: 3rem;
+        padding: 3rem 0;
+        background: linear-gradient(135deg, #667eea 0%, #4b71a2 100%);
+        color: white;
+        border-radius: 10px;
+        margin-bottom: 3rem;
+    }
+    
+    .hero-section h1 {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        font-weight: 300;
+    }
+    
+    .hero-section p {
+        font-size: 1.2rem;
+        margin-bottom: 0;
+        opacity: 0.9;
+    }
+    
+    .mission-section {
+        background: #f8f9fa;
+        padding: 3rem;
+        border-radius: 10px;
+        margin-bottom: 3rem;
+    }
+    
+    .mission-section h2 {
+        color: #333;
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+    
+    .mission-content {
+        font-size: 1.1rem;
+        line-height: 1.8;
+        color: #555;
+        text-align: center;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    
+    .features-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+        margin-bottom: 3rem;
+    }
+    
+    .feature-card {
+        background: white;
+        padding: 2rem;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        transition: transform 0.3s ease;
+    }
+    
+    .feature-card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .feature-icon {
+        font-size: 3rem;
+        color: #667eea;
+        margin-bottom: 1rem;
+    }
+    
+    .feature-card h3 {
+        color: #333;
+        margin-bottom: 1rem;
+    }
+    
+    .feature-card p {
+        color: #666;
+        line-height: 1.6;
+    }
+    
+    .team-section {
+        text-align: center;
+        margin-bottom: 3rem;
+    }
+    
+    .team-section h2 {
+        color: #333;
+        margin-bottom: 2rem;
+    }
+    
+    .organization-logos {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 3rem;
+        flex-wrap: wrap;
+        margin-top: 2rem;
+    }
+    
+    .organization-logos img {
+        max-height: 60px;
+        opacity: 0.8;
+        transition: opacity 0.3s ease;
+    }
+    
+    .organization-logos img:hover {
+        opacity: 1;
+    }
+    
+    .contact-section {
+        background: #f8f9fa;
+        padding: 3rem;
+        border-radius: 10px;
+        text-align: center;
+    }
+    
+    .contact-section h2 {
+        color: #333;
+        margin-bottom: 2rem;
+    }
+    
+    .contact-info {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 2rem;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    
+    .contact-item {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .contact-item i {
+        font-size: 2rem;
+        color: #667eea;
+        margin-bottom: 1rem;
+    }
+    
+    .contact-item h4 {
+        color: #333;
+        margin-bottom: 0.5rem;
+    }
+    
+    .contact-item p {
+        color: #666;
+        margin: 0;
+    }
+    
+    @media (max-width: 768px) {
+        .hero-section h1 {
+            font-size: 2rem;
+        }
+        
+        .about-container {
+            padding: 1rem;
+        }
+        
+        .organization-logos {
+            gap: 1.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block body_block %}
+<br /><br />
+<div class="about-container header-margin footer-margin">
+    <!-- Hero Section -->
+    <div class="hero-section">
+        <h1>About AIDERS</h1>
+        <!-- <p>Advanced Intelligent Disaster Emergency Response System</p> -->
+        <p>Real-time Artificial Intelligence for DEcision support via RPAS data analyticS</p>
+    </div>
+
+    <!-- Mission Section -->
+    <div class="mission-section">
+        <h2>Our Mission</h2>
+        <div class="mission-content">
+            <p>
+                AIDERS is a cutting-edge platform designed to revolutionize disaster management and emergency response. 
+                We combine artificial intelligence, drone technology, and real-time data analysis to provide 
+                comprehensive solutions for crisis management, search and rescue operations, and environmental monitoring.
+            </p>
+            <p>
+                Our platform empowers first responders, emergency management teams, and organizations with the tools 
+                they need to make informed decisions quickly and effectively during critical situations.
+            </p>
+        </div>
+    </div>
+
+    <!-- Features Grid -->
+    <div class="features-grid">
+        <div class="feature-card">
+            <div class="feature-icon">
+                <i class="fas fa-paper-plane"></i>
+            </div>
+            <h3>UAV Management</h3>
+            <p>Advanced drone control and coordination system for aerial surveillance, mapping, and emergency response operations.</p>
+        </div>
+        
+        <div class="feature-card">
+            <div class="feature-icon">
+                <i class="fas fa-eye"></i>
+            </div>
+            <h3>Computer Vision</h3>
+            <p>AI-powered object detection and recognition capabilities for real-time analysis of visual data from multiple sources.</p>
+        </div>
+        
+        <div class="feature-card">
+            <div class="feature-icon">
+                <i class="fas fa-map-marked-alt"></i>
+            </div>
+            <h3>Live Mapping</h3>
+            <p>Real-time mapping and geographic information system integration for comprehensive situational awareness.</p>
+        </div>
+        
+        <div class="feature-card">
+            <div class="feature-icon">
+                <i class="fas fa-chart-line"></i>
+            </div>
+            <h3>Data Analytics</h3>
+            <p>Advanced analytics and reporting tools for mission planning, performance analysis, and decision support.</p>
+        </div>
+        
+        <div class="feature-card">
+            <div class="feature-icon">
+                <i class="fas fa-satellite-dish"></i>
+            </div>
+            <h3>Sensor Integration</h3>
+            <p>Multi-sensor data fusion including environmental sensors, LiDAR, and IoT device integration.</p>
+        </div>
+        
+        <div class="feature-card">
+            <div class="feature-icon">
+                <i class="fas fa-users"></i>
+            </div>
+            <h3>Team Collaboration</h3>
+            <p>Multi-user operation management with role-based access control and real-time collaboration tools.</p>
+        </div>
+    </div>
+
+    <!-- Team Section -->
+    <div class="team-section">
+        <h2>Developed By</h2>
+        <p class="mission-content">
+            AIDERS is developed by the <strong>KIOS Research and Innovation Center of Excellence</strong> 
+            at the University of Cyprus. Our team consists of leading researchers and engineers in the fields of 
+            artificial intelligence, robotics, emergency management, and systems engineering.
+        </p>
+        
+        <div class="organization-logos">
+            <img src="{% static 'aiders/imgs/kios_logo.png' %}" alt="KIOS Research Center" />
+            <img src="{% static 'aiders/imgs/eu_logo.png' %}" alt="European Union" />
+        </div>
+        
+        <p class="mt-4" style="color: #666; font-size: 0.9rem;">
+            This project is funded by the European Union Civil Protection mechanism, 
+            supporting innovative solutions for disaster preparedness and response.
+        </p>
+    </div>
+
+    <!-- Contact Section -->
+    <div class="contact-section">
+        <h2>Contact Information</h2>
+        <div class="contact-info">
+            <div class="contact-item">
+                <i class="fas fa-university"></i>
+                <h4>Institution</h4>
+                <p>KIOS Research and Innovation Center of Excellence<br>University of Cyprus</p>
+            </div>
+            
+            <div class="contact-item">
+                <i class="fas fa-envelope"></i>
+                <h4>Email</h4>
+                <p>kios@ucy.ac.cy</p>
+            </div>
+
+        </div>
+    </div>
+</div>
+<br /><br />
+
+{% endblock %}

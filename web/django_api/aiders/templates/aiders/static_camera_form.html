@@ -1,0 +1,156 @@
+{% extends "base.html" %} {% load i18n %} {% load static %} {% load crispy_forms_tags %}{% block title %} Aiders - {{title}} {% endblock %} {% block head_block %} 
+{{ form.media }}
+<link href="{% static 'libs/font-awesome/css/all.css' %}" rel="stylesheet" />
+<script src="{% static 'libs/jquery/code.jquery.com_jquery-1.11.2.min.js' %}"></script>
+<script src="{% static 'libs/bootstrap/bootstrap_v5.js' %}"></script>
+{% endblock %} 
+
+{% block body_block %}
+<div class="justify-content-center ms-5 me-5 footer-margin header-margin">
+    <div class="row pt-5 pb-3">
+        <div class="row">
+            <div class="col">
+                <h3 class="float-start">{{title}}</h3>
+                <a href="{% url 'static_cameras_list' %}" class="btn btn-primary float-end">
+                    <i class="fas fa-arrow-left"></i> Back to List
+                </a>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                {% include 'aiders/errors.html' %}
+            </div>
+        </div>
+        <form id="form-post" method="post">
+            {% csrf_token %}
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Static Camera Details</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label for="{{ form.name.id_for_label }}" class="form-label">Camera Name *</label>
+                                {{ form.name }}
+                                {% if form.name.errors %}
+                                    <div class="text-danger">
+                                        {% for error in form.name.errors %}
+                                            <small>{{ error }}</small>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label for="{{ form.model.id_for_label }}" class="form-label">Camera Model *</label>
+                                {{ form.model }}
+                                {% if form.model.errors %}
+                                    <div class="text-danger">
+                                        {% for error in form.model.errors %}
+                                            <small>{{ error }}</small>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="form-group mb-3">
+                                <label for="{{ form.live_stream_url.id_for_label }}" class="form-label">Live Stream URL</label>
+                                {{ form.live_stream_url }}
+                                <small class="form-text text-muted">Enter the URL for the camera's live stream (optional)</small>
+                                {% if form.live_stream_url.errors %}
+                                    <div class="text-danger">
+                                        {% for error in form.live_stream_url.errors %}
+                                            <small>{{ error }}</small>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label for="{{ form.latitude.id_for_label }}" class="form-label">Latitude</label>
+                                {{ form.latitude }}
+                                <small class="form-text text-muted">Decimal degrees (e.g., 35.1667)</small>
+                                {% if form.latitude.errors %}
+                                    <div class="text-danger">
+                                        {% for error in form.latitude.errors %}
+                                            <small>{{ error }}</small>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label for="{{ form.longitude.id_for_label }}" class="form-label">Longitude</label>
+                                {{ form.longitude }}
+                                <small class="form-text text-muted">Decimal degrees (e.g., 33.3667)</small>
+                                {% if form.longitude.errors %}
+                                    <div class="text-danger">
+                                        {% for error in form.longitude.errors %}
+                                            <small>{{ error }}</small>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label for="{{ form.operation.id_for_label }}" class="form-label">Operation</label>
+                                {{ form.operation }}
+                                <small class="form-text text-muted">Assign camera to an operation (optional)</small>
+                                {% if form.operation.errors %}
+                                    <div class="text-danger">
+                                        {% for error in form.operation.errors %}
+                                            <small>{{ error }}</small>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <div class="form-check mt-4">
+                                    {{ form.is_connected_with_platform }}
+                                    <label class="form-check-label" for="{{ form.is_connected_with_platform.id_for_label }}">
+                                        Camera is connected with platform
+                                    </label>
+                                </div>
+                                {% if form.is_connected_with_platform.errors %}
+                                    <div class="text-danger">
+                                        {% for error in form.is_connected_with_platform.errors %}
+                                            <small>{{ error }}</small>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <div class="d-flex justify-content-end">
+                        <a href="{% url 'static_cameras_list' %}" class="btn btn-danger me-2">Cancel</a>
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-save"></i> Save Static Camera
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %} 
+
+{% block script_block %}
+
+{% endblock %}

@@ -53,14 +53,14 @@
             hidePopup('#buildMapLoadingToStop');
         }
     }
-
-    function highlightElement(element, action) {
-        if (action === ACTIVATE_HIGHLIGHT) {
-            $(element).addClass('active');
-        } else if (action === DEACTIVATE_HIGHLIGHT) {
-            $(element).removeClass('active');
-        }
-    }
+    // NOT USED
+    // function highlightElement(element, action) {
+    //     if (action === ACTIVATE_HIGHLIGHT) {
+    //         $(element).addClass('active');
+    //     } else if (action === DEACTIVATE_HIGHLIGHT) {
+    //         $(element).removeClass('active');
+    //     }
+    // }
 
     function showPopupForALittle(popup_element, message, duration_ms) {
         if (message !== '') {
@@ -279,25 +279,34 @@
                 modal: true,
                 title: title,
                 buttons: [
-                    {
-                        id: DETECTION_TYPES.VEHICLE_DETECTOR.refName,
-                        text: DETECTION_TYPES.VEHICLE_DETECTOR.refName,
-                        click: function () {
-                            defer.resolve(DETECTION_TYPES.VEHICLE_DETECTOR.name);
-                            $(this).remove();
-                        },
-                        width: '130',
-                    },
+                    // {
+                    //     id: DETECTION_TYPES.VEHICLE_DETECTOR.refName,
+                    //     text: DETECTION_TYPES.VEHICLE_DETECTOR.refName,
+                    //     click: function () {
+                    //         defer.resolve(DETECTION_TYPES.VEHICLE_DETECTOR.name);
+                    //         $(this).remove();
+                    //     },
+                    //     width: '130',
+                    // },
 
+                    // {
+                    //     id: DETECTION_TYPES.VEHICLE_PERSON_DETECTOR.refName,
+                    //     text: DETECTION_TYPES.VEHICLE_PERSON_DETECTOR.refName,
+                    //     click: function () {
+                    //         defer.resolve(DETECTION_TYPES.VEHICLE_PERSON_DETECTOR.name);
+                    //         $(this).remove();
+                    //     },
+                    //     width: '130',
+                    // },
                     {
-                        id: DETECTION_TYPES.VEHICLE_PERSON_DETECTOR.refName,
-                        text: DETECTION_TYPES.VEHICLE_PERSON_DETECTOR.refName,
+                        id: DETECTION_TYPES.WALDO_DETECTOR.refName,
+                        text: DETECTION_TYPES.WALDO_DETECTOR.refName,
                         click: function () {
-                            defer.resolve(DETECTION_TYPES.VEHICLE_PERSON_DETECTOR.name);
+                            defer.resolve(DETECTION_TYPES.WALDO_DETECTOR.name);
                             $(this).remove();
                         },
-                        width: '130',
-                    },
+                        width: '180',
+                    },                     
                     {
                         id: DETECTION_TYPES.DISASTER_CLASSIFICATION.refName,
                         text: DETECTION_TYPES.DISASTER_CLASSIFICATION.refName,
@@ -305,7 +314,7 @@
                             defer.resolve(DETECTION_TYPES.DISASTER_CLASSIFICATION.name);
                             $(this).remove();
                         },
-                        width: '130',
+                        width: '180',
                     },
                     {
                         id: DETECTION_TYPES.CROWD_LOCALIZATION.refName,
@@ -314,8 +323,9 @@
                             defer.resolve(DETECTION_TYPES.CROWD_LOCALIZATION.name);
                             $(this).remove();
                         },
-                        width: '130',
-                    },                                
+                        width: '180',
+                    },
+                   
                 ],
                 close: function () {
                     $(this).remove();
@@ -1259,79 +1269,88 @@ function create_operation_dialog(okButton, cancelButton, selected, message, dial
     return defer.promise();
 }
 
-function create_form_with_checkboxes_for_3d_mesh(mesh_periods) {
-    let iDiv = document.createElement('div');
-    iDiv.id = 'myCheckboxDiv';
-    //
-    document.body.appendChild(iDiv);
-    for (var i = 0; i < mesh_periods.length; i++) {
-        let drone_id = mesh_periods[i]['id'];
-        let start_time = convertUTCDateToLocalDate(mesh_periods[i]['start_time']);
 
-        let end_time = convertUTCDateToLocalDate(mesh_periods[i]['end_time']);
-        var checkbox = document.createElement('input');
-        checkbox.type = 'checkbox';
-        checkbox.name = 'myCustomCheckBox' + i;
-        checkbox.value = drone_id + start_time;
-        checkbox.id = 'myCustomCheckBox' + i;
-        document.body.appendChild(checkbox);
-        iDiv.appendChild(checkbox);
-        var newLabel = document.createElement('Label');
-        newLabel.setAttribute('for', 'myCustomCheckBox' + i);
-        newLabel.innerHTML =
-            'ID: ' +
-            '<i>' +
-            drone_id +
-            ' </i>' +
-            '&nbsp;&nbsp;Started: ' +
-            '<i>' +
-            start_time +
-            ' </i>' +
-            '&nbsp;&nbsp;Ended: ' +
-            '<i>' +
-            end_time +
-            ' </i>';
-        iDiv.appendChild(newLabel);
-        var br = document.createElement('br');
-        iDiv.appendChild(br);
-    }
+// Example of a form field configuration
+// [
+//  {
+//   "id": "id",
+//   "name": "name",
+//   "type": "checkbox",
+//   "value": "initial value",
+//   "hidden": false,
+//   "disabled": false
+//  },
+// ]
+// NOTE: Hidden and Disabled config values can be undefined
+// NOTE: number type can add min and max values
 
-    $('input[id^="myCustomCheckBox"]').checkboxradio();
 
-    return iDiv;
-}
-
-function create_3d_mesh_dialog_with_checkboxes_form(checkboxes_form_element, okButton, cancelButton, dialogTitle) {
+function createDynamicFormDialog(okButton, cancelButton, dialogTitle, fields) {
     let defer = $.Deferred();
-    let dialog = $(checkboxes_form_element).dialog({
-        autoOpen: false,
-        height: 400,
-        width: 660,
-        modal: true,
-        title: dialogTitle,
-        buttons: [
-            {
-                text: okButton,
-                click: function () {
-                    // defer.resolve(true);
-                    defer.resolve([true, dialog]);
-                    // $(this).dialog("close");
-                },
-            },
-            {
-                text: cancelButton,
-                click: function () {
-                    // defer.resolve(false);
-                    defer.resolve([false, dialog]);
-                    $(this).remove();
-                },
-            },
-        ],
-        close: function () {
-            defer.resolve([false, dialog]);
-            $(this).remove();
-        },
+
+    // Build the form dynamically based on fields
+    let formHtml = '<form class="dynamic-dialog-form">';
+    fields.forEach(field => {
+        formHtml += '<div class="dynamic-dialog-form-group" style="margin-bottom: 10px;' + (field.hidden ? ' display: none;' : '') + '">'
+        formHtml += `<label for="${field.id}">${field.name}: </label>`;
+        switch (field.type) {
+            case 'text':
+                formHtml += `<input type="text" id="${field.id}" name="${field.id}" value="${field.value}" ${field.disabled ? 'disabled' : ''}>`;
+                break;
+            case 'checkbox':
+                formHtml += `<input type="checkbox" id="${field.id}" name="${field.id}" ${field.value ? 'checked' : '' } ${field.disabled ? 'disabled' : ''}>`;
+                break;
+            case 'number':
+                formHtml += `<input type="number" id="${field.id}" name="${field.id}" value="${field.value}" ${field.disabled ? 'disabled' : ''} ${field.min ? 'min="' + field.min + '"' : ''} ${field.max ? 'max="' + field.max + '"' : ''} step="1">`;
+                break;
+            // Add more cases as needed
+            default:
+                console.log("error with the dynamic form creation");
+        }
+        formHtml += '</div>';
     });
+    formHtml += '</form>';
+
+    let dialog = $('<div></div>')
+        .appendTo('body')
+        .html(formHtml)
+        .dialog({
+            autoOpen: false,
+            height: 'auto',
+            width: 400,
+            modal: true,
+            title: dialogTitle,
+            buttons: [
+                {
+                    text: okButton,
+                    click: function () {
+                        let result = { success: true, data: {} };
+                        fields.forEach(field => {
+                            let value;
+                            if (field.type === 'checkbox') {
+                                value = $('#' + field.id).is(':checked');
+                            } else {
+                                value = $('#' + field.id).val();
+                            }
+                            result.data[field.id] = value;
+                        });
+                        defer.resolve(result);
+                        $(this).dialog('close');
+                    }
+                },
+                {
+                    text: cancelButton,
+                    click: function () {
+                        defer.resolve({ success: false });
+                        $(this).dialog('close');
+                    }
+                }
+            ],
+            close: function () {
+                $(this).remove();
+            }
+        });
+
     dialog.dialog('open');
     return defer.promise();
 }

@@ -228,7 +228,7 @@ def getPaths(drone_ids,lowerLeft,upperLeft, lowerRight, upperRight,batteries, cu
             'path':[[y,x,currentAlts[k]] for y,x in zip(circuitY[k], circuitX[k] )]
         }
         result.append(obj)
-
+        result[k]['path'].pop()
 
     return result
 

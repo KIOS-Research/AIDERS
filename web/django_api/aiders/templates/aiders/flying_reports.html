@@ -24,6 +24,14 @@ Aiders - Flying Reports
 <div class="justify-content-center ms-5 me-5 footer-margin header-margin">
     <div class="row pt-5">
         <h3 class="col float-start">{{operation_name}} Flying Reports</h3>
+        {% if perms.aiders.manage_operations %}
+            <div class="col">
+                <a class="btn btn-success float-end mx-1" href="{% url 'flying_report'  operation_name=operation_name %}">
+                    <i class="fa-solid fa-plus "></i>
+                    New Report
+                </a>
+            </div>
+        {% endif %}        
     </div>
     <div class="row mb-5">
         <div class="col-sm" style="color: black">
@@ -60,9 +68,9 @@ Aiders - Flying Reports
                             <td class='align-middle'> {{flying_report.start_date_time}}</td>
                             <td class='align-middle'> {{flying_report.end_date_time}}</td>
                             <td class='align-middle'>
-                                <button id="sidebarToggle" title="View Fligth Report" onclick="go_pdf(this)" class="btn btn-primary" value={{flying_report.file_path}}>
-                                        <i style="color:white;" class="fa-solid fa-highlighter"></i>
-                                </button>
+                                <a href="/media/{{flying_report.file_path}}" target="_blank" class="btn btn-primary" title="View Flight Report">
+                                    <i style="color:white;" class="fa-solid fa-eye"></i>
+                                </a>
                             </td>
                         </tr>
                     {% endfor %}

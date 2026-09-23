@@ -3,10 +3,12 @@
 <link href="{% static 'libs/bootstrap/bootstrap_v5.css' %}" rel="stylesheet" />
 <script src="{% static 'libs/bootstrap/bootstrap_v4.js' %}"></script>
 
-<script src="{% static 'aiders/javascripts/constants/settings_constants.js' %}"></script>
 
 {% endblock %} {% block body_block %}
-
+<script>
+    let OFFLINE_MAP_MODE="OFFLINE_MAP_MODE"
+    let ONLINE_MAP_MODE="ONLINE_MAP_MODE"
+</script>
 <div class="justify-content-center ms-5 me-5 footer-margin header-margin">
     <div class="row pt-5">
         <h4 class="col float-start">Settings</h4>

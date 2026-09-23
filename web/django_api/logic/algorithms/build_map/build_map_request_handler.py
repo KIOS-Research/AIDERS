@@ -12,19 +12,37 @@ import requests
 #     t.overlap = int(overlap)
 #     publisher.publish(t)
 
-def PostRequestForBuildMapStartOrStop(_droneName, _command, _overlap):
-    rosUrl = f"http://localhost:{os.environ['ROS_API_PORT']}/droneStartOrStopBuildMap"
-    payload = {
-        "droneName": _droneName,
-        "command": _command,
-        "overlap": _overlap,
-    }
+def PostRequestForBuildMapStartOrStop(_droneName, _command, _interval, _connectionType):
+
+
+    if _connectionType == "ROS":
+        requestUrl = f"http://{os.environ['ROS_HOST']}:{os.environ['ROS_API_PORT']}/ros/droneStartOrStopBuildMap"
+
+        payload = {
+            "droneName": _droneName,
+            "command": _command,
+            "interval": _interval,
+        }
+    else:
+        requestUrl = f"http://{os.environ['WSI_HOST']}:{os.environ['WSI_PORT']}/wsi/sendMessageToClient"
+
+        payload = {
+            "name": _droneName,
+            "type": "buildmap",
+            "msg": {
+                "command": _command,
+                "interval": int(_interval),
+            }
+        }
+
+
+
     headers = {
         'Content-Type': 'application/json'
     }    
     json_payload = json.dumps(payload)
 
-    response = requests.post(rosUrl, data=json_payload, headers=headers) # send the POST request
+    response = requests.post(requestUrl, data=json_payload, headers=headers) # send the POST request
     # TODO: check the response status code
     if response.status_code == 200:
         print("REQUEST TO ROS API SUCCESSFUL")

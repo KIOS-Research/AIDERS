@@ -20,6 +20,7 @@ type LidarPointQueryParams struct {
 	NumberOfPoints int `db:"number_of_points"`
 }
 
+
 func GetLidarPointBySessionIdAndLatestId(_sessionId int, _latestId int, _numberOfPoints int) []LidarPoint {
 	query := `
 		SELECT

@@ -1,10 +1,14 @@
-{% extends "base.html" %} {% load i18n %} {% load static %} {% block title %} Aiders - New Operation {% endblock %} {% block head_block %} {{
+{% extends "base.html" %} {% load i18n %} {% load static %} {% block title %} Aiders - Edit Operation {% endblock %} {% block head_block %} {{
 form.media }}
 <link href="{% static 'libs/font-awesome/css/all.css' %}" rel="stylesheet" />
 <script src="{% static 'libs/jquery/code.jquery.com_jquery-1.11.2.min.js' %}"></script>
 <script src="{% static 'libs/bootstrap/bootstrap_v5.js' %}"></script>
 <script src="{% static 'aiders/javascripts/drone/multi_select.js' %}"></script>
 <link rel="stylesheet" href="{% static 'aiders/css/form/operation_new.css' %}" />
+
+<!-- Leaflet Map CSS and JS (Local Files) -->
+<link rel="stylesheet" href="{% static 'libs/leaflet/leaflet.css' %}" />
+<script src="{% static 'libs/leaflet/leaflet.js' %}"></script>
 {% endblock %} {% block body_block %}
 <div class="justify-content-center ms-5 me-5 footer-margin header-margin">
     <div class="row pt-4 pb-0">
@@ -16,7 +20,7 @@ form.media }}
             <!-- Form Steps / Progress Bar -->
             <ul class="form-stepper form-stepper-horizontal text-center mx-auto pl-0">
                 <!-- Step 1 -->
-                <li class="form-stepper-active text-center form-stepper-list" step="1">
+                <li class="form-stepper-active text-center form-stepper-list" step="1" data-step-type="basic">
                     <a class="mx-2">
                         <span class="form-stepper-circle form-click-button">
                             <span>1</span>
@@ -25,7 +29,7 @@ form.media }}
                     </a>
                 </li>
                 <!-- Step 2 -->
-                <li class="form-stepper-unfinished text-center form-stepper-list" step="2">
+                <li class="form-stepper-unfinished text-center form-stepper-list" step="2" data-step-type="users">
                     <a class="mx-2">
                         <span class="form-stepper-circle form-click-button text-muted">
                             <span>2</span>
@@ -33,8 +37,9 @@ form.media }}
                         <div class="label form-click-button text-muted">Users</div>
                     </a>
                 </li>
+                {% if drones_all or drones_allow %}
                 <!-- Step 3 -->
-                <li class="form-stepper-unfinished text-center form-stepper-list" step="3">
+                <li class="form-stepper-unfinished text-center form-stepper-list" step="3" data-step-type="drones">
                     <a class="mx-2">
                         <span class="form-stepper-circle form-click-button text-muted">
                             <span>3</span>
@@ -42,8 +47,10 @@ form.media }}
                         <div class="label form-click-button text-muted">Drones</div>
                     </a>
                 </li>
+                {% endif %}
+                {% if devices_all or devices_allow %}
                 <!-- Step 4 -->
-                <li class="form-stepper-unfinished text-center form-stepper-list" step="4">
+                <li class="form-stepper-unfinished text-center form-stepper-list" step="4" data-step-type="devices">
                     <a class="mx-2">
                         <span class="form-stepper-circle form-click-button text-muted">
                             <span>4</span>
@@ -51,8 +58,10 @@ form.media }}
                         <div class="label form-click-button text-muted">Devices</div>
                     </a>
                 </li>
+                {% endif %}
+                {% if baloras_all or baloras_allow %}
                 <!-- Step 5 -->
-                <li class="form-stepper-unfinished text-center form-stepper-list" step="5">
+                <li class="form-stepper-unfinished text-center form-stepper-list" step="5" data-step-type="baloras">
                     <a class="mx-2">
                         <span class="form-stepper-circle form-click-button text-muted">
                             <span>5</span>
@@ -60,6 +69,7 @@ form.media }}
                         <div class="label form-click-button text-muted">Baloras</div>
                     </a>
                 </li>
+                {% endif %}
             </ul>
             {% csrf_token %}
             <input type="hidden" id="step" value="1" />
@@ -69,7 +79,7 @@ form.media }}
                 </tr>
                 <tr>
                     <th>Operation name:</th>
-                    <td><input type="text" name="operation_name" placeholder="e.g Exercise_02Aug" value="{{operation.operation_name}}" maxlength="100" required="" id="id_operation_name" readonly></td>
+                    <td><input type="text" name="operation_name" placeholder="e.g Exercise_02Aug" value="{{operation.operation_name}}" maxlength="100" required="" id="id_operation_name" style="background-color: lightgrey" readonly></td>
                 </tr>
                 <tr>
                     <th>Location:</th>
@@ -77,20 +87,85 @@ form.media }}
                 </tr>
                 <tr>
                     <th>Description:</th>
-                    <td><textarea name="description" cols="40" rows="10" placeholder="The objectives and scenario of this operation" id="id_description">{{operation.description}}</textarea></td>
+                    <td><textarea name="description" cols="40" rows="8" placeholder="The objectives and scenario of this operation" id="id_description">{{operation.description}}</textarea></td>
                 </tr>
+
                 <tr>
-                    <th>Disaster epicenter latitude:</th>
-                    <td><input type="number" name="disaster_epicenter_latitude" id="id_disaster_epicenter_latitude" value="{{operation.disaster_epicenter_latitude}}" step="any" ></td>
-                </tr>
+                    <th>Base of operations:</th>
+                    <td>
+                        <div class="base-location-container">
+                            <!-- Map container -->
+                            <div id="base-map" style="height: 300px; width: 100%; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px;"></div>
+                            
+                            <!-- Coordinate inputs (hidden by default, shown when coordinates are set) -->
+                            <div class="coordinate-inputs" style="display: flex; gap: 10px; margin-top: 10px;">
+                                <div style="flex: 1;">
+                                    <label for="id_boo_latitude" style="font-size: 12px; color: #666;">Latitude:</label>
+                                    <input type="number" name="boo_latitude" id="id_boo_latitude" 
+                                           value="{{operation.boo_latitude}}" step="any" 
+                                           class="form-control" style="font-size: 14px;" readonly>
+                                </div>
+                                <div style="flex: 1;">
+                                    <label for="id_boo_longitude" style="font-size: 12px; color: #666;">Longitude:</label>
+                                    <input type="number" name="boo_longitude" id="id_boo_longitude" 
+                                           value="{{operation.boo_longitude}}" step="any" 
+                                           class="form-control" style="font-size: 14px;" readonly>
+                                </div>
+                                <div style="display: flex; align-items: end;">
+                                    <button type="button" id="clear-base-location" class="btn btn-sm btn-outline-secondary" style="height: fit-content;">
+                                        <i class="fa-solid fa-times"></i> Clear
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Instructions -->
+                            <div class="map-instructions" style="font-size: 12px; color: #666; margin-top: 5px;">
+                                <i class="fa-solid fa-info-circle"></i> Click on the map to set the base of operations location
+                            </div>
+                        </div>
+                    </td>
+                </tr>   
+
                 <tr>
-                    <th>Disaster epicenter longitude:</th>
-                    <td><input type="number" name="disaster_epicenter_longitude" id="id_disaster_epicenter_longitude" value="{{operation.disaster_epicenter_longitude}}" step="any" ></td>
+                    <th>Disaster epicenter:</th>
+                    <td>
+                        <div class="disaster-location-container">
+                            <!-- Map container -->
+                            <div id="disaster-map" style="height: 300px; width: 100%; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px;"></div>
+                            
+                            <!-- Coordinate inputs (hidden by default, shown when coordinates are set) -->
+                            <div class="coordinate-inputs" style="display: flex; gap: 10px; margin-top: 10px;">
+                                <div style="flex: 1;">
+                                    <label for="id_disaster_epicenter_latitude" style="font-size: 12px; color: #666;">Latitude:</label>
+                                    <input type="number" name="disaster_epicenter_latitude" id="id_disaster_epicenter_latitude" 
+                                           value="{{operation.disaster_epicenter_latitude}}" step="any" 
+                                           class="form-control" style="font-size: 14px;" readonly>
+                                </div>
+                                <div style="flex: 1;">
+                                    <label for="id_disaster_epicenter_longitude" style="font-size: 12px; color: #666;">Longitude:</label>
+                                    <input type="number" name="disaster_epicenter_longitude" id="id_disaster_epicenter_longitude" 
+                                           value="{{operation.disaster_epicenter_longitude}}" step="any" 
+                                           class="form-control" style="font-size: 14px;" readonly>
+                                </div>
+                                <div style="display: flex; align-items: end;">
+                                    <button type="button" id="clear-disaster-location" class="btn btn-sm btn-outline-secondary" style="height: fit-content;">
+                                        <i class="fa-solid fa-times"></i> Clear
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Instructions -->
+                            <div class="map-instructions" style="font-size: 12px; color: #666; margin-top: 5px;">
+                                <i class="fa-solid fa-info-circle"></i> Click on the map to set the disaster epicenter location
+                            </div>
+                        </div>
+                    </td>
                 </tr>                
+             
             </table>
             <label id="select_users" hidden>
                 <h4 class="form-titles">Users</h4>
-                <p class="text-center my-0">Select the Users <b>that are allowed to join </b> this operation <b>if they attempt to</b></p>
+                <p class="text-center my-0">Select the Users <b>that are allowed to join </b> this operation.</p>
                 <br />
                 <div class="container d-inline-block d-flex justify-content-center" style="width: 900px">
                     <div class="row" style="height: 280px">
@@ -127,9 +202,10 @@ form.media }}
                     </div>
                 </div>
             </label>
+            {% if drones_all or drones_allow %}
             <label id="select_drones" hidden>
                 <h4 class="form-titles">Drones</h4>
-                <p class="text-center my-0">Select the Drones <b>that are allowed to join </b> this operation <b>if they attempt to</b></p>
+                <p class="text-center my-0">Select the Drones <b>that are allowed to join </b> this operation.</p>
                 <br />
                 <div class="container d-inline-block d-flex justify-content-center" style="width: 900px">
                     <div class="row" style="height: 280px">
@@ -166,14 +242,15 @@ form.media }}
                     </div>
                 </div>
                 <div id="check_box_drone" class="text-center">
-			<b>RECOMMENDED</b>
-                    <input id="drone_operation" type="checkbox" name="drone_operation" value="True" />
-                    <label for="drone_operation"> The selected drone will join the current operation.</label>
+                    <input id="drone_operation" type="checkbox" name="drone_operation" value="True" checked="checked" />
+                    <label for="drone_operation"> The selected drones will join the current operation.</label>
                 </div>
             </label>
+            {% endif %}
+            {% if devices_all or devices_allow %}
             <label id="select_devices" hidden>
                 <h4 class="form-titles">Devices</h4>
-                <p class="text-center my-0">Select the Devices <b>that are allowed to join </b> this operation <b>if they attempt to</b></p>
+                <p class="text-center my-0">Select the Devices <b>that are allowed to join </b> this operation.</p>
                 <br />
                 <div class="container d-inline-block d-flex justify-content-center" style="width: 900px">
                     <div class="row" style="height: 280px">
@@ -210,14 +287,15 @@ form.media }}
                     </div>
                 </div>
                 <div id="check_box_device" class="text-center">
-			<b>RECOMMENDED</b>
-                    <input id="device_operation" type="checkbox" name="device_operation" value="True" />
-                    <label for="device_operation"> The selected device will join the current operation.</label>
+                    <input id="device_operation" type="checkbox" name="device_operation" value="True" checked="checked" />
+                    <label for="device_operation"> The selected devices will join the current operation.</label>
                 </div>
             </label>
+            {% endif %}
+            {% if baloras_all or baloras_allow %}
             <label id="select_baloras" hidden>
                 <h4 class="form-titles">Baloras</h4>
-                <p class="text-center my-0">Select the Baloras <b>that are allowed to join </b> this operation <b>if they attempt to</b></p>
+                <p class="text-center my-0">Select the Baloras <b>that are allowed to join </b> this operation.</p>
                 <br />
                 <div class="container d-inline-block d-flex justify-content-center" style="width: 900px">
                     <div class="row" style="height: 280px">
@@ -254,23 +332,43 @@ form.media }}
                     </div>
                 </div>
                 <div id="check_box_balora" class="text-center">
-			<b>RECOMMENDED</b>
-                    <input id="balora_operation" type="checkbox" name="balora_operation" value="True" />
+                    <input id="balora_operation" type="checkbox" name="balora_operation" value="True" checked="checked" />
                     <label for="balora_operation"> The selected balora will join the current operation.</label>
                 </div>
             </label>
+            {% endif %}
             <label id="user-input-buttons">
                 <input hidden></input>
-                <input id="previous" type="button" value="Previous" onclick="buttonPrevious()"></input>
-                <input id="next" type="button" value="Next" onclick="buttonNext()" ></input>
-                <input id="submit" type="submit" value="Submit"></input>
+                <input id="previous" class="btn btn-danger" type="button" value="Previous" onclick="buttonPrevious()"></input>
+                <input id="next" class="btn btn-primary" type="button" value="Next" onclick="buttonNext()" ></input>
+                <input id="submit" class="btn btn-success" type="submit" value="Submit"></input>
             </label>
         </form>
     </div>
 </div>
 
 <script type="text/javascript">
+    // Dynamic step management
+    let stepMapping = {};
+    let totalSteps = 0;
+    
     $(document).ready(function () {
+        // Dynamically renumber steps and create mapping
+        const stepElements = document.querySelectorAll('.form-stepper-list');
+        totalSteps = stepElements.length;
+        
+        stepElements.forEach((element, index) => {
+            const stepNumber = index + 1;
+            const stepType = element.getAttribute('data-step-type');
+            
+            // Update step attribute and displayed number
+            element.setAttribute('step', stepNumber);
+            element.querySelector('span span').textContent = stepNumber;
+            
+            // Create mapping for step types to step numbers
+            stepMapping[stepType] = stepNumber;
+        });
+
         $('#lstviewuser').multiselect({
             search: {
                 left: '<input type="text" name="q" autocomplete="off" class="form-control" placeholder="Search..." />',
@@ -278,28 +376,369 @@ form.media }}
                 right: '<input type="text" name="q" autocomplete="off" class="form-control" placeholder="Search..." />',
             },
         });
-        $('#lstviewdrone').multiselect({
-            search: {
-                left: '<input type="text" name="q" autocomplete="off" class="form-control" placeholder="Search..." />',
+        
+        // Only initialize drone multiselect if it exists
+        if ($('#lstviewdrone').length) {
+            $('#lstviewdrone').multiselect({
+                search: {
+                    left: '<input type="text" name="q" autocomplete="off" class="form-control" placeholder="Search..." />',
 
-                right: '<input type="text" name="q" autocomplete="off" class="form-control" placeholder="Search..." />',
-            },
-        });
-        $('#lstviewdevice').multiselect({
-            search: {
-                left: '<input type="text" name="q" autocomplete="off" class="form-control" placeholder="Search..." />',
+                    right: '<input type="text" name="q" autocomplete="off" class="form-control" placeholder="Search..." />',
+                },
+            });
+        }
+        
+        // Only initialize device multiselect if it exists
+        if ($('#lstviewdevice').length) {
+            $('#lstviewdevice').multiselect({
+                search: {
+                    left: '<input type="text" name="q" autocomplete="off" class="form-control" placeholder="Search..." />',
 
-                right: '<input type="text" name="q" autocomplete="off" class="form-control" placeholder="Search..." />',
-            },
-        });
-        $('#lstviewbalora').multiselect({
-            search: {
-                left: '<input type="text" name="q" autocomplete="off" class="form-control" placeholder="Search..." />',
+                    right: '<input type="text" name="q" autocomplete="off" class="form-control" placeholder="Search..." />',
+                },
+            });
+        }
+        
+        // Only initialize balora multiselect if it exists
+        if ($('#lstviewbalora').length) {
+            $('#lstviewbalora').multiselect({
+                search: {
+                    left: '<input type="text" name="q" autocomplete="off" class="form-control" placeholder="Search..." />',
 
-                right: '<input type="text" name="q" autocomplete="off" class="form-control" placeholder="Search..." />',
-            },
-        });
+                    right: '<input type="text" name="q" autocomplete="off" class="form-control" placeholder="Search..." />',
+                },
+            });
+        }
+
+        // Initialize disaster location map
+        initializeDisasterMap();
+        // Initialize base operations map
+        initializeBaseMap();
+        
+        // Initialize step click handlers after steps are renumbered
+        initializeStepClickHandlers();
+        
+        // Initial form refresh
+        formRefresh();
     });
+
+    // Dynamic form step management functions
+    function formRefresh() {
+        const currentStep = parseInt(document.getElementById('step').value);
+        
+        // Hide all form sections
+        document.getElementById('operation_data_form').hidden = true;
+        document.getElementById('select_users').hidden = true;
+        
+        // Only hide these if they exist
+        const dronesSection = document.getElementById('select_drones');
+        const devicesSection = document.getElementById('select_devices');
+        const balorasSection = document.getElementById('select_baloras');
+        
+        if (dronesSection) dronesSection.hidden = true;
+        if (devicesSection) devicesSection.hidden = true;
+        if (balorasSection) balorasSection.hidden = true;
+        
+        // Show the appropriate section based on step type
+        const currentStepElement = document.querySelector(`li[step="${currentStep}"]`);
+        if (currentStepElement) {
+            const stepType = currentStepElement.getAttribute('data-step-type');
+            
+            switch (stepType) {
+                case 'basic':
+                    document.getElementById('operation_data_form').hidden = false;
+                    break;
+                case 'users':
+                    document.getElementById('select_users').hidden = false;
+                    break;
+                case 'drones':
+                    if (dronesSection) dronesSection.hidden = false;
+                    break;
+                case 'devices':
+                    if (devicesSection) devicesSection.hidden = false;
+                    break;
+                case 'baloras':
+                    if (balorasSection) balorasSection.hidden = false;
+                    break;
+            }
+        }
+        
+        /**
+         * Mark all form steps as unfinished.
+         */
+        document.querySelectorAll('.form-stepper-list').forEach((formStepHeader) => {
+            formStepHeader.classList.add('form-stepper-unfinished', 'text-muted');
+            formStepHeader.classList.remove('form-stepper-active', 'form-stepper-completed');
+        });
+
+        /**
+         * Select the form step circle (progress bar).
+         */
+        const formStepCircle = document.querySelector('li[step="' + currentStep + '"]');
+        /**
+         * Mark the current form step as active.
+         */
+        if (formStepCircle) {
+            formStepCircle.classList.remove('form-stepper-unfinished', 'form-stepper-completed', 'text-muted');
+            formStepCircle.classList.add('form-stepper-active');
+        }
+        /**
+         * Loop through each form step circles.
+         * This loop will continue up to the current step number.
+         * Example: If the current step is 3,
+         * then the loop will perform operations for step 1 and 2.
+         */
+        for (let index = 1; index < currentStep; index++) {
+            /**
+             * Select the form step circle (progress bar).
+             */
+            const formStepCircle = document.querySelector('li[step="' + index + '"]');
+            /**
+             * Check if the element exist. If yes, then proceed.
+             */
+            if (formStepCircle) {
+                /**
+                 * Mark the form step as completed.
+                 */
+                formStepCircle.classList.remove('form-stepper-unfinished', 'form-stepper-active');
+                formStepCircle.classList.add('form-stepper-completed');
+            }
+        }
+        buttonRefresh();
+    }
+    
+    function buttonRefresh() {
+        const currentStep = parseInt(document.getElementById('step').value);
+        
+        if (currentStep === 1) {
+            document.getElementById('previous').style.display = 'none';
+            document.getElementById('next').style.display = '';
+            document.getElementById('submit').style.display = 'none';
+        } else if (currentStep === totalSteps) {
+            document.getElementById('previous').style.display = '';
+            document.getElementById('next').style.display = 'none';
+            document.getElementById('submit').style.display = '';
+        } else {
+            document.getElementById('previous').style.display = '';
+            document.getElementById('next').style.display = '';
+            document.getElementById('submit').style.display = 'none';
+        }
+    }
+    
+    function buttonNext() {
+        const currentStep = parseInt(document.getElementById('step').value);
+        if (currentStep < totalSteps) {
+            document.getElementById('step').value = (currentStep + 1).toString();
+        }
+        formRefresh();
+    }
+    
+    function buttonPrevious() {
+        const currentStep = parseInt(document.getElementById('step').value);
+        if (currentStep > 1) {
+            document.getElementById('step').value = (currentStep - 1).toString();
+        }
+        formRefresh();
+    }
+    
+    function changeCustomStep(step) {
+        document.getElementById('step').value = step;
+        formRefresh();
+    }
+
+    // Initialize click handlers for form step navigation
+    function initializeStepClickHandlers() {
+        Array.from(document.getElementsByClassName('form-click-button')).forEach((element) => {
+            element.addEventListener('click', function (e) {
+                if (!element.parentElement.parentElement.classList.contains('form-stepper-unfinished')) {
+                    changeCustomStep(element.parentElement.parentElement.getAttribute('step'));
+                }
+            });
+        });
+    }
+
+    let disasterMap;
+    let disasterMarker;
+    let baseMap;
+    let baseMarker;
+
+    function initializeDisasterMap() {
+        // Get existing coordinates if any
+        const existingLat = parseFloat($('#id_disaster_epicenter_latitude').val());
+        const existingLng = parseFloat($('#id_disaster_epicenter_longitude').val());
+        
+        // Default center (Cyprus as example, adjust as needed)
+        let mapCenter = [35.1264, 33.4299]; // Cyprus coordinates
+        let mapZoom = 8;
+        
+        // If we have existing coordinates, center on them
+        if (!isNaN(existingLat) && !isNaN(existingLng)) {
+            mapCenter = [existingLat, existingLng];
+            mapZoom = 12;
+        }
+
+        // Initialize the map
+        disasterMap = L.map('disaster-map').setView(mapCenter, mapZoom);
+
+        // Add OpenStreetMap tiles from the public online source
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; OpenStreetMap contributors',
+            referrerPolicy: 'origin'
+        }).addTo(disasterMap);
+
+        // Add existing marker if coordinates exist
+        if (!isNaN(existingLat) && !isNaN(existingLng)) {
+            disasterMarker = L.marker([existingLat, existingLng])
+                .addTo(disasterMap)
+                .bindPopup('Disaster Epicenter')
+                .openPopup();
+        }
+
+        // Handle map clicks
+        disasterMap.on('click', function(e) {
+            const lat = e.latlng.lat;
+            const lng = e.latlng.lng;
+            
+            // Remove existing marker
+            if (disasterMarker) {
+                disasterMap.removeLayer(disasterMarker);
+            }
+            
+            // Add new marker
+            disasterMarker = L.marker([lat, lng])
+                .addTo(disasterMap)
+                .bindPopup('Disaster Epicenter<br/>Lat: ' + lat.toFixed(6) + '<br/>Lng: ' + lng.toFixed(6))
+                .openPopup();
+            
+            // Update form fields
+            $('#id_disaster_epicenter_latitude').val(lat);
+            $('#id_disaster_epicenter_longitude').val(lng);
+        });
+
+        // Handle clear button
+        $('#clear-disaster-location').on('click', function() {
+            if (disasterMarker) {
+                disasterMap.removeLayer(disasterMarker);
+                disasterMarker = null;
+            }
+            $('#id_disaster_epicenter_latitude').val('');
+            $('#id_disaster_epicenter_longitude').val('');
+        });
+
+        // Invalidate map size when the form step becomes visible
+        // This ensures the map renders correctly when switching between form steps
+        setTimeout(function() {
+            disasterMap.invalidateSize();
+        }, 100);
+    }
+
+    function initializeBaseMap() {
+        // Get existing coordinates if any
+        const existingLat = parseFloat($('#id_boo_latitude').val());
+        const existingLng = parseFloat($('#id_boo_longitude').val());
+        
+        // Default center (Cyprus as example, adjust as needed)
+        let mapCenter = [35.1264, 33.4299]; // Cyprus coordinates
+        let mapZoom = 8;
+        
+        // If we have existing coordinates, center on them
+        if (!isNaN(existingLat) && !isNaN(existingLng)) {
+            mapCenter = [existingLat, existingLng];
+            mapZoom = 12;
+        }
+
+        // Initialize the map
+        baseMap = L.map('base-map').setView(mapCenter, mapZoom);
+
+        // Add OpenStreetMap tiles from the public online source
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; OpenStreetMap contributors',
+            referrerPolicy: 'origin'
+        }).addTo(baseMap);
+
+        // Add existing marker if coordinates exist
+        if (!isNaN(existingLat) && !isNaN(existingLng)) {
+            
+            baseMarker = L.marker([existingLat, existingLng])
+                .addTo(baseMap)
+                .bindPopup('Base of Operations')
+                .openPopup();
+        }
+
+        // Handle map clicks
+        baseMap.on('click', function(e) {
+            const lat = e.latlng.lat;
+            const lng = e.latlng.lng;
+            
+            // Remove existing marker
+            if (baseMarker) {
+                baseMap.removeLayer(baseMarker);
+            }
+            
+            // Add new marker
+            baseMarker = L.marker([lat, lng])
+                .addTo(baseMap)
+                .bindPopup('Base of Operations<br/>Lat: ' + lat.toFixed(6) + '<br/>Lng: ' + lng.toFixed(6))
+                .openPopup();
+            
+            // Update form fields
+            $('#id_boo_latitude').val(lat);
+            $('#id_boo_longitude').val(lng);
+        });
+
+        // Handle clear button
+        $('#clear-base-location').on('click', function() {
+            if (baseMarker) {
+                baseMap.removeLayer(baseMarker);
+                baseMarker = null;
+            }
+            $('#id_boo_latitude').val('');
+            $('#id_boo_longitude').val('');
+        });
+
+        // Invalidate map size when the form step becomes visible
+        // This ensures the map renders correctly when switching between form steps
+        setTimeout(function() {
+            baseMap.invalidateSize();
+        }, 100);
+    }
+
+    // Override the original buttonNext function to handle map resize
+    const originalButtonNext = window.buttonNext;
+    window.buttonNext = function() {
+        if (originalButtonNext) {
+            originalButtonNext();
+        }
+        // Resize maps when form step changes
+        setTimeout(function() {
+            if (disasterMap) {
+                disasterMap.invalidateSize();
+            }
+            if (baseMap) {
+                baseMap.invalidateSize();
+            }
+        }, 100);
+    };
+
+    // Override the original buttonPrevious function to handle map resize
+    const originalButtonPrevious = window.buttonPrevious;
+    window.buttonPrevious = function() {
+        if (originalButtonPrevious) {
+            originalButtonPrevious();
+        }
+        // Resize maps when form step changes
+        setTimeout(function() {
+            if (disasterMap) {
+                disasterMap.invalidateSize();
+            }
+            if (baseMap) {
+                baseMap.invalidateSize();
+            }
+        }, 100);
+    };
 </script>
-<script src="{% static 'aiders/javascripts/form/new_operation.js' %}"></script>
+<!-- Commented out original script file as functionality is now inline -->
+<!-- <script src="{% static 'aiders/javascripts/form/new_operation.js' %}"></script> -->
 {% endblock %}

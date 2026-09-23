@@ -76,30 +76,30 @@ def handleAlgorithmExecution(operationPK, input, canBeLoadedOnMap, algorithmName
         views.AlgorithmRetrieveView.save_algorithm_to_db(algorithmObj)
 
         # this is for SafeDrones collision detection algorithm
-        if(len(paths) == 2):
-            path1 = paths[0]["path"]
-            path1.pop() # remove the last element to make the length of the two paths the same
-            path2 = paths[1]["path"]
-            # print(path1, flush=True)
-            # print(path2, flush=True)
-            # print(len(path1), flush=True)
-            # print(len(path2), flush=True)
+        # if(len(paths) == 2):
+        #     path1 = paths[0]["path"]
+        #     path1.pop() # remove the last element to make the length of the two paths the same
+        #     path2 = paths[1]["path"]
+        #     # print(path1, flush=True)
+        #     # print(path2, flush=True)
+        #     # print(len(path1), flush=True)
+        #     # print(len(path2), flush=True)
 
-            import logic.algorithms.safe_drones.SafeDrones as SafeDrones
-            eval = SafeDrones.SafeDrones()
+        #     import logic.algorithms.safe_drones.SafeDrones as SafeDrones
+        #     eval = SafeDrones.SafeDrones()
 
-            path1_tuples = [tuple(subarray) for subarray in path1]
-            path2_tuples = [tuple(subarray) for subarray in path2]
-            # print(path1_tuples, flush=True)
-            # print(path2_tuples, flush=True)            
-            danger_zone_risk, collision_zone_risk = eval.calculate_collision_risk(path1_tuples, path2_tuples, danger_threshold=15, collision_threshold=10)
-            # print("danger_zone_risk", flush=True)
-            # print(danger_zone_risk, flush=True)
-            # print("collision_zone_risk", flush=True)
-            # print(collision_zone_risk, flush=True)
+        #     path1_tuples = [tuple(subarray) for subarray in path1]
+        #     path2_tuples = [tuple(subarray) for subarray in path2]
+        #     # print(path1_tuples, flush=True)
+        #     # print(path2_tuples, flush=True)
+        #     danger_zone_risk, collision_zone_risk = eval.calculate_collision_risk(path1_tuples, path2_tuples, danger_threshold=15, collision_threshold=10)
+        #     # print("danger_zone_risk", flush=True)
+        #     # print(danger_zone_risk, flush=True)
+        #     # print("collision_zone_risk", flush=True)
+        #     # print(collision_zone_risk, flush=True)
 
-            if(danger_zone_risk > 0.5):
-                return [-1, danger_zone_risk, collision_zone_risk]
+        #     if(danger_zone_risk > 0.5):
+        #         return [-1, danger_zone_risk, collision_zone_risk]
         for path in paths:
             thresholdAngle = 45
             path["path"]=getOnlyPathEdges(path["path"], thresholdAngle)
