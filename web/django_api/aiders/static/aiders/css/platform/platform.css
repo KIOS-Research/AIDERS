@@ -63,6 +63,24 @@
     border-radius: 6px;
 }
 
+
+#define-area-selection-message {
+    background-color: rgb(15, 88, 27);
+    padding: 5px;
+    font-size: 13px;
+    text-align: center;
+    display: none;
+    /* white-space: normal; */
+    border: 3px solid #fff;
+    position: absolute;
+    top: 50px;
+    left: 350px;
+    z-index: 100;
+    color: white;
+    font-weight: bold;
+    border-radius: 6px;
+}
+
 .sidebar {
     position: fixed;
     top: 0;
@@ -511,6 +529,7 @@ m4 {
 }
 .sidebar table td {
     padding-left: 10px;
+    padding-right: 5px;
     padding-bottom: 5px;
 }
 .sidebar table .table_second_td {
@@ -538,7 +557,7 @@ m4 {
     padding: 10px;
     width: fit-content;
     border: 2px solid black;
-    font-size: 14px;
+    font-size: 16px;
     color: #222;
     background-color: #ff9c9c;
 }
@@ -549,12 +568,12 @@ m4 {
     margin: 0 auto;
     width: fit-content;
     border: 2px solid black;
-    font-size: 20px;
+    font-size: 14px;
     color: #222;
-    background-color: #7a7777;
-    /*padding: 20px;*/
-    left: 50%;
-    top: 50%;
+    background-color: #ffbf9f;
+    padding: 20px;
+    left: 20px;
+    top: 20px;
 }
 
 .loadingIcon {
@@ -806,6 +825,7 @@ body {
     /*position: absolute;*/
 }
 
+
 .video-stream-div {
     width: 320px;
     height: 240px;
@@ -823,19 +843,39 @@ body {
     background-color: #28a745;
 }
 
+.stream-fullscreen-btn {
+    /* position: absolute;
+    top: 0px;
+    right: 0px; */
+    z-index: 10;
+    background-color: transparent;
+    color: white;
+    font-size: 12px;
+    padding: 0px 5px;
+    border: none;
+    cursor: pointer;
+    /* opacity: 0.7; */
+}
+
 .outer-img-container {
-    width: 320px;
-    height: 240px;
+    width: 350px;
+    height: 199px;
     background-color: transparent;
     top: 50%;
     left: 50%;
     position: absolute;
-    min-width: 300px;
-    min-height: 200px;
+    min-width: 200px;
+    min-height: 114px;
     max-width: 100%;
     max-height: 100%;
     display: none;
+    border: 2px solid black;
 }
+
+.outer-img-container:hover {
+    cursor: move;
+}
+
 .img-container .btn {
     position: absolute;
     /*top: 50%;*/
@@ -1110,7 +1150,7 @@ ul {
 
 
 .video-div-info {
-    background-color: rgba(0, 0, 0, 0.3);
+    background-color: rgba(0, 0, 0, 0.6);
     top: 0px !important;
     left: 0px !important;
     padding: 3px;
@@ -1131,4 +1171,40 @@ ul {
     border-spacing: 10px;
     border-collapse: separate;
     text-align: center;
+}
+
+.btn-outline-success.active {
+    border-color: #28a745;
+    background-color: #28a745;
+    color: #fff;
+}
+
+
+#missionPlannerModal .modal-dialog {
+    max-width: 70%;
+    /* Adjust width as needed */
+    max-height: 80%;
+    /* Adjust height as needed */
+}
+
+#missionPlannerModal .modal-content {
+    height: 80vh;
+    /* Set height relative to the viewport */
+}
+
+#missionPlannerIframe {
+    height: 100%;
+    /* Ensure iframe fills the modal body */
+}
+
+/* #crisisLogs a {
+    text-decoration: underline;
+    text-decoration-color: inherit;
+    color: inherit;
+} */
+
+#crisisLogs a:hover {
+    text-decoration: underline;
+    text-decoration-color: inherit;
+    color: inherit;
 }

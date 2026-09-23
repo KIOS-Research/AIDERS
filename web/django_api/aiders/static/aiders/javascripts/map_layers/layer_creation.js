@@ -1,26 +1,3 @@
-/*An offlne layer*/
-const offlineStyle = {
-    version: 8,
-    sources: {
-        'raster-tiles': {
-            type: 'raster',
-            tiles: ['http://mt0.google.com/vt/lyrs=m&hl=en&x={x}&y={y}&z={z}'],
-            tileSize: 256,
-            attribution:
-                'Map tiles by <a target="_top" rel="noopener" href="http://stamen.com">Stamen Design</a>, under <a target="_top" rel="noopener" href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a>. Data by <a target="_top" rel="noopener" href="http://openstreetmap.org">OpenStreetMap</a>, under <a target="_top" rel="noopener" href="http://creativecommons.org/licenses/by-sa/3.0">CC BY SA</a>',
-        },
-    },
-    layers: [
-        {
-            id: 'simple-tiles',
-            type: 'raster',
-            source: 'raster-tiles',
-            minzoom: 0,
-            maxzoom: 22,
-        },
-    ],
-};
-
 //A mapbox layer that adds height to the buildings
 const threeDbuildingLayer = {
     id: '3d-buildings',
@@ -102,6 +79,244 @@ const layerHospitals = {
     },
 };
 
+/*There are more than a thousand shelters, so they are clustered while zoomed out.
+ * The clusters and the shelters themselves are drawn out of a single source*/
+const layerShelters = {
+    id: 'shelters',
+    type: 'symbol',
+    source: 'shelters',
+    filter: ['!', ['has', 'point_count']],
+    layout: {
+        'icon-size': 0.5,
+        visibility: 'visible',
+    },
+    paint: {
+        'icon-color': '#1a7a7a',
+    },
+};
+
+const layerShelterClusters = {
+    id: 'shelterClusters',
+    type: 'circle',
+    source: 'shelters',
+    filter: ['has', 'point_count'],
+    layout: {
+        visibility: 'visible',
+    },
+    paint: {
+        'circle-color': '#1a7a7a',
+        'circle-opacity': 0.85,
+        'circle-stroke-width': 2,
+        'circle-stroke-color': '#ffffff',
+        'circle-radius': ['step', ['get', 'point_count'], 15, 10, 20, 50, 25, 100, 30],
+    },
+};
+
+const layerShelterClusterCount = {
+    id: 'shelterClusterCount',
+    type: 'symbol',
+    source: 'shelters',
+    filter: ['has', 'point_count'],
+    layout: {
+        'text-field': '{point_count_abbreviated}',
+        'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
+        'text-size': 12,
+        visibility: 'visible',
+    },
+    paint: {
+        'text-color': '#ffffff',
+    },
+};
+
+const layerFireStations = {
+    id: 'fireStations',
+    type: 'symbol',
+    source: 'fireStations',
+    layout: {
+        'icon-size': 0.1,
+        visibility: 'visible',
+    },
+    paint: {
+        'icon-color': '#d62828',
+    },
+};
+
+/*The police stations and the area every station is responsible for come from the same geojson,
+ * so they are drawn out of a single source and are switched on/off by a single toggle*/
+const layerPoliceStations = {
+    id: 'policeStations',
+    type: 'symbol',
+    source: 'policeStations',
+    filter: ['==', ['geometry-type'], 'Point'],
+    layout: {
+        'icon-size': 0.5,
+        visibility: 'visible',
+    },
+    paint: {
+        'icon-color': '#153d8a',
+    },
+};
+
+const layerPoliceStationBoundaries = {
+    id: 'policeStationBoundaries',
+    type: 'fill',
+    source: 'policeStations',
+    filter: ['==', ['geometry-type'], 'Polygon'],
+    layout: {
+        visibility: 'visible',
+    },
+    paint: {
+        'fill-color': '#153d8a',
+        'fill-opacity': 0.12,
+    },
+};
+
+const layerPoliceStationBoundariesOutline = {
+    id: 'policeStationBoundariesOutline',
+    type: 'line',
+    source: 'policeStations',
+    filter: ['==', ['geometry-type'], 'Polygon'],
+    layout: {
+        'line-join': 'round',
+        visibility: 'visible',
+    },
+    paint: {
+        'line-color': '#153d8a',
+        'line-width': 1.5,
+    },
+};
+
+/*The layers below come from the Department of Forests' wildfire dataset*/
+const layerFirebreaks = {
+    id: 'firebreaks',
+    type: 'line',
+    source: 'firebreaks',
+    layout: {
+        'line-join': 'round',
+        'line-cap': 'round',
+        visibility: 'visible',
+    },
+    paint: {
+        'line-color': '#e42041',
+        'line-width': 2,
+    },
+};
+
+const layerForestStations = {
+    id: 'forestStations',
+    type: 'symbol',
+    source: 'forestStations',
+    filter: ['!', ['has', 'point_count']],
+    layout: {
+        'icon-size': 0.5,
+        visibility: 'visible',
+    },
+    paint: {
+        'icon-color': '#2e7d32',
+    },
+};
+
+const layerFireLookouts = {
+    id: 'fireLookouts',
+    type: 'symbol',
+    source: 'fireLookouts',
+    filter: ['!', ['has', 'point_count']],
+    layout: {
+        'icon-size': 0.5,
+        visibility: 'visible',
+    },
+    paint: {
+        'icon-color': '#e65100',
+    },
+};
+
+const layerHeliports = {
+    id: 'heliports',
+    type: 'symbol',
+    source: 'heliports',
+    filter: ['!', ['has', 'point_count']],
+    layout: {
+        'icon-size': 0.5,
+        visibility: 'visible',
+    },
+    paint: {
+        'icon-color': '#1565c0',
+    },
+};
+
+const layerFireHydrants = {
+    id: 'fireHydrants',
+    type: 'symbol',
+    source: 'fireHydrants',
+    filter: ['!', ['has', 'point_count']],
+    layout: {
+        'icon-size': 0.5,
+        visibility: 'visible',
+    },
+    paint: {
+        'icon-color': '#c62828',
+    },
+};
+
+const layerExplosivesStores = {
+    id: 'explosivesStores',
+    type: 'symbol',
+    source: 'explosivesStores',
+    filter: ['!', ['has', 'point_count']],
+    layout: {
+        'icon-size': 0.5,
+        visibility: 'visible',
+    },
+    paint: {
+        'icon-color': '#6a1b9a',
+    },
+};
+
+/*Builds the two extra layers a clustered point layer needs: a bubble per cluster
+ * and the number of features drawn inside it. The features that stayed out of a
+ * cluster keep being drawn by layer_obj itself, which filters them in.*/
+function create_cluster_layers(layer_obj, color) {
+    return {
+        circles: {
+            id: layer_obj.id + 'Clusters',
+            type: 'circle',
+            source: layer_obj.source,
+            filter: ['has', 'point_count'],
+            layout: {
+                visibility: 'visible',
+            },
+            paint: {
+                'circle-color': color,
+                'circle-opacity': 0.85,
+                'circle-stroke-width': 2,
+                'circle-stroke-color': '#ffffff',
+                'circle-radius': ['step', ['get', 'point_count'], 15, 10, 20, 50, 25, 100, 30],
+            },
+        },
+        counts: {
+            id: layer_obj.id + 'ClusterCount',
+            type: 'symbol',
+            source: layer_obj.source,
+            filter: ['has', 'point_count'],
+            layout: {
+                'text-field': '{point_count_abbreviated}',
+                'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
+                'text-size': 12,
+                visibility: 'visible',
+            },
+            paint: {
+                'text-color': '#ffffff',
+            },
+        },
+    };
+}
+
+const forestStationClusterLayers = create_cluster_layers(layerForestStations, '#2e7d32');
+const fireLookoutClusterLayers = create_cluster_layers(layerFireLookouts, '#e65100');
+const heliportClusterLayers = create_cluster_layers(layerHeliports, '#1565c0');
+const fireHydrantClusterLayers = create_cluster_layers(layerFireHydrants, '#c62828');
+const explosivesStoreClusterLayers = create_cluster_layers(layerExplosivesStores, '#6a1b9a');
+
 const layerPoles = {
     id: 'ecaPoles',
     type: 'symbol',
@@ -144,6 +359,24 @@ const layerRestrictedAllowedAreasForDrone = {
     },
 };
 
+
+const layerGeoZones = {
+    id: 'geoZones',
+    type: 'fill',
+    source: 'geoZones_source',
+    layout: {
+        //'icon-allow-overlap': true
+        visibility: 'visible',
+    },
+    paint: {
+        'fill-outline-color': '#000000',
+        'fill-color': ['get', 'fill'],
+        'fill-opacity': 0.6,
+    },
+};
+
+
+
 const layercyprusFir = {
     id: 'cyprusFir',
     type: 'line',
@@ -153,8 +386,8 @@ const layercyprusFir = {
         visibility: 'visible',
     },
     paint: {
-        'line-color': '#02fc0a',
-        'line-width': 1,
+        'line-color': '#fc5e02',
+        'line-width': 3,
     },
 };
 const layerOperationAreas = {
@@ -170,6 +403,41 @@ const layerOperationAreas = {
         'line-width': 1,
     },
 };
+
+const layerPopulation = {
+    id: 'population',
+    type: 'fill',
+    source: 'population_source',
+    layout: {
+        visibility: 'visible',
+    },
+    paint: {
+        'fill-outline-color': '#2c3e50',
+        'fill-color': [
+            'interpolate',
+            ['linear'],
+            ['get', 'Total_Population'],
+            0,
+            '#f7fbff',
+            100,
+            '#deebf7',
+            500,
+            '#c6dbef',
+            1000,
+            '#9ecae1',
+            1500,
+            '#6baed6',
+            2000,
+            '#4292c6',
+            2500,
+            '#2171b5',
+            3000,
+            '#084594'
+        ],
+        'fill-opacity': 0.5,
+    },
+};
+
 // const layerDams = {
 //     'id': 'points',
 //     'type': 'symbol',
@@ -211,39 +479,6 @@ const layerTerrainLines = {
 //     'filter': ['in', 'id', '']
 // };
 
-let threeDMarker_origin = [33.4151176797, 35.1452954125, 30];
-let label;
-
-// TODO: Try to make label as a 3b object
-const thrreeDmarker_Layer = {
-    id: 'threeDMarkerLayer',
-    type: 'custom',
-    renderingMode: '3d',
-    onAdd: function (map, mbxContext) {
-        label = tb.label(
-            (obj = {
-                position: threeDMarker_origin,
-                htmlElement: createLabel(),
-                cssClass: ' label3D',
-                alwaysVisible: true,
-                bottomMargin: 0,
-                feature: null,
-            })
-        );
-
-        label.setCoords(threeDMarker_origin);
-        // label.addEventListener('ObjectDragged', onDraggedObject, true);
-        // label.addEventListener('ObjectMouseOver', onObjectMouseOver, true);
-        // label.addEventListener('ObjectMouseOut', onObjectMouseOut, true);
-
-        tb.add(label);
-    },
-
-    render: function (gl, matrix) {
-        // tb.update();
-    },
-};
-
 function add_symbol_layer(symbol_png, geojson_url, color) {
     map.loadImage(symbol_png, (error, image) => {
         if (error) throw error;
@@ -281,14 +516,145 @@ function add_symbol_layer(symbol_png, geojson_url, color) {
         });
     });
 }
-function createLabel() {
-    var divTooltip = document.createElement('div');
-    divTooltip.className = 'marker';
 
-    let color = 'background-color:' + get_selected_drone_marker_color() + ';';
-    let test = '<span style=' + color + '><b>';
-    divTooltip.innerHTML = test + (markerNumber + 1) + '</b></span>';
-    return divTooltip;
+function add_shelters_on_map(geojson_url, icon_path) {
+    const source_id = layerShelters.source;
+    if (!map.getSource(source_id)) {
+        map.addSource(source_id, {
+            type: 'geojson',
+            data: geojson_url,
+            cluster: true,
+            clusterMaxZoom: 14, //From this zoom level and closer, every shelter is shown on its own
+            clusterRadius: 50,
+        });
+    }
+    [layerShelterClusters, layerShelterClusterCount].forEach((layer_obj) => {
+        if (!map.getLayer(layer_obj.id)) {
+            map.addLayer(layer_obj);
+        }
+    });
+
+    map.loadImage(icon_path, (error, image) => {
+        if (error) throw error;
+        if (!map.hasImage(source_id + '_symbol')) {
+            map.addImage(source_id + '_symbol', image);
+        }
+        layerShelters['layout']['icon-image'] = source_id + '_symbol';
+        if (!map.getLayer(layerShelters.id)) {
+            map.addLayer(layerShelters);
+        }
+    });
+
+    [layerShelters.id, layerShelterClusters.id].forEach((layer_id) => {
+        map.on('mouseenter', layer_id, () => {
+            tb.defaultCursor = 'pointer';
+        });
+
+        map.on('mouseleave', layer_id, () => {
+            tb.defaultCursor = '';
+        });
+    });
+}
+
+function remove_shelters_from_map() {
+    [layerShelters, layerShelterClusters, layerShelterClusterCount].forEach((layer_obj) => {
+        if (map.getLayer(layer_obj.id)) {
+            map.removeLayer(layer_obj.id);
+        }
+    });
+}
+
+/*Adds a point layer whose features are grouped into clusters while zoomed out.
+ * The clusters and the features are drawn out of a single source, so the three
+ * layers are switched on and off together, by a single toggle.*/
+function add_clustered_layer_on_map(layer_obj, cluster_layers, geojson_url, icon_path) {
+    const source_id = layer_obj.source;
+    if (!map.getSource(source_id)) {
+        map.addSource(source_id, {
+            type: 'geojson',
+            data: geojson_url,
+            cluster: true,
+            clusterMaxZoom: 14, //From this zoom level and closer, every feature is shown on its own
+            clusterRadius: 50,
+        });
+    }
+    [cluster_layers.circles, cluster_layers.counts].forEach((cluster_layer) => {
+        if (!map.getLayer(cluster_layer.id)) {
+            map.addLayer(cluster_layer);
+        }
+    });
+
+    map.loadImage(icon_path, (error, image) => {
+        if (error) throw error;
+        if (!map.hasImage(source_id + '_symbol')) {
+            map.addImage(source_id + '_symbol', image);
+        }
+        layer_obj['layout']['icon-image'] = source_id + '_symbol';
+        if (!map.getLayer(layer_obj.id)) {
+            map.addLayer(layer_obj);
+        }
+    });
+
+    [layer_obj.id, cluster_layers.circles.id].forEach((layer_id) => {
+        map.on('mouseenter', layer_id, () => {
+            tb.defaultCursor = 'pointer';
+        });
+
+        map.on('mouseleave', layer_id, () => {
+            tb.defaultCursor = '';
+        });
+    });
+}
+
+function remove_clustered_layer_from_map(layer_obj, cluster_layers) {
+    [layer_obj, cluster_layers.circles, cluster_layers.counts].forEach((layer) => {
+        if (map.getLayer(layer.id)) {
+            map.removeLayer(layer.id);
+        }
+    });
+}
+
+/*Adds the boundaries first, so that the station icons stay on top of them*/
+function add_police_stations_on_map(geojson_url, icon_path) {
+    const source_id = layerPoliceStations.source;
+    if (!map.getSource(source_id)) {
+        map.addSource(source_id, {
+            type: 'geojson',
+            data: geojson_url,
+        });
+    }
+    [layerPoliceStationBoundaries, layerPoliceStationBoundariesOutline].forEach((layer_obj) => {
+        if (!map.getLayer(layer_obj.id)) {
+            map.addLayer(layer_obj);
+        }
+    });
+
+    map.loadImage(icon_path, (error, image) => {
+        if (error) throw error;
+        if (!map.hasImage(source_id + '_symbol')) {
+            map.addImage(source_id + '_symbol', image);
+        }
+        layerPoliceStations['layout']['icon-image'] = source_id + '_symbol';
+        if (!map.getLayer(layerPoliceStations.id)) {
+            map.addLayer(layerPoliceStations);
+        }
+    });
+
+    map.on('mouseenter', layerPoliceStations.id, () => {
+        tb.defaultCursor = 'pointer';
+    });
+
+    map.on('mouseleave', layerPoliceStations.id, () => {
+        tb.defaultCursor = '';
+    });
+}
+
+function remove_police_stations_from_map() {
+    [layerPoliceStations, layerPoliceStationBoundaries, layerPoliceStationBoundariesOutline].forEach((layer_obj) => {
+        if (map.getLayer(layer_obj.id)) {
+            map.removeLayer(layer_obj.id);
+        }
+    });
 }
 
 function add_terrain_lines_layer() {
@@ -301,7 +667,7 @@ function add_terrain_lines_layer() {
     map.addLayer(layerTerrainLines);
 }
 
-function createLineLayer(objectID) {
+function createLineLayer(objectID, color) {
     return new MapboxLayer({
         id: objectID + 'line',
         type: LineLayer,
@@ -314,7 +680,7 @@ function createLineLayer(objectID) {
         // getStrokeWidth: 6,
         getSourcePosition: (d) => d.source,
         getTargetPosition: (d) => d.dest,
-        getColor: hexToRgb(getRandomColour()), //for example "#257103"
+        getColor: hexToRgb(color), //for example "#257103"
     });
 }
 
@@ -398,15 +764,15 @@ function add_layer_on_map(
     }
 }
 
-function create_layers_for_new_drone(allDronesArray, index) {
-    allDronesArray[index].droneLineLayer = createLineLayer(allDronesArray[index].droneID);
+function create_layers_for_new_drone(allDronesArray, index, color) {
+    allDronesArray[index].droneLineLayer = createLineLayer(allDronesArray[index].droneID, color);
     return allDronesArray;
 }
-function create_layers_for_new_device(allDeviceArray, index) {
-    allDeviceArray[index].deviceLineLayer = createLineLayer(allDeviceArray[index].deviceID);
+function create_layers_for_new_device(allDeviceArray, index, color) {
+    allDeviceArray[index].deviceLineLayer = createLineLayer(allDeviceArray[index].deviceID, color);
     return allDeviceArray;
 }
-function create_layers_for_new_balora(allBaloraArray, index) {
-    allBaloraArray[index].baloraLineLayer = createLineLayer(allBaloraArray[index].baloraID);
+function create_layers_for_new_balora(allBaloraArray, index, color) {
+    allBaloraArray[index].baloraLineLayer = createLineLayer(allBaloraArray[index].baloraID, color);
     return allBaloraArray;
 }

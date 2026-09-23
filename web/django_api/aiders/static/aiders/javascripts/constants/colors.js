@@ -2,10 +2,12 @@
 * Constant color values
 * */
 {
-    let availableColors = ["#0b6565",
-        "#257103",
-        "#0000ff",
+    let availableColors = [
         "#a52a2a",
+        "#0000ff",
+        "#257103",
+        "#ff8c00",
+        "#9932cc",
         "#00ffff",
         "#00008b",
         "#008b8b",
@@ -14,16 +16,17 @@
         "#bdb76b",
         "#8b008b",
         "#556b2f",
+        "#8b0000",
+        "#e9967a",
+        "#0b6565"]
+
+
+    let colors = [
+        "#a52a2a",
+        "#0000ff",
+        "#257103",
         "#ff8c00",
         "#9932cc",
-        "#8b0000",
-        "#e9967a"]
-
-
-    let colors = ["#0b6565",
-        "#257103",
-        "#0000ff",
-        "#a52a2a",
         "#00ffff",
         "#00008b",
         "#008b8b",
@@ -32,10 +35,10 @@
         "#bdb76b",
         "#8b008b",
         "#556b2f",
-        "#ff8c00",
-        "#9932cc",
         "#8b0000",
-        "#e9967a"]
+        "#e9967a",
+        "#0b6565"]
+
 
 
     let chartColors =
@@ -175,21 +178,25 @@
         "#00ff00",
         "#ff8c00",
     ]
-    function get_drone_colors()
-    {
-        return availableColors
-    }
 
-    function get_chart_colors()
-    {
-        // all_model_types.splice(3,all_model_types.length)
-        return chartColors
-    }
+    // NOT USED
+    // function get_drone_colors()
+    // {
+    //     return availableColors
+    // }
 
-    function get_border_chart_colors()
-    {
-        return chartBorderColors
-    }
+    // NOT USED
+    // function get_chart_colors()
+    // {
+    //     // all_model_types.splice(3,all_model_types.length)
+    //     return chartColors
+    // }
+
+    // NOT USED
+    // function get_border_chart_colors()
+    // {
+    //     return chartBorderColors
+    // }
 
     function getRandomColour()
     {
@@ -203,10 +210,11 @@
         return colour
     }
 
-    function getRandomChartColor(index)
-    {
-        return chartBorderColors[index]
-    }
+    // NOT USED
+    // function getRandomChartColor(index)
+    // {
+    //     return chartBorderColors[index]
+    // }
 
     function getColor(pos)
     {

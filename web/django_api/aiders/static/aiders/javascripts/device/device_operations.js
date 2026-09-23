@@ -29,6 +29,7 @@
                 currentCoordinate: [],
                 previousCoordinate: [],
                 currentBatteryLevel: [],
+                latestPhotoUrl: null,
             },
             deviceObject: undefined,
             deviceID: deviceID,
@@ -41,7 +42,7 @@
             devicePK: devicePK,
         });
         allDeviceInfo = create_new_device_model(allDeviceInfo.length - 1);
-        allDeviceInfo = create_layers_for_new_device(allDeviceInfo, allDeviceInfo.length - 1);
+        allDeviceInfo = create_layers_for_new_device(allDeviceInfo, allDeviceInfo.length - 1, getRandomColour());
 
         add_layers_device_on_map(allDeviceInfo, allDeviceInfo.length - 1);
         return allDeviceInfo;
@@ -182,12 +183,48 @@
      * Create the device tooltip popup description
      */
     function dataTooltipOnDevice(device) {
+        const photoUrl = device.deviceInfo.latestPhotoUrl;
+        console.log(photoUrl);
+        console.log("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+        
+
         return `
         <strong>ID: ${device.deviceID}
         <br>Operator: ${device.deviceInfo.operator}   
         </strong>
+        <img class="device-latest-photo" src="${photoUrl || ''}" style="${photoUrl ? '' : 'display:none;'}width:220px;height:auto;padding:3px;">
         `;
     }
+
+
+    /**
+     * Updates the latest photo shown in the device tooltip.
+     * Called from imageMarkers.js whenever a new image is received for a device.
+     * devicePK: the device's primary key (integer)
+     * photoPath: the raw path string from the image record (e.g. "device_images/foo.jpg")
+     *
+     * We mutate the existing CSS2DObject element directly instead of rebuilding the
+     * tooltip (which resets visibility to false and closes it if currently open).
+     */
+    function update_device_latest_photo(devicePK, photoPath) {
+        const deviceObj = allDeviceInfo.find((d) => d.devicePK === devicePK);
+        if (!deviceObj || !deviceObj.deviceObject) return;
+        const photoUrl = photoPath ? ('/media/' + photoPath) : null;
+        deviceObj.deviceInfo.latestPhotoUrl = photoUrl;
+
+        const css2dObj = deviceObj.deviceObject.getObjectByName('tooltip');
+        if (!css2dObj || !css2dObj.element) return;
+        const imgEl = css2dObj.element.querySelector('.device-latest-photo');
+        if (!imgEl) return;
+        if (photoUrl) {
+            imgEl.src = photoUrl;
+            imgEl.style.display = '';
+        } else {
+            imgEl.src = '';
+            imgEl.style.display = 'none';
+        }
+    }
+
 
     /**
      * Retrieve data from Device
@@ -214,7 +251,7 @@
                     allDeviceInfo[i].deviceObject.addTooltip(
                         `<div id="device_tooltip_${allDeviceInfo[i].deviceID}">` + dataTooltipOnDevice(allDeviceInfo[i]) + '</div>',
                         true,
-                        13
+                        24
                     );
                 }
             }
@@ -222,20 +259,6 @@
         return allDeviceInfo;
     }
 
-    /**
-     * Later if want to change popup data
-     *
-     * Refreshed the tooltip data for devices
-     *
-     * first_time = 0;
-     * function refreshTooltipOnDevices(device) {
-     *     if (first_time == 0) {
-     *         if (document.getElementById('device_tooltip_' + device.deviceID) !== null) {
-     *             document.getElementById('device_tooltip_' + device.deviceID).innerHTML = dataTooltipOnDevice(device);
-     *         }
-     *     }
-     * }
-     */
 
 
     function removeDeviceImageMarker(image) {

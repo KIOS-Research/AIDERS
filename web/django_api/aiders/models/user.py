@@ -12,23 +12,24 @@ class User(AbstractUser):
     # On which operation the current user is currently joined. It can be NULL
     joined_operation = models.ForeignKey(
         "Operation", on_delete=models.SET_NULL, blank=True, null=True)
+    execute_commands = models.BooleanField(default=False) # TODO: make this a permission
 
-    def update_permissions(self, edit_data, value):
-        user = User.objects.get(id=self)
-        if edit_data == "permission_edit_permissions":
-            my_group = Group.objects.get(name="edit_permissions")
-            if value:
-                my_group.user_set.add(user)
-            else:
-                my_group.user_set.remove(user)
-        elif edit_data == "permission_create_operations":
-            my_group = Group.objects.get(name="create_operations")
-            if value:
-                my_group.user_set.add(user)
-            else:
-                my_group.user_set.remove(user)
-        else:
-            print(edit_data)
+    # def update_permissions(self, edit_data, value):
+    #     user = User.objects.get(id=self)
+    #     if edit_data == "permission_edit_permissions":
+    #         my_group = Group.objects.get(name="edit_permissions")
+    #         if value:
+    #             my_group.user_set.add(user)
+    #         else:
+    #             my_group.user_set.remove(user)
+    #     elif edit_data == "permission_create_operations":
+    #         my_group = Group.objects.get(name="create_operations")
+    #         if value:
+    #             my_group.user_set.add(user)
+    #         else:
+    #             my_group.user_set.remove(user)
+    #     else:
+    #         print(edit_data)
 
     def getUserNameById(pk):
         try:
@@ -36,13 +37,28 @@ class User(AbstractUser):
         except User.DoesNotExist:
             return None
 
+    def updateUserAllowExecuteCommandsById(_userIds):
+        # Set execute_commands to True for users in the list
+        User.objects.filter(id__in=_userIds).update(execute_commands=True)
+        # Set execute_commands to False for users not in the list
+        User.objects.exclude(id__in=_userIds).update(execute_commands=False)
+        return _userIds
+
+    def checkIfUserAllowToExecudeCommands(_user):
+        if _user.execute_commands or _user.is_superuser:
+            return True
+        return False
 
 class UserPreferences(models.Model):
     use_online_map = models.BooleanField(default=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
+    def initalizeUserPreferences(user):
+        UserPreferences.objects.create(user=user)
+
 
 class Terminal(models.Model):
+    time = models.DateTimeField(auto_now_add=True)
     ip_address = models.GenericIPAddressField()
     logged_in = models.BooleanField(default=False)
     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)

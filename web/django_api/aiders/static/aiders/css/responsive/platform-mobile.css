@@ -1,0 +1,508 @@
+/* ==========================================================================
+   platform-mobile.css — responsive layer for platform.html (the live map console)
+   ==========================================================================
+
+   Loaded from platform.html immediately after weather_map.css, which is the
+   last <link> in the document — five stylesheets load from inside <body>, so
+   this must go there too, not in <head>.
+
+   Works together with javascripts/responsive/mobile_drawer.js, which supplies
+   the classes this file keys off:
+       <html>.is-mobile      viewport is <= 1024px
+       <html>.drawer-open    the sidebar is currently open
+       #m-drawer-backdrop    the tap-to-dismiss scrim (created by that script)
+       #m-drawer-toggle      the floating hamburger (created by that script)
+
+   RULES FOR EDITING THIS FILE
+   1. Every declaration MUST live inside an @media block. Nothing at the top
+      level. Checked by:
+          grep -nE '^[^@} \t]' .../css/responsive/*.css      (must return nothing)
+   2. Only use !important against (a) inline style="" (including styles written
+      by JS), (b) Bootstrap utilities, (c) existing !important rules. Say which.
+   3. NEVER set `display` on #overlay children or on any alert box. All ~35
+      alert boxes and every floating window are shown and hidden by JS via
+      inline display, so touching it here makes them permanently visible or
+      permanently invisible.
+
+   Existing CSS files are intentionally NOT modified.
+   ========================================================================== */
+
+@media (max-width: 1024px) {
+    /* ----------------------------------------------------------------------
+       1. The drawer
+
+       On desktop `close-bar` means "collapse to a 60px icon rail". Here it is
+       reinterpreted as "fully off-canvas". Reusing the existing class rather
+       than inventing one keeps platform.html's toggle (lines ~1881-1887) as
+       the single source of truth for .sidebar and .overlay-section.
+
+       The slide uses `left`, never `transform`. A transform on .sidebar would
+       make it the containing block for its position:fixed descendants and
+       re-anchor them.
+       ---------------------------------------------------------------------- */
+    .sidebar {
+        width: 85vw;
+        max-width: 340px;
+        left: 0;
+        z-index: 1200;
+        /* Flex column so .side-menu-last can stop being position:fixed (below). */
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        box-shadow: 0 0 24px rgba(0, 0, 0, 0.45);
+        visibility: visible;
+        transition: left 0.28s ease, visibility 0s linear 0s;
+    }
+
+    .sidebar.close-bar {
+        /* (0,2,0) — beats platform.css:99 and its @media (max-width:400px)
+           counterpart on source order */
+        width: 85vw;
+        max-width: 340px;
+        left: -85vw;
+        visibility: hidden;
+        transition: left 0.28s ease, visibility 0s linear 0.28s;
+    }
+
+    .sidebar .logo-details {
+        flex: 0 0 auto;
+    }
+
+    .sidebar .info-menu {
+        flex: 0 0 auto;
+        max-height: 22vh;
+    }
+
+    .sidebar .nav-links {
+        max-height: none; /* was 74% of a fixed-height sidebar */
+        flex: 1 1 auto;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* .side-menu-last is position:fixed with no transformed ancestor, so it
+       resolves against the VIEWPORT. Left alone, sliding the drawer off-canvas
+       would strand the KIOS/AIDERS logo strip on top of the map. */
+    .sidebar .side-menu-last,
+    .sidebar.close-bar .side-menu-last {
+        position: static;
+        width: 100%;
+        flex: 0 0 auto;
+        padding-bottom: calc(12px + env(safe-area-inset-bottom));
+    }
+
+    /* ----------------------------------------------------------------------
+       2. Undo desktop "icon rail" mode
+
+       Ten rules in platform.css fire on .close-bar to produce the 60px rail.
+       On mobile close-bar means off-canvas, so the drawer must still look like
+       a full drawer while it slides.
+       ---------------------------------------------------------------------- */
+    .sidebar.close-bar .logo-details .logo_name,
+    .sidebar.close-bar .nav-links li a .link_name {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    .sidebar.close-bar .nav-links {
+        overflow-y: auto;
+    }
+
+    .sidebar.close-bar .nav-links li .icon-link {
+        display: flex;
+    }
+
+    .sidebar.close-bar .nav-links i.arrow {
+        display: inline-block;
+    }
+
+    .sidebar.close-bar .info-menu {
+        display: block;
+    }
+
+    .sidebar.close-bar #info_table {
+        display: table;
+    }
+
+    .sidebar.close-bar .info_table_lines {
+        display: block;
+    }
+
+    .sidebar.close-bar .side-menu-last .logos-icon {
+        display: none;
+    }
+
+    .sidebar.close-bar .side-menu-last .logos,
+    .sidebar.close-bar .side-menu-last i {
+        display: block;
+    }
+
+    /* Rail mode turns submenus into position:absolute; left:100% flyouts. With
+       the drawer at left:-85vw and width:85vw, left:100% computes to viewport
+       x = 0, so the submenus would leak onto the map on hover/tap. */
+    .sidebar.close-bar .nav-links li .sub-menu,
+    .sidebar.close-bar .nav-links li:hover .sub-menu {
+        position: static;
+        left: auto;
+        top: auto;
+        opacity: 1;
+        pointer-events: auto;
+        border-radius: 0;
+        padding: 10px;
+        transition: none;
+        display: none;
+    }
+
+    .sidebar.close-bar .nav-links li.showMenu .sub-menu {
+        display: block;
+    }
+
+    .sidebar.close-bar .nav-links li .sub-menu .link_name {
+        display: none;
+    }
+
+    /* ----------------------------------------------------------------------
+       3. Backdrop and floating hamburger
+
+       Both elements are created by mobile_drawer.js with an inline
+       display:none, which is what lets this whole file stay inside @media.
+       Overriding that inline default is the only reason for !important here.
+       ---------------------------------------------------------------------- */
+    #m-drawer-backdrop {
+        display: block !important; /* inline display:none set by mobile_drawer.js */
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.45);
+        z-index: 1150;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.28s ease, visibility 0s linear 0.28s;
+    }
+
+    html.drawer-open #m-drawer-backdrop {
+        opacity: 1;
+        visibility: visible;
+        transition: opacity 0.28s ease, visibility 0s linear 0s;
+    }
+
+    #m-drawer-toggle {
+        display: inline-flex !important; /* inline display:none set by mobile_drawer.js */
+        position: fixed;
+        top: calc(8px + env(safe-area-inset-top));
+        left: calc(8px + env(safe-area-inset-left));
+        z-index: 1250;
+        width: 44px;
+        height: 44px;
+        align-items: center;
+        justify-content: center;
+        border: 0;
+        border-radius: 8px;
+        background: var(--primary-color, #222);
+        color: #fff;
+        font-size: 20px;
+        line-height: 1;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    html.drawer-open #m-drawer-toggle {
+        display: none !important; /* same inline default */
+    }
+
+    /* #sidebar-overlay is NOT the drawer backdrop — it is the functional white
+       scrim that uav_missions.js and user_defined_area.js show while the user
+       picks a point on the map. It is hard-coded to 300px, so on mobile it
+       would dim a 300px strip of the map instead of the drawer. Glue it to the
+       drawer. It stays display:none unless that JS shows it. */
+    #sidebar-overlay {
+        /* (1,0,0), equal to panel.css:1 — wins on source order */
+        width: 85vw;
+        max-width: 340px;
+        left: -85vw;
+        z-index: 1210;
+        transition: left 0.28s ease;
+    }
+
+    html.drawer-open #sidebar-overlay {
+        left: 0;
+    }
+
+    /* ----------------------------------------------------------------------
+       4. Map and status boxes
+
+       #drone-warnings, #point-selection-message, #selected-drones-list and
+       #define-area-selection-message are hard-coded to left:310px / left:350px,
+       derived from the 300px sidebar. Each is (1,0,0), equal to the original,
+       so source order is enough.
+       ---------------------------------------------------------------------- */
+    .main-section {
+        height: 100vh;
+        height: 100dvh; /* survives the mobile URL bar showing/hiding */
+    }
+
+    #drone-warnings,
+    #point-selection-message,
+    #selected-drones-list,
+    #define-area-selection-message {
+        left: 8px;
+        right: 8px;
+        width: auto;
+        box-sizing: border-box;
+        font-size: 12px;
+        z-index: 1140;
+    }
+
+    #drone-warnings {
+        top: calc(60px + env(safe-area-inset-top));
+    }
+
+    #point-selection-message,
+    #define-area-selection-message {
+        top: calc(108px + env(safe-area-inset-top));
+    }
+
+    #selected-drones-list {
+        top: calc(160px + env(safe-area-inset-top));
+        max-height: 22dvh;
+        overflow-y: auto;
+    }
+
+    /* The ~35 alert boxes sit at top:77%; left:35% with fit-content width. */
+    .center-element {
+        left: 8px;
+        right: 8px;
+        width: auto;
+        max-width: none;
+        box-sizing: border-box;
+    }
+
+    /* ----------------------------------------------------------------------
+       5. Map chrome
+
+       .geocoder is width:19% — about 70px on a phone, and unusable. Pull it
+       out to the full width, clearing the floating hamburger on the left.
+       ---------------------------------------------------------------------- */
+    .geocoder {
+        position: fixed;
+        left: 60px;
+        right: 8px;
+        width: auto;
+        margin-left: 0;
+        top: calc(10px + env(safe-area-inset-top));
+        z-index: 1090;
+    }
+
+    .maplibregl-ctrl-geocoder {
+        min-width: 0;
+        width: 100%;
+    }
+
+    .maplibregl-ctrl-geocoder input {
+        font-size: 16px; /* below 16px, iOS zooms the page on focus */
+    }
+
+    .maplibregl-ctrl-top-right {
+        top: calc(58px + env(safe-area-inset-top));
+    }
+
+    .maplibregl-ctrl-group button {
+        width: 36px;
+        height: 36px;
+    }
+
+    .maplibregl-popup {
+        max-width: min(80vw, 280px);
+    }
+
+    /* ----------------------------------------------------------------------
+       6. Touch sizing inside the drawer
+       ---------------------------------------------------------------------- */
+    .sidebar .nav-links li a {
+        min-height: 44px;
+    }
+
+    .sidebar .nav-links li i {
+        height: 44px;
+        line-height: 44px;
+        min-width: 48px;
+    }
+
+    .sidebar .nav-links li .sub-menu {
+        white-space: normal;
+    }
+
+    .sidebar .nav-links li .sub-menu a {
+        display: block;
+        padding: 10px 0;
+    }
+
+    .form-range {
+        width: 100%; /* was 275px */
+    }
+
+    .sidebar input,
+    .sidebar select,
+    .sidebar textarea {
+        font-size: 16px;
+        min-height: 40px;
+    }
+
+    .panel-btn {
+        font-size: 12px;
+        padding: 0.4rem 0.6rem;
+        min-height: 32px;
+    }
+
+    .panel-btn:focus {
+        font-size: 12px !important; /* panel.css:47 ships font-size: 9px !important */
+    }
+
+    #missionPlannerModal .modal-dialog {
+        max-width: calc(100% - 16px);
+        margin: 8px;
+    }
+
+    #missionPlannerModal .modal-content {
+        height: 85dvh;
+    }
+
+    /* ----------------------------------------------------------------------
+       7. Floating windows -> a bottom sheet
+
+       #overlay keeps pointer-events:none so the map stays pannable; each child
+       already gets pointer-events:auto from .overlay-popup. Video, detection,
+       telemetry, lora and fire-spread windows all become full-width cards
+       stacked from the bottom.
+       ---------------------------------------------------------------------- */
+    #overlay.overlay-section,
+    #overlay.overlay-section.close-bar {
+        /* Both states are identical on mobile, so the two elements never need
+           to stay in sync while the drawer is open or closed.
+
+           Anchored to the bottom 55dvh rather than filling the viewport, so
+           the map above the sheet stays pannable even with windows open. */
+        left: 0;
+        right: 0;
+        width: 100%;
+        top: auto;
+        bottom: 0;
+        height: auto;
+        max-height: 55dvh;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        gap: 8px;
+        padding: 8px 8px calc(8px + env(safe-area-inset-bottom));
+        box-sizing: border-box;
+        overflow: hidden;
+        pointer-events: none;
+        z-index: 1100;
+    }
+
+    /* Only claim touches once something is actually open. Every static child in
+       platform.html ships style="display: none", and jQuery's show()/hide()
+       write the same spaced form, so this is false on a quiet map. */
+    #overlay.overlay-section:has(> *:not([style*='display: none'])) {
+        pointer-events: auto;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* Deliberately never sets `display` — see rule 3 in the header. */
+    #overlay > * {
+        /* position:relative rather than static: several of these are the
+           containing block for absolutely positioned children (.img-container
+           inside .outer-img-container), which would otherwise escape to
+           #overlay itself. */
+        position: relative !important; /* jQuery UI writes inline position */
+        inset: auto !important; /* inline top/left from jQuery UI and from
+                                   drone_data.js, device_data.js, weather_data.js */
+        transform: none !important; /* .center-div uses translate(-50%, -50%) */
+        margin: 0 !important; /* #fireSpreadBox inline margin: auto */
+        width: 100% !important; /* jQuery UI resizable writes inline width */
+        min-width: 0 !important;
+        max-width: 100% !important; /* #fireSpreadBox inline max-width */
+        height: auto !important; /* jQuery UI resizable writes inline height */
+        max-height: 38dvh !important;
+        overflow: auto !important;
+        box-sizing: border-box !important;
+        pointer-events: auto;
+        flex: 0 0 auto;
+        font-size: 13px;
+        border-radius: 8px;
+    }
+
+    /* Video and detection windows keep their aspect ratio. */
+    #overlay > .outer-img-container {
+        aspect-ratio: 16 / 9;
+        height: auto !important;
+        min-height: 0 !important; /* platform.css sets min-height: 114px */
+        padding-top: 0;
+    }
+
+    #overlay .outer-img-container video,
+    #overlay .img-container img {
+        width: 100% !important; /* live_stream.js writes inline width/height */
+        height: 100% !important;
+        object-fit: contain;
+    }
+
+    #overlay .outer-img-container:hover {
+        cursor: default; /* it is no longer draggable */
+    }
+
+    .ui-resizable-handle {
+        display: none !important; /* jQuery UI writes inline display on these */
+    }
+
+    /* SafeDrones boxes are the one exception: motor_failure_risk_calculator.js
+       injects them with .insertAfter($('#map')), so they land in .main-content
+       rather than #overlay and cannot join the sheet above.
+
+       .main-content must stay position:static — #map is position:absolute and
+       .main-section is its only positioned ancestor; giving .main-content a
+       position would re-anchor the map to a 60px-tall box. */
+    .main-section .main-content {
+        display: block;
+        height: auto;
+    }
+
+    .main-content > .droneHullBox {
+        /* relative, not static: a static box would paint below the absolutely
+           positioned #map. relative keeps it in flow and enables z-index. */
+        position: relative !important; /* inline left/top written by jQuery .css() */
+        left: auto !important;
+        top: auto !important;
+        z-index: 1120;
+        width: auto !important;
+        min-width: 0 !important;
+        max-width: calc(100% - 16px) !important;
+        margin: 8px 8px 0 8px !important;
+        max-height: 30dvh;
+        overflow: auto;
+    }
+
+    .main-content > .droneHullBox:first-of-type {
+        margin-top: 58px !important; /* clear the floating hamburger */
+    }
+}
+
+@media (max-width: 767.98px) {
+    /* ----------------------------------------------------------------------
+       Phones only. Reclaim vertical space; the drawer is the whole screen.
+       ---------------------------------------------------------------------- */
+    .sidebar,
+    .sidebar.close-bar {
+        max-width: none;
+    }
+
+    .sidebar .info-menu {
+        max-height: 18vh;
+        font-size: 13px;
+    }
+
+    #overlay > * {
+        max-height: 45dvh !important; /* same inline styles as the 1024px rule */
+    }
+}

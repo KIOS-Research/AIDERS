@@ -29,6 +29,9 @@ class Operation(models.Model):
     operation_name = models.CharField(max_length=100, validators=[alphanumeric], unique=True)
     operator = models.ForeignKey(get_user_model(), related_name="operations", on_delete=models.CASCADE)
 
+    boo_latitude = models.FloatField(null=True, blank=True)
+    boo_longitude = models.FloatField(null=True, blank=True)
+
     disaster_epicenter_latitude = models.FloatField(null=True, blank=True)
     disaster_epicenter_longitude = models.FloatField(null=True, blank=True)
 
@@ -62,6 +65,14 @@ class Operation(models.Model):
             return Operation.objects.get(operation_name=_operationName).id
         except ObjectDoesNotExist:
             return None  # Return None if the operation name is not found
+    def getBooGPSByOperationId(_operationId):
+        try:
+            operationObject = Operation.objects.get(id=_operationId)
+            if operationObject.boo_latitude != None and operationObject.boo_longitude != None:
+                return {"latitude":operationObject.boo_latitude, "longitude":operationObject.boo_longitude}
+        except ObjectDoesNotExist:
+            return None  # Return None if the operation name is not found
+        return None            
     def getDisasterEpicenterGPSByOperationId(_operationId):
         try:
             operationObject = Operation.objects.get(id=_operationId)
@@ -70,11 +81,11 @@ class Operation(models.Model):
         except ObjectDoesNotExist:
             return None  # Return None if the operation name is not found
         return None
-    class Meta:
-        permissions = (
-            ("join_operation", "Join operation"),
-            ("edit_operation", "Edit operation"),
-        )
+    # class Meta:
+    #     permissions = (
+    #         ("join_operation", "Join operation"),
+    #         ("edit_operation", "Edit operation"),
+    #     )
 
     def __str__(self) -> str:
         return self.operation_name
@@ -85,6 +96,7 @@ class OnlineSession(models.Model):
     drone = models.ForeignKey("Drone", null=True, blank=True, on_delete=models.CASCADE)
     device = models.ForeignKey("Device", null=True, blank=True, on_delete=models.CASCADE)
     balora_master = models.ForeignKey("BaloraMaster", null=True, blank=True, on_delete=models.CASCADE)
+    static_camera = models.ForeignKey("StaticCamera", null=True, blank=True, on_delete=models.CASCADE)
     start_time = models.DateTimeField(auto_now_add=True)
     end_time = models.DateTimeField(auto_now_add=False, null=True, blank=True)
 
@@ -131,3 +143,17 @@ class OnlineSession(models.Model):
         elif OnlineSession.objects.filter(balora_master=self, end_time__isnull=True).last() != None:
             OnlineSession.objects.filter(
                 balora_master=self, end_time__isnull=True).update(end_time=timezone.now())
+
+    def update_static_camera_session(self):
+        if self.operation != None and self.is_connected_with_platform:
+            if OnlineSession.objects.filter(static_camera=self, end_time__isnull=True).last() is None:
+                OnlineSession.objects.create(
+                    operation=self.operation, static_camera=self)
+            elif OnlineSession.objects.filter(static_camera=self, end_time__isnull=True).last().operation != self.operation:
+                OnlineSession.objects.filter(
+                    static_camera=self, end_time__isnull=True).update(end_time=timezone.now())
+                OnlineSession.objects.create(
+                    operation=self.operation, static_camera=self)
+        elif OnlineSession.objects.filter(static_camera=self, end_time__isnull=True).last() != None:
+            OnlineSession.objects.filter(
+                static_camera=self, end_time__isnull=True).update(end_time=timezone.now())

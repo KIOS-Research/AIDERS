@@ -19,12 +19,14 @@ if (lastDroneLocation === null || typeof lastDroneLocation === 'undefined' || la
 $('#' + currentStyleRadioBtn).prop('checked', true);
 
 if (!USE_ONLINE_MAPS) {
+    // tilesUrl = "http://" + window.location.hostname + ":" + NGINX_PORT + "/geo/tile/{z}/{x}/{y}.png" //For secure network mode
+    tilesUrl = "http://" + window.location.hostname + ":8081/tile/{z}/{x}/{y}.png"
     currentStyle = {
         version: 8,
         sources: {
             osm: {
                 type: 'raster',
-                tiles: ['http://0.0.0.0:8081/tile/{z}/{x}/{y}.png'],
+                tiles: [tilesUrl],
                 tileSize: 256,
             },
         },

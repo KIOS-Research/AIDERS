@@ -31,7 +31,6 @@ dutils.conf.urls = {
 
     // Paths start with drone_route argument
     last_detection_frame: drone_route + '/last_detection_frame',
-    mission_points: drone_route + '/mission_points',
     mission: drone_route + '/mission',
     objects_detected_on_last_frame: drone_route + '/objects_detected_on_last_frame',
     detectionStartOrStop: drone_route + '/detectionStartOrStop',
@@ -44,9 +43,17 @@ dutils.conf.urls = {
     media: media + '<path>/',
 
     // Paths start with operation_route argument
+    adsb_aircraft_data: operation_route + '/adsb/aircraft',
+    adsb_aircraft_info: operation_route + '/adsb/aircraft/<icao24>',
     algorithm_execute: operation_route + '/algorithm/execute',
     algorithms: operation_route + '/algorithms/',
     balora_pm25: operation_route + '/balora_pm25',
+    balora_pm1: operation_route + '/balora_pm1',
+    balora_pm1_avg: operation_route + '/balora_pm1_avg',
+    balora_nox_avg: operation_route + '/balora_nox',
+    balora_voc_avg: operation_route + '/balora_voc',
+    balora_temp_avg: operation_route + '/balora_temp_avg',
+    balora_humidity_avg: operation_route + '/balora_humidity_avg',
     detection_types: operation_route + '/detection_types',
     drone: operation_route + '/drones/<drone_name>/',
     drones: operation_route + '/drones/',

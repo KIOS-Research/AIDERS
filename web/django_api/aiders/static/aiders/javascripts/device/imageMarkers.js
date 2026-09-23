@@ -1,4 +1,4 @@
-const imageMarkerUpdateTimer = 1000;
+const imageMarkerUpdateTimer = 5000;
 const maxShownImages = 50;
 
 let liveDeviceImageMarkers = {};
@@ -43,21 +43,30 @@ class ImageMarker {
 				maxShownImages: maxShownImages,
 			}),
 		};
-		await $.ajax(settings).done((_response) => {
-			let images = _response.data;
-			images.forEach((image) => {
-				localImageMarkers.push(this.createImageMarkerOnMap(image));
-				if (localImageMarkers.length > maxShownImages) {
-					localImageMarkers[0].remove();
-					localImageMarkers.shift();
-				}
-				if (image.id > latestReceivedImageId) {
-					latestReceivedImageId = image.id;
+		try {
+			await $.ajax(settings).done((_response) => {
+				let images = _response.data;
+				images.forEach((image) => {
+					localImageMarkers.push(this.createImageMarkerOnMap(image));
+					if (localImageMarkers.length > maxShownImages) {
+						localImageMarkers[0].remove();
+						localImageMarkers.shift();
+					}
+					if (image.id > latestReceivedImageId) {
+						latestReceivedImageId = image.id;
+					}
+				});
+				// Update the 3D model tooltip with the most recent photo (images are ordered by -time)
+				if (images.length > 0) {
+					update_device_latest_photo(this.deviceId, images[0].path);
 				}
 			});
-		});
-		this.latestReceiveImageId = latestReceivedImageId;
-		this.localImageMarkers = localImageMarkers;
+			this.latestReceiveImageId = latestReceivedImageId;
+			this.localImageMarkers = localImageMarkers;
+		} catch (error) {
+			console.error("Error fetching device images:", error);
+			// Optionally, you can handle the error here, e.g., show a notification or log it
+		}
 	}
 	createImageMarkerOnMap(_image) {
 		var path = "/media/" + _image["path"];

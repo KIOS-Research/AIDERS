@@ -1,7 +1,7 @@
 {
 	const CV_WEB_SOCKET_TIMER = 1000;
 	const CV_WEB_SOCKET_ADDRESS =
-		"ws://" + window.location.hostname + ":" + WS_PORT + "/getCurrentActiveComputerVisionResultsByOperationId";
+		"ws://" + window.location.hostname + ":" + NGINX_PORT + "/ws/getCurrentActiveComputerVisionResultsByOperationId";
 	const CROWD_LOCALIZATION = "CrowdLocalization";
 	const DISASTER_CLASSIFICATION = "DisasterClassification";
 	const VEHICLE_AND_PERSON_TRACKER = "VehicleAndPersonTracker";
@@ -71,9 +71,12 @@
 			saveOrUpdateFunction(loadedData, dataValue.droneId, dataValue.id, dataValue.droneName);
 		});
 	}
-	function vehicleAndPersonTrackerHandler(_vehicleAndPersonTrackerData) {
+	function vehicleAndPersonTrackerHandler(_vehicleAndPersonTrackerData, _detectionDescription) {
 		if (_vehicleAndPersonTrackerData !== null && _vehicleAndPersonTrackerData.length !== 0) {
-			updatingVehicleAndPersonTrackerResultsOnMap(_vehicleAndPersonTrackerData);
+			updateDetectedObjectData(_vehicleAndPersonTrackerData)
+		}
+		if (_detectionDescription !== null && _detectionDescription.length !== 0) {
+			updateDetectedObjectPopup(_detectionDescription)
 		}
 	}
 
@@ -94,7 +97,8 @@
 			saveOrUpdate
 		);
 		// Vehicle And Person Tracker
-		vehicleAndPersonTrackerHandler(_wsMessage.vehicle_and_person_tracker);
+		
+		vehicleAndPersonTrackerHandler(_wsMessage.vehicle_and_person_tracker, _wsMessage.detection_description);
 	}
 	// Send Web socket
 	function sendComputerVisionWebsocketMessage() {
@@ -113,13 +117,19 @@
 		}
 	}
 
-	function manageWebsocketForCrowdLocalization(_checked) {
+	function manageWebsocketForCrowdLocalizationVisualization(_checked) {
 		manageWebsocket(CROWD_LOCALIZATION, _checked);
 	}
-	function manageWebsocketForDisasterClassification(_checked) {
+	function manageWebsocketForDisasterClassificationVisualization(_checked) {
 		manageWebsocket(DISASTER_CLASSIFICATION, _checked);
 	}
-	function manageWebsocketForVehicleAndPersonTracker(_checked) {
+	function manageWebsocketForVehicleAndPersonTrackerVisualization(_checked) {
+		if(_checked){
+			// Get all previous Detection Objects
+			postGetAllDetectedObjectsAndDescriptionByOperationId({operationId: OPERATION_ID}).then((data) => {
+				vehicleAndPersonTrackerHandler(data.data.detectionObjects, data.data.detectionDescriptions)
+			});
+		}
 		manageWebsocket(VEHICLE_AND_PERSON_TRACKER, _checked);
 	}
 

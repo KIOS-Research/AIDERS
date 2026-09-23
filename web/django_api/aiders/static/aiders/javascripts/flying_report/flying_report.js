@@ -1,5 +1,5 @@
 {
-    $('#id_start_date_time').datepicker({ minDate: 0 });
+    // $('#id_start_date_time').datepicker({ minDate: 0 });
     $('#form_selection').change(function () {
         if ($('#form_selection').val() != 'custom') {
             $('#id_latitude').prop('readonly', true);

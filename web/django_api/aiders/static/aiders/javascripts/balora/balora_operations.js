@@ -40,7 +40,7 @@
             baloraPK: baloraPK,
         });
         allBaloraInfo = create_new_balora_model(allBaloraInfo.length - 1);
-        allBaloraInfo = create_layers_for_new_balora(allBaloraInfo, allBaloraInfo.length - 1);
+        allBaloraInfo = create_layers_for_new_balora(allBaloraInfo, allBaloraInfo.length - 1, getRandomColour());
 
         add_layers_balora_on_map(allBaloraInfo, allBaloraInfo.length - 1);
         return allBaloraInfo;
@@ -201,20 +201,7 @@
         return allBaloraInfo;
     }
 
-    /**
-     * Later if want to change popup data
-     *
-     * Refreshed the tooltip data for baloras
-     *
-     * first_time = 0;
-     * function refreshTooltipOnBaloras(balora) {
-     *     if (first_time == 0) {
-     *         if (document.getElementById('balora_tooltip_' + balora.baloraID) !== null) {
-     *             document.getElementById('balora_tooltip_' + balora.baloraID).innerHTML = dataTooltipOnBalora(balora);
-     *         }
-     *     }
-     * }
-     */
+
     function get_all_balora_info_array() {
         return allBaloraInfo;
     }

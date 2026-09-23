@@ -18,6 +18,7 @@
         map.on('click', placeMarkerOnClick); //ALlow user to place a marker as the initial fire position
         let boxDiv = $('#fireSpreadBox');
         boxDiv.toggle();
+        boxDiv.draggable();
         postElementId('Fire Spread', 'Click');
     }
 

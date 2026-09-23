@@ -5,8 +5,10 @@
     let MSO_Interval;
     let infoUpdateInterval;
 
-    var showMSO = false ;
+    var showMSO = true;
     var firstTime = true;
+
+    // startPointOfInterestMarker();
 
     function startStopMSO(toggleButtonID) {
         
@@ -200,7 +202,7 @@
                     if (firstTime) {
                         let msg = 'Successfully started receiving Manually Set Objects!';
                         create_popup_for_a_little(SUCCESS_ALERT, msg, 2000);
-                        map.flyTo({ center: [currentLon, currentLat], zoom: 20 });
+                        // map.flyTo({ center: [currentLon, currentLat], zoom: 20 });
                         firstTime = false;
                     }
                 }
@@ -236,6 +238,7 @@
     function placeManualMarkerOnMap(lngLat, tagName, color, description , Manually_Set_Object ) {
         
         console.log('placing marker : ' + tagName )
+        console.log(lngLat )
         
         let el = document.createElement('div');
         let marker_id = 'MSO' + tagName;
@@ -246,7 +249,7 @@
         el.innerHTML = inside_marker + 'M' + tagName + '</b></span>';
         
         html_value =    `
-                        <p>Object Id: ${tagName}</p>
+                        <p>Pin Id: ${tagName}</p>
                         <ul class="map_popup_list">
                         <li>  
                         <span>Description:</span>
@@ -254,18 +257,30 @@
                         <span>${description}</span>                     
                         </li>
                         <li>
-                        <span>Created By:</span>
+                        <span>Lat: ${lngLat.lat}</span>
                         <br>
+                        <span>Long: ${lngLat.lng}</span>  
+                        </li>                        
+                        <li>
+                        <span>Created By: </span>
                         <span>${Manually_Set_Object['created_by_username']}</span>                     
                         </li>
                         <li>
-                        <span>Location Set By:</span>
-                        <br>
+                        <span>Location Set By: </span>
                         <span>${Manually_Set_Object['coords_set_by_username']}</span>
                         </li>
-                        <li
+
+                        <li class='btn btn-primary btn-sm text-center' style='cursor: pointer;'
                         onclick='displayUpdateUserSetObjectForm("${tagName}")' >
-                        Edit Object Description
+                        Edit Pin
+                        </li>
+                        <li class='btn btn-secondary btn-sm text-center' style='cursor: pointer; margin-top: 4px;'
+                        onclick='sendMSOToDrone("${tagName}")' >
+                        Send to Drone
+                        </li>
+                        <li class='btn btn-secondary btn-sm text-center' style='cursor: pointer; margin-top: 4px;'
+                        onclick='sendMSOToDevice("${tagName}")' >
+                        Send to Device
                         </li>
                         </ul> `;
 
@@ -308,7 +323,7 @@
 
             //console.log(Manually_Set_Objects[index]['currentLocation']['lon'] )
 
-            titleIDEl.innerHTML     = 'Update Object Description (Object ID: ' + objID + ')' ;
+            titleIDEl.innerHTML     = 'Edit Pin (ID: ' + objID + ')' ;
             latInputEl.value    = Manually_Set_Objects[index]['currentLocation']['lat'] ;
             lonInputEl.value    = Manually_Set_Objects[index]['currentLocation']['lon'] ;
             descInputEl.value   = Manually_Set_Objects[index]['description'] ;
@@ -334,6 +349,134 @@
             getTargetPosition: (d) => d.dest,
             getColor: hexToRgb(color), 
         });
+    }
+
+    function sendMSOToDrone(tagName) {
+        let index = Manually_Set_Objects.findIndex(obj => obj.id === tagName);
+        if (index === -1) return;
+
+        let mso = Manually_Set_Objects[index];
+        let prefilledMessage = `[Pin ${tagName}] ${mso.description ? mso.description + ' | ' : ''}Lat: ${mso.currentLocation.lat}, Lon: ${mso.currentLocation.lon}`;
+
+        // Populate drone dropdown
+        let droneSelect = document.getElementById('mso-drone-not-select');
+        droneSelect.innerHTML = '';
+        let allDrones = get_all_drone_info_array();
+        if (allDrones.length === 0) {
+            let opt = document.createElement('option');
+            opt.text = 'No drones connected';
+            opt.disabled = true;
+            droneSelect.add(opt);
+        } else {
+            allDrones.forEach(function(drone) {
+                let opt = document.createElement('option');
+                opt.value = drone.droneID;
+                opt.text = drone.droneID;
+                droneSelect.add(opt);
+            });
+        }
+
+        // Pre-fill message
+        document.getElementById('mso-drone-not-message').value = prefilledMessage;
+        document.querySelector('.mso-drone-not-error').textContent = '';
+
+        let dialog = $('#mso-drone-not-dialog');
+        dialog.dialog({
+            autoOpen: false,
+            modal: true,
+            height: 'auto',
+            width: 500,
+            title: 'Send Pin to Drone',
+            buttons: {
+                'Send': function () {
+                    let selectedDrone = document.getElementById('mso-drone-not-select').value;
+                    let message = document.getElementById('mso-drone-not-message').value.trim();
+                    let sender = document.getElementById('mso-drone-not-sender').value;
+                    let errorEl = document.querySelector('.mso-drone-not-error');
+
+                    if (!selectedDrone) {
+                        errorEl.textContent = 'Please select a drone.';
+                        return;
+                    }
+                    if (!message) {
+                        errorEl.textContent = 'Message cannot be empty.';
+                        return;
+                    }
+                    errorEl.textContent = '';
+
+                    postPilotMessage({ selectedDrones: [selectedDrone], sender: sender, message: message });
+                    $(this).dialog('close');
+                },
+                'Cancel': function () {
+                    $(this).dialog('close');
+                }
+            }
+        });
+        dialog.dialog('open');
+    }
+
+    function sendMSOToDevice(tagName) {
+        let index = Manually_Set_Objects.findIndex(obj => obj.id === tagName);
+        if (index === -1) return;
+
+        let mso = Manually_Set_Objects[index];
+        let prefilledMessage = `[Pin ${tagName}] ${mso.description ? mso.description + ' | ' : ''}Lat: ${mso.currentLocation.lat}, Lon: ${mso.currentLocation.lon}`;
+
+        // Populate device dropdown
+        let deviceSelect = document.getElementById('mso-not-device-select');
+        deviceSelect.innerHTML = '';
+        let allDevices = get_all_device_info_array();
+        if (allDevices.length === 0) {
+            let opt = document.createElement('option');
+            opt.text = 'No devices connected';
+            opt.disabled = true;
+            deviceSelect.add(opt);
+        } else {
+            allDevices.forEach(function(device) {
+                let opt = document.createElement('option');
+                opt.value = device.deviceID;
+                opt.text = device.deviceID;
+                deviceSelect.add(opt);
+            });
+        }
+
+        // Pre-fill message
+        document.getElementById('mso-not-message').value = prefilledMessage;
+        document.querySelector('.mso-not-error').textContent = '';
+
+        let dialog = $('#mso-not-dialog');
+        dialog.dialog({
+            autoOpen: false,
+            modal: true,
+            height: 'auto',
+            width: 500,
+            title: 'Send Pin as Notification',
+            buttons: {
+                'Send': function () {
+                    let selectedDevice = document.getElementById('mso-not-device-select').value;
+                    let message = document.getElementById('mso-not-message').value.trim();
+                    let sender = document.getElementById('mso-not-sender').value;
+                    let errorEl = document.querySelector('.mso-not-error');
+
+                    if (!selectedDevice) {
+                        errorEl.textContent = 'Please select a device.';
+                        return;
+                    }
+                    if (!message) {
+                        errorEl.textContent = 'Message cannot be empty.';
+                        return;
+                    }
+                    errorEl.textContent = '';
+
+                    submitDeviceMessage([selectedDevice], message, sender);
+                    $(this).dialog('close');
+                },
+                'Cancel': function () {
+                    $(this).dialog('close');
+                }
+            }
+        });
+        dialog.dialog('open');
     }
 
     function CancelObjectUpdate() {

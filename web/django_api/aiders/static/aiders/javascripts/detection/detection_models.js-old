@@ -77,13 +77,6 @@
         }
     }
 
-    function get_updated_chart_data() {
-        let updatedData = [];
-        for (let i = 0; i < prototypeModels.length; i++) {
-            updatedData.push(prototypeModels[i].counter);
-        }
-        return updatedData;
-    }
 
     function increase_counter(modelType) {
         for (let i = 0; i < prototypeModels.length; i++) {
@@ -95,66 +88,5 @@
         }
 
         return NOT_FOUND_STRING;
-    }
-
-    function get_number_of_detected_objects(objType) {
-        for (let i = 0; i < prototypeModels.length; i++) {
-            if (prototypeModels[i].type === objType) {
-                return prototypeModels[i].counter;
-            }
-        }
-
-        return 0;
-    }
-
-    function print_all_prototypes() {
-        for (let i = 0; i < prototypeModels.length; i++) {
-            console.log(prototypeModels[i]);
-        }
-    }
-
-    /*
-     * Returns the layer that will host the objects detected by drone
-     * */
-    function get_prot_models_layer(availableTypes) {
-        return {
-            id: 'det_objects_layer',
-            type: 'custom',
-            renderingMode: '3d',
-            onAdd: function () {
-                for (let i = 0; i < availableTypes.length; i++) {
-                    tb.add(prototypeModels[i].model);
-                }
-            },
-            render: function (gl, matrix) {
-                // tb.update();
-            },
-        };
-    }
-
-    function http_get_available_types() {
-        console.log('AAAAAAAAAAAAAAAAAAAAAAA http_get_available_types');
-
-        var settings = {
-            url: BASE_URL_COCO_NAMES,
-            method: 'GET',
-            timeout: 0,
-            headers: {
-                'Content-Type': 'text/plain',
-            },
-        };
-
-        return $.ajax(settings).done(function (response) {
-            console.log(response);
-            return response;
-        });
-    }
-
-    function get_available_classes() {
-        let available_classes = [];
-        for (let i = 0; i < prototypeModels.length; i++) {
-            available_classes.push(prototypeModels[i].type);
-        }
-        return available_classes;
     }
 }

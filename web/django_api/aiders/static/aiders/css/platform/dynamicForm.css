@@ -1,0 +1,20 @@
+.dynamic-dialog-form-group {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.dynamic-dialog-form-group label {
+    width: 150px; /* Adjust the width as needed */
+    text-align: right;
+    margin-right: 10px;
+}
+
+.dynamic-dialog-form-group input[type="text"],
+.dynamic-dialog-form-group input[type="number"] {
+    flex: 1;
+}
+
+.dynamic-dialog-form-group input[type="checkbox"] {
+    margin-left: 10px; /* Adjust the margin as needed */
+}

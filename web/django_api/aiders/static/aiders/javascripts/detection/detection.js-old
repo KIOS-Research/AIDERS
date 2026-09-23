@@ -7,7 +7,7 @@
 
     function updatingVehicleAndPersonTrackerResultsOnMap(detectionData) {
 			detectionData.forEach(function (data) {
-				visualize_detected_objects([data], data["drone_name"]);
+				visualize_detected_objects([data]);
 			});
 		}
 
@@ -28,10 +28,12 @@
         if (pressed) {
             if (droneIndex > -1) {
                 let message =
-                    `${DETECTION_TYPES.VEHICLE_DETECTOR.htmlDescr}` +
-                    '<br><br>' +
-                    `${DETECTION_TYPES.VEHICLE_PERSON_DETECTOR.htmlDescr}` +
-                    '<br><br>' +
+                    `${DETECTION_TYPES.WALDO_DETECTOR.htmlDescr}` +
+                    '<br><br>' +                
+                    // `${DETECTION_TYPES.VEHICLE_DETECTOR.htmlDescr}` +
+                    // '<br><br>' +
+                    // `${DETECTION_TYPES.VEHICLE_PERSON_DETECTOR.htmlDescr}` +
+                    // '<br><br>' +
                     `${DETECTION_TYPES.DISASTER_CLASSIFICATION.htmlDescr}` +
                     '<br><br>' +                    
                     `${DETECTION_TYPES.CROWD_LOCALIZATION.htmlDescr}`
@@ -59,13 +61,15 @@
      * Visualizes on the map the specified detected objects found by drone.
      * */
     function visualize_detected_objects(detected_cars) {
+        console.log(detected_cars)
         initialize_detected_objects_counter();
-
         for (let i = 0; i < detected_cars.length; i++)
         {
             let objID = detected_cars[i]["track_id"]
+            let detectionSession = detected_cars[i]["detection_session"]
             let found = false
-            let location = [detected_cars[i]["lat"], detected_cars[i]["lon"]]
+            // let location = [detected_cars[i]["lat"], detected_cars[i]["lon"]]
+            let location = [detected_cars[i]["lon"], detected_cars[i]["lat"]]
             let objType = detected_cars[i]["label"]
             let description = ''
             let updated_by_username = ''
@@ -85,7 +89,7 @@
                     break;
                 }
             }
-            tooltip_html_value = detection_create_tooltip(objID,  objType, description, updated_by_username )
+            tooltip_html_value = detection_create_tooltip(objID,  objType, description, updated_by_username, detectionSession )
 
             if (found)
             {
@@ -118,8 +122,8 @@
         }
     }
 
-    function detection_create_tooltip(objID,  objType, description, updated_by_username ){
-
+    function detection_create_tooltip(objID,  objType, description, updated_by_username, sessionId ){
+        console.log(sessionId)
         let tooltip = `
             <div>
             Object: ${objType} - ${objID}
@@ -135,7 +139,7 @@
                 <br>
                 ${updated_by_username}
             </li>
-            <li  onclick='displaySetDetectedObjectForm("${objID}","${description}")'> 
+            <li  onclick='displaySetDetectedObjectForm("${objID}","${description}","${sessionId}")'>
             Edit Object Description
             </li>
             </ul>
@@ -145,17 +149,19 @@
         return tooltip ; 
     }
 
-    function displaySetDetectedObjectForm(track_id, description)
+    function displaySetDetectedObjectForm(track_id, description, session_id)
     {   
         //
-
+        console.log(session_id)
         let titleIDEl     = document.getElementById('setDetectedObjectModalLabel');
         let descInputEl = document.getElementById('detected_object_descInput');
         let idInputEl = document.getElementById('detected_object_track_id');
+        let sessionIdInputEl = document.getElementById('detected_object_session_id');
         
         titleIDEl.innerHTML = 'Set Detected Object Description (Object ID: ' + track_id + ') :' ;
         descInputEl.value   = description
         idInputEl.value     = track_id ;
+        sessionIdInputEl.value = session_id ;
         
         $("#setDetectedObjectModal").show() ;
     }
@@ -269,42 +275,38 @@
 		}
 
     
-    function create_det_video_elements(drone_ids) {
-        for (let i = 0; i < drone_ids.length; i++) {
-            let outer_div = document.createElement('div');
-            $(outer_div).addClass('outer-img-container');
-            $(outer_div).attr('id', 'detection-stream-wrapper-div-' + drone_ids[i]);
-            $(outer_div).addClass('overlay-popup');
-            $('#overlay').append($(outer_div).resizable());
-            $(outer_div).draggable();
+    function create_det_video_elements(_droneName) {
+        let outer_div = document.createElement('div');
+        $(outer_div).addClass('outer-img-container');
+        $(outer_div).attr('id', 'detection-stream-wrapper-div-' + _droneName);
+        $(outer_div).addClass('overlay-popup');
+        $('#overlay').append($(outer_div).resizable());
+        $(outer_div).draggable();
 
-            let det_div = document.createElement('div');
-            det_div.id = 'det-video-div-' + drone_ids[i];
-            document.body.appendChild(det_div);
-            $(det_div).addClass('img-container');
-            outer_div.appendChild(det_div);
-            let cover_img_elem = document.createElement('img');
-            cover_img_elem.setAttribute('src', VIDEO_COVER_PHOTO_DRONE);
-            cover_img_elem.id = 'detection-stream-img-' + drone_ids[i];
-            let actionButtonID = 'initial-action-btn-' + drone_ids[i];
-            let statusDivID = 'detection-stream-status-div-' + drone_ids[i];
-            det_div.innerHTML =
-                '<div class="top-left video-div-info">Detection: ' +
-                drone_ids[i] +
-                '<br/> Status: <div id="' +
-                statusDivID +
-                '" class="top-left-status">Disconnected</div></div>';
-            det_div.prepend(cover_img_elem);
-            makeItTouchDraggable(det_div.id);
-        }
+        let det_div = document.createElement('div');
+        det_div.id = 'det-video-div-' + _droneName;
+        document.body.appendChild(det_div);
+        $(det_div).addClass('img-container');
+        outer_div.appendChild(det_div);
+        let cover_img_elem = document.createElement('img');
+        cover_img_elem.setAttribute('src', VIDEO_COVER_PHOTO_DRONE);
+        cover_img_elem.id = 'detection-stream-img-' + _droneName;
+        let actionButtonID = 'initial-action-btn-' + _droneName;
+        let statusDivID = 'detection-stream-status-div-' + _droneName;
+        det_div.innerHTML =
+            '<div class="top-left video-div-info">Detection: ' +
+            _droneName +
+            '<br/> Status: <div id="' +
+            statusDivID +
+            '" class="top-left-status">Disconnected</div></div>';
+        det_div.prepend(cover_img_elem);
+        makeItTouchDraggable(det_div.id);
     }
 
 
-    function remove_det_video_elements(deleted_drone_ids) {
-        for (let i = 0; i < deleted_drone_ids.length; i++) {
-            $('#det-video-div-' + deleted_drone_ids[i]).remove();
-            $('#detection-stream-wrapper-div-' + deleted_drone_ids[i]).remove();
-        }
+    function remove_det_video_elements(_deleteDroneName) {
+        $('#det-video-div-' + _deleteDroneName).remove();
+        $('#detection-stream-wrapper-div-' + _deleteDroneName).remove();
     }
     
 
@@ -350,16 +352,19 @@
 
     function submitSetDetectedObjectData()
     {
+
         let data = formDataToJson($('#SetDetectedObjectDataForm').serializeArray())
 
         //console.log(data)
         
         let descriptiondata = JSON.stringify({
             "track_id": data.track_id,
-            "description" : data.description
+            "description" : data.description,
+            "session_id": data.session_id
         });
         let track_id = data.track_id
-        
+        console.log(data)
+        console.log(data.session_id)
         //console.log(descriptiondata) ; 
         
         $.ajax({

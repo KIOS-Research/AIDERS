@@ -1,0 +1,385 @@
+/* ==========================================================================
+   admin-mobile.css — responsive layer for base.html and the pages extending it
+   ==========================================================================
+
+   Loaded from base.html AFTER {% block head_block %}, so it is the last
+   stylesheet on every admin page except the 5 templates that use
+   {% block style_block %}.
+
+   RULES FOR EDITING THIS FILE
+   1. Every declaration MUST live inside one of the three @media blocks below.
+      Nothing at the top level. This is what makes ">1024px is unchanged"
+      provable, and it is checked by:
+          grep -nE '^[^@} \t]' .../css/responsive/*.css      (must return nothing)
+   2. Only use !important when the thing being overridden is (a) an inline
+      style="" attribute, (b) a Bootstrap utility class (they all ship
+      !important), or (c) an existing rule that already uses !important.
+      Everything else is won on source order. Say which one, in a comment.
+
+   Existing CSS files are intentionally NOT modified.
+   ========================================================================== */
+
+@media (max-width: 1024px) {
+    /* ----------------------------------------------------------------------
+       1. Un-fix the page chrome
+
+       base.html has a fixed-top navbar (inline height:50px) and a fixed-bottom
+       footer (60px), and <body> has no compensating padding, so content slides
+       under both. Adding body padding is not viable here: the navbar height
+       becomes variable once it wraps, and <nav>/<footer> are hoisted siblings
+       of <body> rather than children. Returning both to normal flow gives the
+       correct result for free, because the source order is
+       nav -> body content -> footer.
+       ---------------------------------------------------------------------- */
+    .navbar.fixed-top {
+        position: static; /* (0,2,0) beats .fixed-top (0,1,0) */
+        height: auto !important; /* inline style="height: 50px" */
+        padding: 0.5rem 0.75rem !important; /* .px-5 ships padding-*: 3rem !important */
+        flex-wrap: wrap;
+        row-gap: 0.25rem;
+        align-items: center;
+    }
+
+    .footer.fixed-bottom {
+        position: static; /* (0,2,0) beats .fixed-bottom (0,1,0) */
+        height: auto; /* (0,2,0) beats ui_platform.css .footer (0,1,0) */
+        margin-top: 1rem;
+    }
+
+    /* login.html pulls in platform.css, which sets body { overflow: clip }.
+       With a static footer that would clip the tail of the page. This file is
+       never loaded on platform.html, so widening it here is safe. */
+    body {
+        overflow: visible;
+    }
+
+    /* ----------------------------------------------------------------------
+       2. Navbar: permanently expanded, no toggler
+
+       base.html loads no Bootstrap JS at all, so a navbar-toggler would be
+       inert. Instead #myNavbar is forced visible and the navbar is allowed to
+       wrap onto a second row. Without this, About / username / Logout are
+       invisible below 768px.
+       ---------------------------------------------------------------------- */
+    #myNavbar {
+        display: flex; /* (1,0,0) beats .collapse:not(.show) (0,2,0) */
+        flex-basis: 100%;
+    }
+
+    #myNavbar .navbar-nav {
+        flex-direction: row;
+        flex-wrap: wrap !important; /* .flex-nowrap ships !important */
+        margin-left: 0 !important; /* .ms-auto ships !important */
+        align-items: center;
+        row-gap: 0.25rem;
+        width: 100%;
+    }
+
+    /* The children of ul.navbar-nav are <div>s and <a>s, not <li>s. */
+    #myNavbar .navbar-nav > div,
+    #myNavbar .navbar-nav > a {
+        margin-right: 0.5rem !important; /* .me-4 ships !important */
+        padding: 0.35rem 0.5rem !important; /* .p-2 ships !important */
+        min-height: 40px;
+        display: flex;
+        align-items: center;
+    }
+
+    /* The 9 section links. Bootstrap's sub-md default for .navbar-nav is
+       flex-direction: column, which would stack them into a 9-row tower. */
+    .navbar-nav.admin-navbar {
+        flex-direction: row;
+        flex-wrap: wrap;
+        flex-grow: 1;
+        row-gap: 0.25rem;
+        width: 100%;
+    }
+
+    /* These <li> are direct children of a <div>, so they are not list items in
+       a list and would otherwise render their markers. */
+    .admin-navbar li {
+        list-style: none;
+    }
+
+    .admin-navbar li a {
+        /* (0,1,2), equal to the ui_platform.css rule — wins on source order */
+        display: flex;
+        align-items: center;
+        min-height: 40px; /* touch target */
+        margin-right: 6px;
+        margin-top: 0;
+        padding: 8px 10px;
+        font-size: 0.85rem;
+        white-space: nowrap;
+    }
+
+    /* ----------------------------------------------------------------------
+       3. Page gutters
+
+       Every admin page wraps its content in
+           <div class="justify-content-center ms-5 me-5 footer-margin header-margin">
+       .ms-5/.me-5 are 3rem each, which leaves almost nothing on a phone.
+       .footer-margin is defined nowhere else in the codebase, which makes
+       .footer-margin.header-margin a collision-free (0,2,0) hook.
+       ---------------------------------------------------------------------- */
+    .footer-margin.header-margin {
+        margin-left: 0.75rem !important; /* .ms-5 ships !important */
+        margin-right: 0.75rem !important; /* .me-5 ships !important */
+        margin-top: 0.75rem !important; /* keep symmetric with the above */
+    }
+
+    .footer-margin {
+        padding-bottom: 1.5rem; /* the footer is in normal flow now */
+    }
+
+    /* mavlink-add/edit.html and operation_report.html put header-margin on a
+       col-md-* / offset-md-* element. Those grid classes still apply between
+       768 and 1024px and would pin the form to a third of the width. */
+    .header-margin[class*="col-md-"] {
+        flex: 0 0 auto; /* (0,2,0) beats .col-md-4 (0,1,0) */
+        width: auto;
+        max-width: none;
+    }
+
+    /* ----------------------------------------------------------------------
+       4. Wide tables — horizontal scroll
+
+       20 pages run DataTables 1.10.2 on #Table with 6-8 columns. Its selectors
+       are all (0,2,0) and this file loads later, so no !important is needed.
+       ---------------------------------------------------------------------- */
+    .dataTables_wrapper {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .dataTables_wrapper > table {
+        min-width: 44rem; /* force the scroll instead of crushing the columns */
+    }
+
+    .dataTables_wrapper .dataTables_length,
+    .dataTables_wrapper .dataTables_filter {
+        float: none;
+        text-align: left;
+        width: 100%;
+        margin-bottom: 0.4rem;
+    }
+
+    .dataTables_wrapper .dataTables_filter input {
+        width: 100%;
+        margin-left: 0;
+        min-height: 40px;
+        font-size: 16px; /* below 16px, iOS zooms the page on focus */
+        box-sizing: border-box;
+    }
+
+    .dataTables_wrapper .dataTables_length select {
+        min-height: 40px;
+        font-size: 16px;
+    }
+
+    .dataTables_wrapper .dataTables_info,
+    .dataTables_wrapper .dataTables_paginate {
+        float: none;
+        text-align: center;
+        padding-top: 0.5rem;
+    }
+
+    .dataTables_wrapper .dataTables_paginate .paginate_button {
+        display: inline-block;
+        min-width: 40px;
+        padding: 0.5rem 0.75rem;
+    }
+
+    /* Non-DataTables tables sit in a .col-sm inside the page wrapper.
+       min-width:0 is required or the flex child refuses to shrink far enough
+       for the overflow to engage. */
+    .footer-margin.header-margin .row > [class*="col"] {
+        overflow-x: auto;
+        min-width: 0;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* manage_operations.html: the Actions column holds 11 icon buttons and is
+       pinned to 28% by an inline style. */
+    #Table th[style*="28%"] {
+        width: auto !important; /* inline style="width: 28%" */
+    }
+
+    #Table td {
+        white-space: nowrap;
+    }
+
+    #Table td .btn-sm {
+        min-height: 36px;
+        min-width: 36px;
+        padding: 0.3rem 0.5rem;
+    }
+
+    /* ----------------------------------------------------------------------
+       5. Forms
+
+       operation_new_form.html, operation_edit_form.html and
+       static_camera_form.html each pin four containers to an inline 900px,
+       with nested inline heights and widths inside. Attribute selectors keep
+       the override surgical; !important is mandatory against inline styles.
+       ---------------------------------------------------------------------- */
+    div.container[style*="900px"] {
+        width: 100% !important; /* inline style="width: 900px" */
+        max-width: 100% !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+
+    .footer-margin input:not([type='checkbox']):not([type='radio']),
+    .footer-margin select,
+    .footer-margin textarea,
+    .footer-margin .form-control,
+    .footer-margin .form-select {
+        font-size: 16px; /* iOS zoom prevention, not an aesthetic choice */
+        min-height: 44px;
+        max-width: 100%;
+    }
+
+    .footer-margin input[type='checkbox'],
+    .footer-margin input[type='radio'] {
+        width: 20px;
+        height: 20px;
+    }
+
+    .footer-margin .btn {
+        min-height: 44px;
+    }
+
+    .footer-margin .btn.btn-sm {
+        min-height: 36px;
+    }
+
+    /* ----------------------------------------------------------------------
+       6. Footer: 4 table cells -> a 2x2 grid
+       ---------------------------------------------------------------------- */
+    .footer .container-fluid {
+        padding-left: 0.75rem !important; /* inline padding-left: 100px */
+        padding-right: 0.75rem !important; /* inline padding-right: 25px */
+    }
+
+    .footer .table {
+        margin-bottom: 0;
+    }
+
+    .footer .table,
+    .footer .table tbody {
+        display: block;
+    }
+
+    .footer .table tbody tr {
+        display: grid;
+        grid-template-columns: 40px 1fr;
+        align-items: center;
+        column-gap: 0.5rem;
+        row-gap: 0.2rem;
+    }
+
+    .footer .table td {
+        /* (0,2,1) beats Bootstrap's .table > :not(caption) > * > * (0,1,1) */
+        display: block;
+        padding: 0.1rem 0;
+        border: 0;
+        font-size: 0.68rem;
+        line-height: 1.15;
+        vertical-align: middle;
+        float: none !important; /* .float-end ships !important */
+    }
+
+    .footer .table td img {
+        height: 26px; /* height="40" is a presentational attribute; author rules win */
+        display: block;
+        float: none !important; /* inline style="float: left" */
+    }
+}
+
+@media (max-width: 767.98px) {
+    /* ----------------------------------------------------------------------
+       Phones only
+       ---------------------------------------------------------------------- */
+
+    /* Brand + version badge. Once .navbar is position:static, an absolutely
+       positioned #platform-version has no positioned ancestor and would escape
+       to the initial containing block. */
+    .navbar .navbar-brand {
+        position: relative;
+        margin-right: 0.5rem;
+    }
+
+    .navbar .navbar-brand img {
+        height: 30px;
+        width: auto;
+    }
+
+    #platform-version {
+        /* (1,0,0), equal to ui_platform.css — wins on source order */
+        position: static;
+        display: inline-block;
+        margin-left: 4px;
+        vertical-align: super;
+    }
+
+    /* The dual-select "shuttle" widget inside the 900px form containers.
+       Every override here targets an inline style. */
+    div.container[style*='900px'] > .row[style*='280px'] {
+        height: auto !important; /* inline style="height: 280px" */
+        flex-direction: column;
+    }
+
+    div.container[style*='900px'] .col[style*='600px'] {
+        width: 100% !important; /* inline style="width: 600px" */
+        flex: 0 0 auto;
+    }
+
+    div.container[style*='900px'] .ui-table-buttons {
+        height: auto !important; /* inline style="height: 150px" */
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0.5rem 0 !important; /* .mx-auto ships !important */
+        grid-auto-flow: column;
+    }
+
+    div.container[style*='900px'] .ui-table-buttons .btn {
+        min-height: 44px;
+    }
+
+    select.formcls[multiple] {
+        width: 100%;
+    }
+
+    /* Django's default {{ form }} table rendering. */
+    #operation_data_form,
+    #operation_data_form tbody,
+    #operation_data_form tr,
+    #operation_data_form th,
+    #operation_data_form td {
+        display: block;
+        width: 100%;
+        text-align: left;
+    }
+
+    #operation_data_form th {
+        padding-top: 0.6rem;
+    }
+
+    /* Type scale */
+    .footer-margin h3 {
+        font-size: 1.25rem;
+    }
+
+    .footer-margin h4 {
+        font-size: 1.1rem;
+    }
+
+    .footer-margin .table {
+        font-size: 0.82rem;
+    }
+
+    .footer-margin .row.pt-5 {
+        padding-top: 1rem !important; /* .pt-5 ships !important */
+    }
+}

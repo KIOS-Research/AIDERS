@@ -1,0 +1,305 @@
+{
+ "type": "FeatureCollection",
+ "features": [
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     33.3573,
+     35.1728
+    ]
+   },
+   "properties": {
+    "CSC_Name": "Πυροσβεστικός Σταθμός Πύλης Πάφου",
+    "Address": "Ρηγαίνης 81-83, Λευκωσία",
+    "Citizen_Tel_No": "112",
+    "Office_Tel": "22802288",
+    "Office_Fax": "22802825",
+    "Opening_Hours": "24 ωρο",
+    "Email": "cyprusfireservice@fs.gov.cy",
+    "Info_URL": "http://www.fs.gov.cy/fs/fs.nsf/index_gr/index_gr?OpenDocument"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     33.394,
+     35.1883
+    ]
+   },
+   "properties": {
+    "CSC_Name": "Πυροσβεστικός Σταθμός Καϊμακλίου",
+    "Address": "Λεωφόρος Καντάρας 77, Καιμακλί",
+    "Citizen_Tel_No": "112",
+    "Office_Tel": "22802188",
+    "Office_Fax": "22344316",
+    "Opening_Hours": "24 ωρο",
+    "Email": "cyprusfireservice@fs.gov.cy",
+    "Info_URL": "http://www.fs.gov.cy/fs/fs.nsf/index_gr/index_gr?OpenDocument"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     33.3581,
+     35.1463
+    ]
+   },
+   "properties": {
+    "CSC_Name": "Πυροσβεστικός Σταθμός Ακροπόλεως Λοχία Σπύρου Τταντή",
+    "Address": "Τροοδιτίσσης 1, Στρόβολος (Λεωφόρο Αθαλάσσης)",
+    "Citizen_Tel_No": "112",
+    "Office_Tel": "22802150",
+    "Office_Fax": "22305180",
+    "Opening_Hours": "24 ωρο",
+    "Email": "cyprusfireservice@fs.gov.cy",
+    "Info_URL": "http://www.fs.gov.cy/fs/fs.nsf/index_gr/index_gr?OpenDocument"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     33.3145,
+     35.1283
+    ]
+   },
+   "properties": {
+    "CSC_Name": "Πυροσβεστικός Σταθμός Λακατάμιας",
+    "Address": "Οδός Ακαδημίας Αρ.12 , Λακατάμια",
+    "Citizen_Tel_No": "112",
+    "Office_Tel": "22802424",
+    "Office_Fax": "22802453",
+    "Opening_Hours": "24 ωρο",
+    "Email": "cyprusfireservice@fs.gov.cy",
+    "Info_URL": "http://www.fs.gov.cy/fs/fs.nsf/index_gr/index_gr?OpenDocument"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     33.0281,
+     34.6815
+    ]
+   },
+   "properties": {
+    "CSC_Name": "Πυροσβεστικός Σταθμός Αγίου Ιωάννη Λοχία Βασίλη Κρόκου",
+    "Address": "Λεωφ. Αρχιεπισκόπου Μακαρίου Γ΄ 84 , Λεμεσός",
+    "Citizen_Tel_No": "112",
+    "Office_Tel": "25805400",
+    "Office_Fax": "25305677",
+    "Opening_Hours": "24 ωρο",
+    "Email": "cyprusfireservice@fs.gov.cy",
+    "Info_URL": "http://www.fs.gov.cy/fs/fs.nsf/index_gr/index_gr?OpenDocument"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     33.0692,
+     34.6903
+    ]
+   },
+   "properties": {
+    "CSC_Name": "Πυροσβεστικός Σταθμός Αγίου Νικολάου",
+    "Address": "Λεωφ. Γρίβα Διγενή 138, Αγ. Αθανάσιος",
+    "Citizen_Tel_No": "112",
+    "Office_Tel": "25805444",
+    "Office_Fax": "25306028",
+    "Opening_Hours": "24 ωρο",
+    "Email": "cyprusfireservice@fs.gov.cy",
+    "Info_URL": "http://www.fs.gov.cy/fs/fs.nsf/index_gr/index_gr?OpenDocument"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     32.9928,
+     34.6684
+    ]
+   },
+   "properties": {
+    "CSC_Name": "Πυροσβεστικός Σταθμός Μονοβολικού",
+    "Address": "Οδός Πανταίνου 3 , Βιομ. Περιοχή",
+    "Citizen_Tel_No": "112",
+    "Office_Tel": "25805454",
+    "Office_Fax": "25305751",
+    "Opening_Hours": "24 ωρο",
+    "Email": "cyprusfireservice@fs.gov.cy",
+    "Info_URL": "http://www.fs.gov.cy/fs/fs.nsf/index_gr/index_gr?OpenDocument"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     33.6163,
+     34.9207
+    ]
+   },
+   "properties": {
+    "CSC_Name": "Πυροσβεστικός Σταθμός Υπαστυνόμου Ανδρέα Παπαδόπουλου",
+    "Address": "Λεωφόρος Γιάννη Κρανιδιώτη 1, Λάρνακα",
+    "Citizen_Tel_No": "112",
+    "Office_Tel": "24804280",
+    "Office_Fax": "24304166",
+    "Opening_Hours": "24 ωρο",
+    "Email": "cyprusfireservice@fs.gov.cy",
+    "Info_URL": "http://www.fs.gov.cy/fs/fs.nsf/index_gr/index_gr?OpenDocument"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     33.6574,
+     34.9608
+    ]
+   },
+   "properties": {
+    "CSC_Name": "Πυροσβεστικός Σταθμός Ορόκλινης Λοχία Παναγιώτη Θεοφίλου",
+    "Address": "Μεσογείου 21,  Ορόκλινη",
+    "Citizen_Tel_No": "112",
+    "Office_Tel": "24804260",
+    "Office_Fax": "24304608",
+    "Opening_Hours": "24 ωρο",
+    "Email": "cyprusfireservice@fs.gov.cy",
+    "Info_URL": "http://www.fs.gov.cy/fs/fs.nsf/index_gr/index_gr?OpenDocument"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     33.6177,
+     34.8739
+    ]
+   },
+   "properties": {
+    "CSC_Name": "Πυροσβεστικός Σταθμός Αεροδρομίου Λάρνακας",
+    "Address": "Διεθνές Αεροδρόμιο Λάρνακας",
+    "Citizen_Tel_No": "112",
+    "Office_Tel": "24804770",
+    "Office_Fax": "24804786",
+    "Opening_Hours": "24 ωρο",
+    "Email": "cyprusfireservice@fs.gov.cy",
+    "Info_URL": "http://www.fs.gov.cy/fs/fs.nsf/index_gr/index_gr?OpenDocument"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     32.4355,
+     34.7694
+    ]
+   },
+   "properties": {
+    "CSC_Name": "Πυροσβεστικός Σταθμός Πάφου",
+    "Address": "Λεωφόρος Αθηνών 16, Πάφος",
+    "Citizen_Tel_No": "112",
+    "Office_Tel": "26806272",
+    "Office_Fax": "26806299",
+    "Opening_Hours": "24 ωρο",
+    "Email": "cyprusfireservice@fs.gov.cy",
+    "Info_URL": "http://www.fs.gov.cy/fs/fs.nsf/index_gr/index_gr?OpenDocument"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     32.4306,
+     35.0297
+    ]
+   },
+   "properties": {
+    "CSC_Name": "Πυροσβεστικός Σταθμός Πόλεως Χρυσοχούς",
+    "Address": "Θεοδούλου Νίττη 1 Α, Πόλης Χρυσοχούς",
+    "Citizen_Tel_No": "112",
+    "Office_Tel": "26806230",
+    "Office_Fax": "26321184",
+    "Opening_Hours": "24 ωρο",
+    "Email": "cyprusfireservice@fs.gov.cy",
+    "Info_URL": "http://www.fs.gov.cy/fs/fs.nsf/index_gr/index_gr?OpenDocument"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     32.4782,
+     34.7152
+    ]
+   },
+   "properties": {
+    "CSC_Name": "Πυρoσβεστικός Σταθμός Αεροδρομίου Πάφου",
+    "Address": "Διεθνές Αεροδρόμιο Πάφου",
+    "Citizen_Tel_No": "112",
+    "Office_Tel": "26806480",
+    "Office_Fax": "26306545",
+    "Opening_Hours": "24 ωρο",
+    "Email": "cyprusfireservice@fs.gov.cy",
+    "Info_URL": "http://www.fs.gov.cy/fs/fs.nsf/index_gr/index_gr?OpenDocument"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     33.9704,
+     35.0575
+    ]
+   },
+   "properties": {
+    "CSC_Name": "Πυροσβεστικός Σταθμός Λοχία Αδάμου Αδάμου",
+    "Address": "Ακροπόλεως 55, Δερύνεια",
+    "Citizen_Tel_No": "112",
+    "Office_Tel": "23803232",
+    "Office_Fax": "23827151",
+    "Opening_Hours": "24 ωρο",
+    "Email": "cyprusfireservice@fs.gov.cy",
+    "Info_URL": "http://www.fs.gov.cy/fs/fs.nsf/index_gr/index_gr?OpenDocument"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     33.3933,
+     34.8302
+    ]
+   },
+   "properties": {
+    "CSC_Name": "Ε.Μ.Α.Κ.",
+    "Address": "Αρχ. Μακαρίου Γ'",
+    "Citizen_Tel_No": "112",
+    "Office_Tel": "24804366",
+    "Office_Fax": "24322288",
+    "Opening_Hours": "24 ωρο",
+    "Email": "cyprusfireservice@fs.gov.cy",
+    "Info_URL": "http://www.fs.gov.cy/fs/fs.nsf/index_gr/index_gr?OpenDocument"
+   }
+  }
+ ]
+}

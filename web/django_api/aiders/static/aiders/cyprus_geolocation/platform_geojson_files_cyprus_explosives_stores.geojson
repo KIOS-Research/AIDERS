@@ -1,0 +1,605 @@
+{
+ "type": "FeatureCollection",
+ "features": [
+  {
+   "type": "Feature",
+   "properties": {
+    "Name": "ΕΧPLOMIN IMPORTS/EXPORTS LTD",
+    "Category": "Explosive Materials",
+    "Category_GR": "ΑΠΟΘΗΚΕΣ ΕΚΡΗΚΤΙΚΩΝ ΥΛΩΝ",
+    "District": "Nicosia",
+    "District_GR": "ΛΕΥΚΩΣΙΑ",
+    "Tel": "99685506",
+    "Seveso": "Lower tier",
+    "Details": ""
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     33.37887503740325,
+     34.94616940916146
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "Name": "HΕLLENIC COPPER MINES LTD",
+    "Category": "Explosive Materials",
+    "Category_GR": "ΑΠΟΘΗΚΕΣ ΕΚΡΗΚΤΙΚΩΝ ΥΛΩΝ",
+    "District": "Nicosia",
+    "District_GR": "ΛΕΥΚΩΣΙΑ",
+    "Tel": "22933312",
+    "Seveso": "Lower tier",
+    "Details": ""
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     32.88875149838843,
+     35.08874828817189
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "Name": "SKYRAMONT QUARRIES LTD",
+    "Category": "Explosive Materials",
+    "Category_GR": "ΑΠΟΘΗΚΕΣ ΕΚΡΗΚΤΙΚΩΝ ΥΛΩΝ",
+    "District": "Limassol",
+    "District_GR": "ΛΕΜΕΣΟΥ",
+    "Tel": "99424161 99530909",
+    "Seveso": "",
+    "Details": ""
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     33.154294433861,
+     34.78133334937465
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "Name": "CYFIELD QUARRIES LTD",
+    "Category": "Explosive Materials",
+    "Category_GR": "ΑΠΟΘΗΚΕΣ ΕΚΡΗΚΤΙΚΩΝ ΥΛΩΝ",
+    "District": "Limassol",
+    "District_GR": "ΛΕΜΕΣΟΥ",
+    "Tel": "99245442",
+    "Seveso": "",
+    "Details": ""
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     33.15238889154261,
+     34.77982498936446
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "Name": "Κ. ΚΥΤHREOTIS HOLDINGS LTD",
+    "Category": "Explosive Materials",
+    "Category_GR": "ΑΠΟΘΗΚΕΣ ΕΚΡΗΚΤΙΚΩΝ ΥΛΩΝ",
+    "District": "Limassol",
+    "District_GR": "ΛΕΜΕΣΟΥ",
+    "Tel": "99792454",
+    "Seveso": "Lower tier",
+    "Details": ""
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     33.15140277376027,
+     34.79059167039912
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "Name": "Μ.S. (SKYRA) VASSAS LTD",
+    "Category": "Explosive Materials",
+    "Category_GR": "ΑΠΟΘΗΚΕΣ ΕΚΡΗΚΤΙΚΩΝ ΥΛΩΝ",
+    "District": "Limassol",
+    "District_GR": "ΛΕΜΕΣΟΥ",
+    "Tel": "25633320 99403630",
+    "Seveso": "",
+    "Details": ""
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     33.21894763520224,
+     34.7721192341434
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "Name": "ΣΚΥΡΑ ΛΙΜΑ ΔΗΜΟΣΙΑ ΛΤΔ",
+    "Category": "Explosive Materials",
+    "Category_GR": "ΑΠΟΘΗΚΕΣ ΕΚΡΗΚΤΙΚΩΝ ΥΛΩΝ",
+    "District": "Larnaca",
+    "District_GR": "ΛΑΡΝΑΚΑΣ",
+    "Tel": "96753766",
+    "Seveso": "",
+    "Details": ""
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     33.40697776763275,
+     34.90731388571709
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "Name": "ΛΑΤΟΜΕΙΟ ΠΥΡΓΩΝ ΛΤΔ",
+    "Category": "Explosive Materials",
+    "Category_GR": "ΑΠΟΘΗΚΕΣ ΕΚΡΗΚΤΙΚΩΝ ΥΛΩΝ",
+    "District": "Larnaca",
+    "District_GR": "ΛΑΡΝΑΚΑΣ",
+    "Tel": "99408788",
+    "Seveso": "Lower tier",
+    "Details": ""
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     33.44071111235389,
+     34.9066722226703
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "Name": "ΠΟΥΛΛΑΣ TΣΑΔΙΩΤΗΣ ΛΤΔ",
+    "Category": "Explosive Materials",
+    "Category_GR": "ΑΠΟΘΗΚΕΣ ΕΚΡΗΚΤΙΚΩΝ ΥΛΩΝ",
+    "District": "Paphos",
+    "District_GR": "ΠΑΦΟΥ",
+    "Tel": "26422460 99424161",
+    "Seveso": "",
+    "Details": ""
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     32.39495554763211,
+     35.00036388804253
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "Name": "G&L CALIBERS LTD",
+    "Category": "Smokeless Powder",
+    "Category_GR": "ΑΠΟΘΗΚΕΣ ΑΚΑΠΝΗΣ ΠΥΡΙΤΙΔΑΣ 2026",
+    "District": "Nicosia",
+    "District_GR": "ΛΕΥΚΩΣΙΑΣ",
+    "Tel": "22621548",
+    "Seveso": "Lower tier",
+    "Details": ""
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     33.22649300533636,
+     35.06364400073983
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "Name": "ΒΙΕΜ ΛΤΔ",
+    "Category": "Smokeless Powder",
+    "Category_GR": "ΑΠΟΘΗΚΕΣ ΑΚΑΠΝΗΣ ΠΥΡΙΤΙΔΑΣ 2026",
+    "District": "Limassol",
+    "District_GR": "ΛΕΜΕΣΟΥ",
+    "Tel": "99429765",
+    "Seveso": "",
+    "Details": ""
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     32.95539999779317,
+     34.70218889477994
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "Name": "A.Y. HUNTING KILLER LTD",
+    "Category": "Smokeless Powder",
+    "Category_GR": "ΑΠΟΘΗΚΕΣ ΑΚΑΠΝΗΣ ΠΥΡΙΤΙΔΑΣ 2026",
+    "District": "Limassol",
+    "District_GR": "ΛΕΜΕΣΟΥ",
+    "Tel": "99651006",
+    "Seveso": "",
+    "Details": ""
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     32.99581726443434,
+     34.70794584567482
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "Name": "Ανδρέας Μάππας",
+    "Category": "Smokeless Powder",
+    "Category_GR": "ΑΠΟΘΗΚΕΣ ΑΚΑΠΝΗΣ ΠΥΡΙΤΙΔΑΣ 2026",
+    "District": "Limassol",
+    "District_GR": "ΛΕΜΕΣΟΥ",
+    "Tel": "99491891",
+    "Seveso": "",
+    "Details": ""
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     32.96184168759151,
+     34.63337777283289
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "Name": "Xρίστος Στυλιανού",
+    "Category": "Smokeless Powder",
+    "Category_GR": "ΑΠΟΘΗΚΕΣ ΑΚΑΠΝΗΣ ΠΥΡΙΤΙΔΑΣ 2026",
+    "District": "Limassol",
+    "District_GR": "ΛΕΜΕΣΟΥ",
+    "Tel": "25392612 97630748",
+    "Seveso": "",
+    "Details": ""
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     32.95013884372391,
+     34.67536660918677
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "Name": "Zαχαρίας Ζαχαρίου",
+    "Category": "Smokeless Powder",
+    "Category_GR": "ΑΠΟΘΗΚΕΣ ΑΚΑΠΝΗΣ ΠΥΡΙΤΙΔΑΣ 2026",
+    "District": "Limassol",
+    "District_GR": "ΛΕΜΕΣΟΥ",
+    "Tel": "99498529 99696199",
+    "Seveso": "",
+    "Details": ""
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     32.99032660395054,
+     34.71311671224542
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "Name": "ΠΡΟΚΟΠΗΣ Γ. ΓΑΒΡΙΗΛΙΔΗΣ ΛΤΔ",
+    "Category": "Smokeless Powder",
+    "Category_GR": "ΑΠΟΘΗΚΕΣ ΑΚΑΠΝΗΣ ΠΥΡΙΤΙΔΑΣ 2026",
+    "District": "Larnaca",
+    "District_GR": "ΛΑΡΝΑΚΑΣ",
+    "Tel": "24530309 99617711",
+    "Seveso": "",
+    "Details": ""
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     33.59130555430406,
+     34.93390833017
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "Name": "Nίκος Χ\" Μπέης",
+    "Category": "Smokeless Powder",
+    "Category_GR": "ΑΠΟΘΗΚΕΣ ΑΚΑΠΝΗΣ ΠΥΡΙΤΙΔΑΣ 2026",
+    "District": "Larnaca",
+    "District_GR": "ΛΑΡΝΑΚΑΣ",
+    "Tel": "24629415 99404440",
+    "Seveso": "",
+    "Details": ""
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     33.63502394078836,
+     34.91235253189291
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "Name": "Παύλος Πιερέττης",
+    "Category": "Smokeless Powder",
+    "Category_GR": "ΑΠΟΘΗΚΕΣ ΑΚΑΠΝΗΣ ΠΥΡΙΤΙΔΑΣ 2026",
+    "District": "Famagusta",
+    "District_GR": "ΑΜΜΟΧΩΣΤΟΥ",
+    "Tel": "99624754",
+    "Seveso": "",
+    "Details": ""
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     33.90965679440689,
+     35.03376070127025
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "Name": "MASP ENTERPRISES LTD",
+    "Category": "Fireworks - High Intensity (F2, F3, F4, T1, T2)",
+    "Category_GR": "ΑΠΟΘΗΚΕΣ ΠΥΡΟΤΕΧΝΗΜΑΤΩΝ ΥΨΗΛΗΣ ΕΝΤΑΣΗΣ 2026 (ΚΑΤΗΓΟΡΙΑ F2, F3, F4, T1, T2)",
+    "District": "Nicosia",
+    "District_GR": "ΛΕΥΚΩΣΙΑΣ",
+    "Tel": "99129301",
+    "Seveso": "",
+    "Details": "Μάριος Πέτρου"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     33.30242222083338,
+     34.99611944497999
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "Name": "M.J.D. PYRGOS FIREWORKS LTD",
+    "Category": "Fireworks - High Intensity (F2, F3, F4, T1, T2)",
+    "Category_GR": "ΑΠΟΘΗΚΕΣ ΠΥΡΟΤΕΧΝΗΜΑΤΩΝ ΥΨΗΛΗΣ ΕΝΤΑΣΗΣ 2026 (ΚΑΤΗΓΟΡΙΑ F2, F3, F4, T1, T2)",
+    "District": "Larnaca",
+    "District_GR": "ΛΑΡΝΑΚΑΣ",
+    "Tel": "99665435",
+    "Seveso": "",
+    "Details": "Μάριος Πύργου"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     33.219330536438,
+     34.850686099291
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "Name": "ΠΕΤΡΟΣ ΡΙΖΟΣ",
+    "Category": "Fireworks - High Intensity (F2, F3, F4, T1, T2)",
+    "Category_GR": "ΑΠΟΘΗΚΕΣ ΠΥΡΟΤΕΧΝΗΜΑΤΩΝ ΥΨΗΛΗΣ ΕΝΤΑΣΗΣ 2026 (ΚΑΤΗΓΟΡΙΑ F2, F3, F4, T1, T2)",
+    "District": "Limassol",
+    "District_GR": "ΛΕMEΣΟΥ",
+    "Tel": "96355425",
+    "Seveso": "",
+    "Details": "ΠΕΤΡΟΣ ΡΙΖΟΣ"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     33.15567496223274,
+     34.78271942315941
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "Name": "LABROUCO TRADING LTD",
+    "Category": "Fireworks - Low Intensity (F1, F2, P1 & P2)",
+    "Category_GR": "ΑΠΟΘΗΚΕΣ ΠΥΡΟΤΕΧΝΗΜΑΤΩΝ XAMHΛΗΣ ΕΝΤΑΣΗΣ 2026 (ΚΑΤΗΓΟΡΙΑΣ FI, F2 και P1&P2)",
+    "District": "Nicosia",
+    "District_GR": "ΛΕΥΚΩΣΙΑΣ",
+    "Tel": "99606615",
+    "Seveso": "",
+    "Details": "Διάφορα F1 και F2"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     33.37981850361233,
+     34.94622467821984
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "Name": "ΠΑΝΤΕΛΗΣ ΚΑΤΕΛΑΡΗΣ & ΣΙΑ ΛΤΔ (ΠΕΡΓΑΜΟΣ)",
+    "Category": "Fireworks - Low Intensity (F1, F2, P1 & P2)",
+    "Category_GR": "ΑΠΟΘΗΚΕΣ ΠΥΡΟΤΕΧΝΗΜΑΤΩΝ XAMHΛΗΣ ΕΝΤΑΣΗΣ 2026 (ΚΑΤΗΓΟΡΙΑΣ FI, F2 και P1&P2)",
+    "District": "Nicosia",
+    "District_GR": "ΛΕΥΚΩΣΙΑΣ",
+    "Tel": "22552552 99411391",
+    "Seveso": "",
+    "Details": "Διάφορα F1 και F2"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     33.39834400282154,
+     35.04637525314153
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "Name": "JUNIOR KM GREETINGS LTD",
+    "Category": "Fireworks - Low Intensity (F1, F2, P1 & P2)",
+    "Category_GR": "ΑΠΟΘΗΚΕΣ ΠΥΡΟΤΕΧΝΗΜΑΤΩΝ XAMHΛΗΣ ΕΝΤΑΣΗΣ 2026 (ΚΑΤΗΓΟΡΙΑΣ FI, F2 και P1&P2)",
+    "District": "Nicosia",
+    "District_GR": "ΛΕΥΚΩΣΙΑΣ",
+    "Tel": "22524292 99671819",
+    "Seveso": "",
+    "Details": ""
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     33.39107186373722,
+     35.05646475164492
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "Name": "FirePro Systems LTD",
+    "Category": "Fireworks - Low Intensity (F1, F2, P1 & P2)",
+    "Category_GR": "ΑΠΟΘΗΚΕΣ ΠΥΡΟΤΕΧΝΗΜΑΤΩΝ XAMHΛΗΣ ΕΝΤΑΣΗΣ 2026 (ΚΑΤΗΓΟΡΙΑΣ FI, F2 και P1&P2)",
+    "District": "Limassol",
+    "District_GR": "ΛΕΜΕΣΟΥ",
+    "Tel": "25379999 25376100",
+    "Seveso": "",
+    "Details": "Καψύλλια ενεργοποίησης πυροσβεστήρων,υλικό γόμωσης Πυροσβεστήρων, Πυροσβεστήρες (άλλα είδη πυροτεχνίας Κατ. P1 & P2)"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     33.06405662018754,
+     34.70702380558254
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "Name": "ELIAS LIASSIS LTD",
+    "Category": "Ship Flares",
+    "Category_GR": "ΑΠΟΘΗΚΕΣ ΦΩΤΟΒΟΛΙΔΩΝ ΠΛΟΙΩΝ 2026",
+    "District": "Limassol",
+    "District_GR": "ΛΕΜΕΣΟΥ",
+    "Tel": "25565569 97634245",
+    "Seveso": "",
+    "Details": ""
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     33.01294327045161,
+     34.65200357606891
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "Name": "RODOU CHARALAMBOUS & SONS LTD",
+    "Category": "Ship Flares",
+    "Category_GR": "ΑΠΟΘΗΚΕΣ ΦΩΤΟΒΟΛΙΔΩΝ ΠΛΟΙΩΝ 2026",
+    "District": "Limassol",
+    "District_GR": "ΛΕΜΕΣΟΥ",
+    "Tel": "25212213 99681948",
+    "Seveso": "",
+    "Details": "Χρίστος Χρίστου"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     32.98136117048162,
+     34.69288813269043
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "Name": "GALAWAY TRADING LTD",
+    "Category": "Ship Flares",
+    "Category_GR": "ΑΠΟΘΗΚΕΣ ΦΩΤΟΒΟΛΙΔΩΝ ΠΛΟΙΩΝ 2026",
+    "District": "Limassol",
+    "District_GR": "ΛΕΜΕΣΟΥ",
+    "Tel": "25384999 99400927",
+    "Seveso": "",
+    "Details": ""
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     33.01391421871658,
+     34.66178158708388
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "Name": "POSEIDON - MULTIMARINE SERVICES LTD",
+    "Category": "Ship Flares",
+    "Category_GR": "ΑΠΟΘΗΚΕΣ ΦΩΤΟΒΟΛΙΔΩΝ ΠΛΟΙΩΝ 2026",
+    "District": "Limassol",
+    "District_GR": "ΛΕΜΕΣΟΥ",
+    "Tel": "25336520 99559927",
+    "Seveso": "",
+    "Details": "Παύλος Φωκάς"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     33.00636989567591,
+     34.64468102448227
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "Name": "COMAR GENERAL TRADING LTD",
+    "Category": "Ship Flares",
+    "Category_GR": "ΑΠΟΘΗΚΕΣ ΦΩΤΟΒΟΛΙΔΩΝ ΠΛΟΙΩΝ 2026",
+    "District": "Limassol",
+    "District_GR": "ΛΕΜΕΣΟΥ",
+    "Tel": "22511251",
+    "Seveso": "",
+    "Details": ""
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     33.35912463323733,
+     35.15467596660763
+    ]
+   }
+  }
+ ]
+}
