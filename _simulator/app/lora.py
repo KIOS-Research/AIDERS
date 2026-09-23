@@ -1,4 +1,3 @@
-import rospy
 import random
 import time
 import threading
@@ -6,45 +5,26 @@ import threading
 import utils
 from constants import loraClientNames
 
-# ROS messages
-from std_msgs.msg import String
 
 class LoraMaster:
     def __init__(self, name, noOfClients, frequency, index):
         self.name = name
         self.noOfClients = noOfClients
         self.frequency = frequency
-        self.connected = False
         self.index = index
-
-        # publishers
-        self.deviceIdsPublisher = rospy.Publisher("/loraIds", String, queue_size=10)
-        
-        # subscribers
-        rospy.Subscriber(f"/{self.name}/handshake", String, self.handshakeReceived)
 
     def start(self):
         utils.myPrint(f"Simulating Lora master: {self.name} with {self.noOfClients} clients")
-
-        message = f"{self.name},True"
-
-        rate = rospy.Rate(float(self.frequency))  # adjust the publishing rate
-        while not self.connected:
-            self.deviceIdsPublisher.publish(message)
-            rate.sleep()
+        # TODO: add /wsi/loraConnect/ handler to wsi and connect via WebSocket here
 
         # spawn clients
         for i, _ in enumerate(range(int(self.noOfClients))):
-            nameIndex = i+(int(self.index)*int(self.noOfClients))
+            nameIndex = i + (int(self.index) * int(self.noOfClients))
             loraClient = LoraClient(loraClientNames[nameIndex], self.name, self.frequency)
             thread = threading.Thread(target=loraClient.start)
-            thread.daemon = False  # set the thread as non-daemonic
+            thread.daemon = False
             thread.start()
-            time.sleep(0.25)        
-
-    def handshakeReceived(self, _msg):
-        if _msg.data == "1":
-            self.connected = True
+            time.sleep(0.25)
 
 
 class LoraClient:
@@ -57,24 +37,20 @@ class LoraClient:
         self.previousDirection = "n"
         self.monitoringMessageInterval = 5
 
-        # publishers
-        self.telemetryPublisher = rospy.Publisher(f"/{self.masterName}/TelemetryLora", String, queue_size=10)
-        self.monitorPublisher = rospy.Publisher(f"/{self.masterName}/MonitorLora", String, queue_size=10)
-
     def start(self):
         self.loop()
 
     def loop(self):
-        rate = rospy.Rate(float(self.frequency))  # adjust the publishing rate
+        rate = float(1 / float(self.frequency))
         nextMonitoringMessage = time.time() + self.monitoringMessageInterval
         while True:
             self.move()
-            self.publishTelemetry()
+            self.buildTelemetry()
             if time.time() >= nextMonitoringMessage:
-                self.publishMonitoringData()
-                nextMonitoringMessage += self.monitoringMessageInterval            
-            rate.sleep()
-    
+                self.buildMonitoringData()
+                nextMonitoringMessage += self.monitoringMessageInterval
+            time.sleep(rate)
+
     def move(self):
         stepSize = random.uniform(0.00001, 0.00003)
         deltaLatitude, deltaLongitude, direction = utils.randomDirection(stepSize, self.previousDirection)
@@ -82,12 +58,14 @@ class LoraClient:
         self.longitude += deltaLongitude
         self.previousDirection = direction
 
-    def publishTelemetry(self):
-        # telemetryMessage = f"{self.name},{time.time()},{self.latitude},{self.longitude},1111,2222,1.11,2.22"
-        telemetryMessageNew = f"{self.name},{time.time()},{self.latitude},{self.longitude},1111,2222,1.11,2.22,3.33,7777"
-        self.telemetryPublisher.publish(telemetryMessageNew)
-        
-    def publishMonitoringData(self):
-        monitoringMessage = f"{self.name},69,77,88,72"
-        self.monitorPublisher.publish(monitoringMessage)
+    def buildTelemetry(self):
+        # TODO: send via WebSocket once a server-side handler exists
+        pm = random.uniform(10, 500)
+        pm25 = random.uniform(10, 500)
+        rssi = random.uniform(-30, -10)
+        _ = f"{self.name},{time.time()},{self.latitude},{self.longitude},{pm:.2f},{pm25:.2f},1.11,2.22,3.33,{rssi}"
+
+    def buildMonitoringData(self):
+        # TODO: send via WebSocket once a server-side handler exists
+        _ = f"{self.name},69,77,88,72"
 

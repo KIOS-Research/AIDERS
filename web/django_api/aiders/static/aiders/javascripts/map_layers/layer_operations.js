@@ -133,9 +133,6 @@
         return map.getLayoutProperty(layerid, 'visibility') === 'visible';
     }
 
-    function get_num() {
-        return 1;
-    }
 
     function load_fire_geojson(geojson_url, geojson_id, fill_opacity, maxID) {
         let source_id = geojson_id;
@@ -220,33 +217,35 @@
             });
         }
     }
-    function load_geojson(geojson_url, geojson_id, fill_opacity, fill_color, outline_color) {
-        let source_id = geojson_id;
-        map.addSource(source_id, {
-            type: 'geojson',
-            data: geojson_url,
-        });
 
-        map.addLayer({
-            id: source_id,
-            type: 'fill',
-            source: source_id, // reference the data source
-            layout: {},
-            paint: {
-                'fill-color': fill_color,
-                'fill-opacity': fill_opacity,
-            },
-        });
-        // Add  outline around the polygon.
-        map.addLayer({
-            id: source_id + 'outline',
-            type: 'line',
-            source: source_id,
-            layout: {},
-            paint: {
-                'line-color': outline_color,
-                'line-width': 4,
-            },
-        });
-    }
+    // NOT USED
+    // function load_geojson(geojson_url, geojson_id, fill_opacity, fill_color, outline_color) {
+    //     let source_id = geojson_id;
+    //     map.addSource(source_id, {
+    //         type: 'geojson',
+    //         data: geojson_url,
+    //     });
+
+    //     map.addLayer({
+    //         id: source_id,
+    //         type: 'fill',
+    //         source: source_id, // reference the data source
+    //         layout: {},
+    //         paint: {
+    //             'fill-color': fill_color,
+    //             'fill-opacity': fill_opacity,
+    //         },
+    //     });
+    //     // Add  outline around the polygon.
+    //     map.addLayer({
+    //         id: source_id + 'outline',
+    //         type: 'line',
+    //         source: source_id,
+    //         layout: {},
+    //         paint: {
+    //             'line-color': outline_color,
+    //             'line-width': 4,
+    //         },
+    //     });
+    // }
 }

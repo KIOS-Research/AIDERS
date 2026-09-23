@@ -8,14 +8,13 @@ form.media }}
 {% endblock %} {% block body_block %}
 <div class="justify-content-center ms-5 me-5 footer-margin header-margin">
     <div class="row pt-4 pb-0">
-        <h3 class="col float-start">Create New Operation</h3>
+        <!-- <h3 class="col float-start">Create New Operation</h3> -->
         <div class="row">
             <h3 class="col float-start">{% include 'aiders/errors.html' %}</h3>
         </div>
         <form id="form-post" method="post" action="{% url 'new_operation' %}">
             <!-- Form Steps / Progress Bar -->
-            <ul class="form-stepper form-stepper-horizontal text-center mx-auto pl-0">
-                <!-- Step 1 -->
+            <!-- <ul class="form-stepper form-stepper-horizontal text-center mx-auto pl-0">
                 <li class="form-stepper-active text-center form-stepper-list" step="1">
                     <a class="mx-2">
                         <span class="form-stepper-circle form-click-button">
@@ -24,7 +23,6 @@ form.media }}
                         <div class="label form-click-button">Basic Details</div>
                     </a>
                 </li>
-                <!-- Step 2 -->
                 <li class="form-stepper-unfinished text-center form-stepper-list" step="2">
                     <a class="mx-2">
                         <span class="form-stepper-circle form-click-button text-muted">
@@ -33,7 +31,6 @@ form.media }}
                         <div class="label form-click-button text-muted">Users</div>
                     </a>
                 </li>
-                <!-- Step 3 -->
                 <li class="form-stepper-unfinished text-center form-stepper-list" step="3">
                     <a class="mx-2">
                         <span class="form-stepper-circle form-click-button text-muted">
@@ -42,7 +39,6 @@ form.media }}
                         <div class="label form-click-button text-muted">Drones</div>
                     </a>
                 </li>
-                <!-- Step 4 -->
                 <li class="form-stepper-unfinished text-center form-stepper-list" step="4">
                     <a class="mx-2">
                         <span class="form-stepper-circle form-click-button text-muted">
@@ -51,7 +47,6 @@ form.media }}
                         <div class="label form-click-button text-muted">Devices</div>
                     </a>
                 </li>
-                <!-- Step 5 -->
                 <li class="form-stepper-unfinished text-center form-stepper-list" step="5">
                     <a class="mx-2">
                         <span class="form-stepper-circle form-click-button text-muted">
@@ -60,18 +55,18 @@ form.media }}
                         <div class="label form-click-button text-muted">Balora</div>
                     </a>
                 </li>
-            </ul>
+            </ul> -->
             {% csrf_token %}
             {% comment %} Basic Info {% endcomment %}
             <input type="hidden" id="step" value="1" />
-            <table id="operation_data_form" hidden>
-                <th colspan="2"><h4 class="form-titles">Basic Details</h4></th>
+            <table id="operation_data_form">
+                <th colspan="2"><h4 class="form-titles">Operation Details</h4></th>
                 {{ form }}
             </table>
             {% comment %} Users Info {% endcomment %}
             <label id="select_users" hidden>
                 <h4 class="form-titles">Users</h4>
-                <p class="text-center my-0">Select the Users <b>that are allowed to join </b> this operation <b>if they attempt to</b></p>
+                <p class="text-center my-0">Select the Users <b>that are allowed to join </b> this operation.</p>
                 <br />
                 <div class="container d-inline-block d-flex justify-content-center" style="width: 900px">
                     <div class="row" style="height: 280px">
@@ -107,7 +102,7 @@ form.media }}
             {% comment %} Drones Info {% endcomment %}
             <label id="select_drones" hidden>
                 <h4 class="form-titles">Drones</h4>
-                <p class="text-center my-0">Select the Drones <b>that are allowed to join </b> this operation <b>if they attempt to</b></p>
+                <p class="text-center my-0">Select the Drones <b>that are allowed to join </b> this operation.</p>
                 <br />
                 <div class="container d-inline-block d-flex justify-content-center" style="width: 900px">
                     <div class="row" style="height: 280px">
@@ -140,15 +135,14 @@ form.media }}
                     </div>
                 </div>
                 <div id="check_box_drone" class="text-center">
-			<b>RECOMMENDED</b>
-                    <input id="drone_operation" type="checkbox" name="drone_operation" value="True" />
+                    <input id="drone_operation" type="checkbox" name="drone_operation" value="True" checked="checked" />
                     <label for="drone_operation"> The selected drones will join the current operation.</label>
                 </div>
             </label>
             {% comment %} Devices Info {% endcomment %}
             <label id="select_devices" hidden>
                 <h4 class="form-titles">Devices</h4>
-                <p class="text-center my-0">Select the Devices <b>that are allowed to join </b> this operation <b>if they attempt to</b></p>
+                <p class="text-center my-0">Select the Devices <b>that are allowed to join </b> this operation.</p>
                 <br />
                 <div class="container d-inline-block d-flex justify-content-center" style="width: 900px">
                     <div class="row" style="height: 280px">
@@ -181,15 +175,14 @@ form.media }}
                     </div>
                 </div>
                 <div id="check_box_device" class="text-center">
-			<b>RECOMMENDED</b>
-                    <input id="device_operation" type="checkbox" name="device_operation" value="True" />
-                    <label for="device_operation"> The selected device will join the current operation.</label>
+                    <input id="device_operation" type="checkbox" name="device_operation" value="True" checked="checked" />
+                    <label for="device_operation"> The selected devices will join the current operation.</label>
                 </div>
             </label>
             {% comment %} Balora Info {% endcomment %}
             <label id="select_baloras" hidden>
                 <h4 class="form-titles">Baloras</h4>
-                <p class="text-center my-0">Select the Baloras <b>that are allowed to join </b> this operation <b>if they attempt to</b></p>
+                <p class="text-center my-0">Select the Baloras <b>that are allowed to join </b> this operation.</p>
                 <br />
                 <div class="container d-inline-block d-flex justify-content-center" style="width: 900px">
                     <div class="row" style="height: 280px">
@@ -222,23 +215,28 @@ form.media }}
                     </div>
                 </div>
                 <div id="check_box_balora" class="text-center">
-			<b>RECOMMENDED</b>
-                    <input id="balora_operation" type="checkbox" name="balora_operation" value="True" />
+                    <input id="balora_operation" type="checkbox" name="balora_operation" value="True" checked="checked" />
                     <label for="balora_operation"> The selected balora will join the current operation.</label>
                 </div>
             </label>
             {% comment %} Buttons {% endcomment %}
-            <label id="user-input-buttons">
+            <!-- <label id="user-input-buttons">
                 <input hidden></input>
-                <input id="previous" type="button" value="Previous" onclick="buttonPrevious()"></input>
-                <input id="next" type="button" value="Next" onclick="buttonNext()" ></input>
-                <input id="submit" type="submit" value="Submit"></input>
-            </label>
+                <input id="previous" class="btn btn-danger" type="button" value="Previous" onclick="buttonPrevious()"></input>
+                <input id="next" class="btn btn-primary" type="button" value="Next" onclick="buttonNext()" ></input>
+                <input id="submit" class="btn btn-success" type="submit" value="Save"></input>
+                
+            </label> -->
+            <div class="d-flex justify-content-center">
+                <a href="{% url 'manage_operations' %}" class="btn btn-danger" style="color: white !important">Cancel</a>
+                &nbsp;&nbsp;
+                <input id="submit" class="btn btn-success" type="submit" value="Save"></input>
+            </div>            
         </form>
     </div>
 </div>
 
-<script type="text/javascript">
+<!-- <script type="text/javascript">
     $(document).ready(function () {
         $('#lstviewuser').multiselect({
             search: {
@@ -270,5 +268,5 @@ form.media }}
         });
     });
 </script>
-<script src="{% static 'aiders/javascripts/form/new_operation.js' %}"></script>
+<script src="{% static 'aiders/javascripts/form/new_operation.js' %}"></script> -->
 {% endblock %}

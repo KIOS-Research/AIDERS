@@ -302,7 +302,12 @@
                 var img = new Image();
                 img.onload = function() {
                     ctx.clearRect(0, 0, canvas.width, canvas.height);
-                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    ctx.fillStyle = '#000';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    var scale = Math.min(canvas.width / img.width, canvas.height / img.height);
+                    var x = (canvas.width - img.width * scale) / 2;
+                    var y = (canvas.height - img.height * scale) / 2;
+                    ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
                     $('#datetime').html(formattedTimes[index]);
                     $('#filename').html("<a href='/media/" + imagePaths[index] + "' target='_blank'>" + imagePaths[index] + "</a>");
                     $('#currentFrameIndex').html(index);

@@ -1,6 +1,22 @@
 # Use the official Nginx image
 FROM nginx:latest
 
+# Install netcat for health check
+RUN apt-get update && apt-get install -y --no-install-recommends netcat-openbsd && rm -rf /var/lib/apt/lists/*
+
 # Remove the default Nginx configuration
 RUN rm /etc/nginx/conf.d/default.conf
 
+# Copy SSL certificates
+# COPY certs /etc/nginx/certs
+
+# Expose HTTPS port
+EXPOSE 443
+
+# HealthCheck
+HEALTHCHECK --interval=30s CMD nc -z -w 5 localhost ${NGINX_PORT} || exit 1
+
+# Copy entrypoint script
+COPY nginx/entrypoint.sh /etc/nginx/entrypoint.sh
+# COPY entrypoint.sh /etc/nginx/entrypoint.sh
+RUN chmod +x /etc/nginx/entrypoint.sh

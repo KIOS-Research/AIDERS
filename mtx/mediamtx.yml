@@ -1,0 +1,76 @@
+paths:
+  all:
+    source: publisher
+
+pathDefaults:
+  record: yes
+  
+  # Recording format: fmp4 for broader codec support  
+  recordFormat: fmp4
+  
+  # Available variables are %path (path name), %Y %m %d (year, month, day),
+  # %H %M %S (hours, minutes, seconds), %f (microseconds), %z (time zone), %s (unix epoch).
+  # %s Unix epoch time in seconds since 1970-01-01T00:00:00Z.
+
+  #RecordPath must contain either %s or %Y %m %d %H %M %S
+
+  recordPath: /recordings/%path-%s
+
+  # Disable any cleanup or deletion behavior - empty string means never delete
+  recordDeleteAfter: ""
+
+  # Post-process recordings: convert fMP4 to browser-friendly MP4 with faststart
+  # This moves the moov atom to the beginning for better browser playback
+  # Environment variables: MTX_SEGMENT_PATH (full path to the recorded segment)
+  # runOnRecordSegmentComplete: /process_recording.sh
+
+  # Command to run when the stream is ready to be read, whenever it is
+  # published by a client or pulled from a server / camera.
+  # This is terminated with SIGINT when the stream is not ready anymore.
+  # The following environment variables are available:
+  # * MTX_PATH: path name
+  # * MTX_QUERY: query parameters (passed by publisher)
+  # * MTX_SOURCE_TYPE: source type
+  # * MTX_SOURCE_ID: source ID
+  # * RTSP_PORT: RTSP server port
+  # * G1, G2, ...: regular expression groups, if path name is
+  #   a regular expression.
+  runOnReady: curl -X POST http://${NET_IP}:${NGINX_PORT}/mtx-stream-started/$MTX_PATH
+  # Restart the command if it exits.
+  runOnReadyRestart: no  
+
+  # Command to run when the stream is not available anymore.
+  # Environment variables are the same of runOnReady.
+  runOnNotReady: curl -X POST http://${NET_IP}:${NGINX_PORT}/mtx-stream-ended/$MTX_PATH
+
+hls: no
+api: yes
+
+authInternalUsers:
+  # Username. 'any' means any user, including anonymous ones.
+  - user: any
+    # Password. Not used in case of 'any' user.
+    pass:
+    # IPs or networks allowed to use this user. An empty list means any IP.
+    ips: []
+    # List of permissions.
+    permissions:
+      # Available actions are: publish, read, playback, api, metrics, pprof.
+      - action: api
+        # Paths can be set to further restrict access to a specific path.
+        # An empty path means any path.
+        # Regular expressions can be used by using a tilde as prefix.
+        path:
+      - action: publish     # anyone can publish, no credentials needed
+        path:
+      - action: read
+        path:
+      - action: playback
+        path:
+  # - user: aiders
+  #   pass: abcd1234
+  #   permissions:
+  #     - action: read      # only authenticated users can read/watch
+  #       path:
+  #     - action: playback  # only authenticated users can access recordings
+  #       path:

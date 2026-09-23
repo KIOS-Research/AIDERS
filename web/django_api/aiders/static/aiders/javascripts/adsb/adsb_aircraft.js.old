@@ -1,0 +1,499 @@
+{
+    // ADS-B Aircraft Tracking System for AIDERS Platform
+    // Displays real-time aircraft positions on MapLibre map
+    
+    const ADSB_WS_TIMER = 2000; // Update every 2 seconds
+    const ADSB_WS_ADDRESS = "wss://opensky-network.org/api/states/all"; // OpenSky Network API
+    const ADSB_LAYER_ID = 'adsb-aircraft';
+    const ADSB_SOURCE_ID = 'adsb-aircraft-source';
+    
+    let adsbWebSocket;
+    let aircraftData = new Map(); // Store aircraft by ICAO24 identifier
+    let adsbEnabled = false;
+    let aircraftCount = 0;
+    let updateInterval;
+    
+    // Aircraft icon data (base64 encoded PNG airplane icon)
+    const AIRCRAFT_ICON = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAAdgAAAHYBTnsmCAAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAANCSURBVEiJpZVLbBNXFIafO/Y4tuPYsZ04dpzECQlJSAhQSqFQVaJCqVq1qKq6YMGCBStWrFmwYMWCBQsWLFiwYMWCBQsWLFiwYMGCBQsWLFiwYMGCBQsWrFiwYMGCBQsWrFixYsGCFStWrFixYsWKFStWrFixYsWKFStWrFixYsWKFStWrFixYsWKFStWrFixYsWKFStWrFixYsWKFStWrFixYsWKFStWrFixYsWKFStWrFixYsWKFStWrFixYsWKFStWrPixYsWKFStWrFixYsWKFStWrFixYsWKFStWrFixYsWKFStWrFixYsWKFStWrFixYsWKFStWrFixYsWKFStWrRix';
+
+    // Alternative: Create aircraft icon programmatically
+    function createAircraftIcon() {
+        const canvas = document.createElement('canvas');
+        canvas.width = 24;
+        canvas.height = 24;
+        const ctx = canvas.getContext('2d');
+        
+        // Set color
+        ctx.fillStyle = '#00BFFF';
+        ctx.strokeStyle = '#0080CC';
+        ctx.lineWidth = 3;
+        
+        // Draw aircraft shape (simplified airplane)
+        ctx.beginPath();
+        // Fuselage
+        ctx.moveTo(12, 4);
+        ctx.lineTo(12, 20);
+        // Wings
+        ctx.moveTo(6, 10);
+        ctx.lineTo(18, 10);
+        // Tail
+        ctx.moveTo(9, 18);
+        ctx.lineTo(15, 18);
+        ctx.stroke();
+        
+        // Draw filled circle for center
+        ctx.beginPath();
+        ctx.arc(12, 12, 2, 0, 2 * Math.PI);
+        ctx.fill();
+        
+        return canvas.toDataURL('image/png');
+    }
+
+    // Create simple fallback icon
+    function createFallbackIcon() {
+        const canvas = document.createElement('canvas');
+        canvas.width = 16;
+        canvas.height = 16;
+        const ctx = canvas.getContext('2d');
+        
+        // Draw simple colored circle
+        ctx.fillStyle = '#00BFFF';
+        ctx.beginPath();
+        ctx.arc(8, 8, 6, 0, 2 * Math.PI);
+        ctx.fill();
+        
+        // Add small directional indicator
+        ctx.fillStyle = '#FFFFFF';
+        ctx.beginPath();
+        ctx.moveTo(8, 3);
+        ctx.lineTo(6, 7);
+        ctx.lineTo(10, 7);
+        ctx.closePath();
+        ctx.fill();
+        
+        return canvas.toDataURL('image/png');
+    }
+
+    // Initialize ADS-B aircraft tracking
+    function initAdsbTracking() {
+        console.log('Initializing ADS-B aircraft tracking...');
+        
+        // Use static aircraft PNG icon
+        const aircraftIconUrl = '/static/aiders/imgs/plane-icon.png';
+        
+        // Add aircraft icon to map
+        map.loadImage(aircraftIconUrl, (error, image) => {
+            if (error) {
+                console.error('Error loading aircraft PNG icon:', error);
+                console.log('Falling back to programmatically created icon...');
+                
+                // Fallback: Create aircraft icon programmatically
+                const fallbackIcon = createAircraftIcon();
+                map.loadImage(fallbackIcon, (fallbackError, fallbackImage) => {
+                    if (!fallbackError && !map.hasImage('aircraft-icon')) {
+                        map.addImage('aircraft-icon', fallbackImage);
+                        console.log('Using programmatically created aircraft icon');
+                    } else {
+                        // Ultimate fallback: simple circle
+                        const simpleIcon = createFallbackIcon();
+                        map.loadImage(simpleIcon, (simpleError, simpleImage) => {
+                            if (!simpleError && !map.hasImage('aircraft-icon')) {
+                                map.addImage('aircraft-icon', simpleImage);
+                                console.log('Using simple circle aircraft icon');
+                            }
+                        });
+                    }
+                });
+                return;
+            }
+            if (!map.hasImage('aircraft-icon')) {
+                map.addImage('aircraft-icon', image);
+                console.log('Aircraft PNG icon loaded successfully');
+            }
+        });
+
+        // Create GeoJSON source for aircraft
+        if (!map.getSource(ADSB_SOURCE_ID)) {
+            map.addSource(ADSB_SOURCE_ID, {
+                type: 'geojson',
+                data: {
+                    type: 'FeatureCollection',
+                    features: []
+                },
+                cluster: false
+            });
+        }
+
+        // Add aircraft symbols layer
+        if (!map.getLayer(ADSB_LAYER_ID)) {
+            map.addLayer({
+                id: ADSB_LAYER_ID,
+                type: 'symbol',
+                source: ADSB_SOURCE_ID,
+                layout: {
+                    'icon-image': 'aircraft-icon',
+                    'icon-size': [
+                        'interpolate',
+                        ['linear'],
+                        ['zoom'],
+                        5, 0.5,
+                        10, 0.8,
+                        15, 1.2
+                    ],
+                    'icon-rotate': ['case', 
+                        ['has', 'heading'], ['get', 'heading'],
+                        0
+                    ],
+                    'icon-rotation-alignment': 'map',
+                    'icon-allow-overlap': true,
+                    'icon-ignore-placement': true,
+                    'text-field': ['get', 'callsign'],
+                    'text-font': ['Open Sans Regular', 'Arial Unicode MS Regular'],
+                    'text-offset': [0, 2],
+                    'text-anchor': 'top',
+                    'text-size': 10,
+                    'text-optional': true
+                },
+                paint: {
+                    'icon-opacity': 1.0,
+                    'text-color': '#000000',
+                    'text-halo-color': '#fcba58',
+                    'text-halo-width': 1
+                }
+            });
+            console.log('Aircraft layer added to map');
+        }
+
+        // Add click event for aircraft
+        map.on('click', ADSB_LAYER_ID, (e) => {
+            if (e.features.length > 0) {
+                const aircraft = e.features[0].properties;
+                showAircraftPopup(e.lngLat, aircraft);
+            }
+        });
+
+        // Change cursor on hover
+        map.on('mouseenter', ADSB_LAYER_ID, () => {
+            map.getCanvas().style.cursor = 'pointer';
+        });
+
+        map.on('mouseleave', ADSB_LAYER_ID, () => {
+            map.getCanvas().style.cursor = '';
+        });
+    }
+
+    // Show aircraft information popup
+    function showAircraftPopup(coordinates, aircraft) {
+        const popup = new maplibregl.Popup({ offset: 25 })
+            .setLngLat(coordinates)
+            .setHTML(`
+                <div class="aircraft-popup">
+                    <h3><strong>Aircraft Information</strong></h3>
+                    <div><strong>Callsign:</strong> ${aircraft.callsign || 'N/A'}</div>
+                    <div><strong>ICAO24:</strong> ${aircraft.icao24}</div>
+                    <div><strong>Country:</strong> ${aircraft.origin_country || 'Unknown'}</div>
+                    <div><strong>Altitude:</strong> ${aircraft.altitude ? Math.round(aircraft.altitude) + ' m' : 'N/A'}</div>
+                    <div><strong>Ground Speed:</strong> ${aircraft.velocity ? Math.round(aircraft.velocity * 3.6) + ' km/h' : 'N/A'}</div>
+                    <div><strong>Heading:</strong> ${aircraft.heading ? Math.round(aircraft.heading) + '°' : 'N/A'}</div>
+                    <div><strong>Vertical Rate:</strong> ${aircraft.vertical_rate ? aircraft.vertical_rate + ' m/s' : 'N/A'}</div>
+                    <div><strong>Last Contact:</strong> ${aircraft.last_contact ? new Date(aircraft.last_contact * 1000).toLocaleTimeString() : 'N/A'}</div>
+                    <div><strong>Position:</strong> ${coordinates.lat.toFixed(4)}, ${coordinates.lng.toFixed(4)}</div>
+                </div>
+            `)
+            .addTo(map);
+    }
+
+    // Fetch aircraft data from Django API
+    async function fetchAircraftData() {
+        try {
+            // Get current map bounds to limit the area
+            const bounds = map.getBounds();
+            const params = new URLSearchParams({
+                lamin: bounds.getSouth(),
+                lomin: bounds.getWest(), 
+                lamax: bounds.getNorth(),
+                lomax: bounds.getEast()
+            });
+            
+            // Use Django API endpoint
+            const apiUrl = dutils.urls.resolve('adsb_aircraft_data', { operation_name: CURRENT_OP });
+            const response = await fetch(`${apiUrl}?${params.toString()}`, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-CSRFToken': document.getElementById('csrf').querySelector('input').value,
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            processDjangoAircraftData(data);
+            
+        } catch (error) {
+            console.error('Error fetching ADS-B data:', error);
+            
+            // Fallback: Use demo data for testing
+            console.log('Using demo aircraft data due to API error');
+            generateDemoAircraft();
+        }
+    }
+
+    // Process aircraft data from Django API
+    function processDjangoAircraftData(data) {
+        if (!Array.isArray(data)) {
+            console.log('No aircraft data available');
+            return;
+        }
+
+        const features = [];
+        const currentTime = Date.now() / 1000;
+
+        data.forEach(aircraft => {
+            // Skip if no position data or aircraft is on ground
+            if (!aircraft.latitude || !aircraft.longitude || aircraft.on_ground) return;
+
+            // Skip if data is too old (more than 60 seconds)
+            if (aircraft.last_contact && currentTime - aircraft.last_contact > 60) return;
+
+            // Store aircraft data
+            aircraftData.set(aircraft.icao24, aircraft);
+
+            // Create GeoJSON feature
+            features.push({
+                type: 'Feature',
+                geometry: {
+                    type: 'Point',
+                    coordinates: [aircraft.longitude, aircraft.latitude]
+                },
+                properties: {
+                    ...aircraft,
+                    // Ensure heading is a number for icon rotation
+                    heading: typeof aircraft.heading === 'number' ? aircraft.heading : 0
+                }
+            });
+        });
+
+        // Update map with aircraft data
+        updateAircraftOnMap(features);
+        
+        aircraftCount = features.length;
+        // console.log(`Updated ${features.length} aircraft on map`);
+    }
+
+    // Generate demo aircraft data for testing
+    function generateDemoAircraft() {
+        const center = map.getCenter();
+        const features = [];
+
+        // Generate some demo aircraft around the map center
+        for (let i = 0; i < 6; i++) {
+            const offsetLat = (Math.random() - 0.5) * 0.08; // ~4km radius
+            const offsetLng = (Math.random() - 0.5) * 0.08;
+            
+            const aircraft = {
+                icao24: `demo${i.toString().padStart(3, '0')}`,
+                callsign: `DEMO${i + 1}`,
+                origin_country: 'Demo',
+                latitude: center.lat + offsetLat,
+                longitude: center.lng + offsetLng,
+                altitude: Math.round(Math.random() * 10000 + 1000), // 1000-11000m
+                velocity: Math.round(Math.random() * 250 + 100), // 100-350 m/s
+                heading: Math.round(Math.random() * 360),
+                vertical_rate: Math.round((Math.random() - 0.5) * 10), // -5 to +5 m/s
+                last_contact: Date.now() / 1000,
+                on_ground: false
+            };
+
+            aircraftData.set(aircraft.icao24, aircraft);
+
+            features.push({
+                type: 'Feature',
+                geometry: {
+                    type: 'Point',
+                    coordinates: [aircraft.longitude, aircraft.latitude]
+                },
+                properties: aircraft
+            });
+        }
+
+        updateAircraftOnMap(features);
+        console.log('Generated demo aircraft data');
+    }
+
+    // Update aircraft positions on map
+    function updateAircraftOnMap(features) {
+        if (map.getSource(ADSB_SOURCE_ID)) {
+            const featureCollection = {
+                type: 'FeatureCollection',
+                features: features
+            };
+            
+            // console.log('Updating aircraft on map:', {
+            //     featureCount: features.length,
+            //     sampleFeature: features[0],
+            //     layerVisible: map.getLayoutProperty(ADSB_LAYER_ID, 'visibility'),
+            //     hasIcon: map.hasImage('aircraft-icon')
+            // });
+            
+            map.getSource(ADSB_SOURCE_ID).setData(featureCollection);
+            
+            // Force layer visibility
+            if (map.getLayer(ADSB_LAYER_ID)) {
+                map.setLayoutProperty(ADSB_LAYER_ID, 'visibility', 'visible');
+            }
+        }
+    }
+
+    // Start ADS-B tracking
+    function startAdsbTracking() {
+        if (adsbEnabled) return;
+        
+        adsbEnabled = true;
+        console.log('Starting ADS-B aircraft tracking...');
+        
+        // Initial fetch
+        fetchAircraftData();
+        
+        // Set up periodic updates
+        updateInterval = setInterval(() => {
+            if (adsbEnabled) {
+                fetchAircraftData();
+            }
+        }, ADSB_WS_TIMER);
+
+        // Show layer
+        if (map.getLayer(ADSB_LAYER_ID)) {
+            map.setLayoutProperty(ADSB_LAYER_ID, 'visibility', 'visible');
+        }
+        
+        create_popup_for_a_little(SUCCESS_ALERT, 'ADS-B aircraft tracking started', 3000);
+    }
+
+    // Stop ADS-B tracking
+    function stopAdsbTracking() {
+        if (!adsbEnabled) return;
+        
+        adsbEnabled = false;
+        console.log('Stopping ADS-B aircraft tracking...');
+        
+        if (updateInterval) {
+            clearInterval(updateInterval);
+            updateInterval = null;
+        }
+
+        // Hide layer
+        if (map.getLayer(ADSB_LAYER_ID)) {
+            map.setLayoutProperty(ADSB_LAYER_ID, 'visibility', 'none');
+        }
+
+        // Clear aircraft data
+        aircraftData.clear();
+        updateAircraftOnMap([]);
+        
+        create_popup_for_a_little(WARNING_ALERT, 'ADS-B aircraft tracking stopped', 3000);
+    }
+
+    // Toggle ADS-B tracking
+    function toggleAdsbTracking() {
+        if (adsbEnabled) {
+            stopAdsbTracking();
+        } else {
+            startAdsbTracking();
+        }
+        return adsbEnabled;
+    }
+
+    // Get aircraft count
+    function getAircraftCount() {
+        // return aircraftData.size;
+        return aircraftCount;
+    }
+
+    // Get aircraft by ICAO24
+    function getAircraft(icao24) {
+        return aircraftData.get(icao24);
+    }
+
+    // Initialize when map loads
+    map.on('load', function() {
+        initAdsbTracking();
+    });
+
+    // Export functions for global access
+    window.adsbTracker = {
+        start: startAdsbTracking,
+        stop: stopAdsbTracking,
+        toggle: toggleAdsbTracking,
+        isEnabled: () => adsbEnabled,
+        getCount: getAircraftCount,
+        getAircraft: getAircraft,
+        getData: () => Array.from(aircraftData.values())
+    };
+}
+
+
+
+
+/*************************************/
+// ADS-B control functions
+/*************************************/
+
+
+
+function toggleAdsbTracking(isEnabled) {
+    postElementId('ADS-B Tracking', isEnabled ? 'On' : 'Off');
+    
+    if (window.adsbTracker) {
+        window.adsbTracker.toggle();
+        updateAdsbCount();
+    }
+}
+
+function toggleAdsbLayerVisibility(toggleId) {
+    const isChecked = document.getElementById(toggleId).checked;
+    
+    if (isChecked) {
+        // Enable tracking and show layer
+        if (window.adsbTracker) {
+            if (!window.adsbTracker.isEnabled()) {
+                window.adsbTracker.start();
+            }
+            if (map.getLayer('adsb-aircraft')) {
+                map.setLayoutProperty('adsb-aircraft', 'visibility', 'visible');
+            }
+        }
+    } else {
+        // Hide layer but keep tracking running
+        if (map.getLayer('adsb-aircraft')) {
+            map.setLayoutProperty('adsb-aircraft', 'visibility', 'none');
+        }
+    }
+    
+    postElementId('ADS-B Aircraft Layer', isChecked ? 'Visible' : 'Hidden');
+    updateAdsbCount();
+}
+
+function refreshAdsbData() {
+    if (window.adsbTracker && window.adsbTracker.isEnabled()) {
+        // Force refresh by stopping and starting
+        window.adsbTracker.stop();
+        setTimeout(() => {
+            window.adsbTracker.start();
+            updateAdsbCount();
+        }, 500);
+    }
+}
+
+function updateAdsbCount() {
+    const count = window.adsbTracker ? window.adsbTracker.getCount() : 0;
+    const countElement = document.getElementById('adsbAircraftCount');
+    if (countElement) {
+        countElement.textContent = count;
+    }
+}
+
+// Update aircraft count every few seconds
+setInterval(updateAdsbCount, 3000);

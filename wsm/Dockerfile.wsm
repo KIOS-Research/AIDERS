@@ -1,0 +1,36 @@
+# Use the official Golang image as the base image
+FROM golang:1.21 AS builder
+
+# Set the working directory inside the container
+WORKDIR /application
+
+# Copy the rest of the application source code into the container
+COPY wsm/app/ .
+COPY wsm/entrypoint.wsm.sh .
+
+# Download Go module dependencies
+RUN go mod download
+
+# Build the Go application inside the container
+RUN CGO_ENABLED=0 GOOS=linux go build -o /application/app ./src
+
+# PHASE 2
+
+# Use a minimal base image to reduce the container size
+FROM alpine:latest
+
+# Needed for telnet support
+RUN apk add --no-cache busybox-extras curl
+
+# Set the working directory inside the container
+WORKDIR /application
+
+# Copy the built Go application from the builder stage to the final image
+COPY --from=builder /application/app .
+COPY --from=builder /application/entrypoint.wsm.sh .
+
+# HealthCheck
+HEALTHCHECK --interval=30s CMD curl -i -N -H "Connection: Upgrade" -H "Upgrade: websocket" -H "Host: localhost:${WSM_PORT}" -H "Origin: http://localhost" http://localhost:${WSM_PORT} || exit 1
+
+ENTRYPOINT ["/bin/sh", "./entrypoint.wsm.sh"]
+

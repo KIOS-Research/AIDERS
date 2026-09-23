@@ -1,17 +1,17 @@
 import math
 import os
 import time
-import rospy
+
+import database.queries
 
 # custom libs
 import ros.callbacks
-import database.queries
+import rospy
+from kios.msg import BuildMap, MissionDji, Telemetry, TelemetryDevice, TerminalHardware
 
 # ROS messages
-from std_msgs.msg import String, Bool
-from kios.msg import Telemetry, TelemetryDevice, TerminalHardware, MissionDji, BuildMap
+from std_msgs.msg import Bool, String
 from trisonica_ros.msg import trisonica_msg
-
 
 runningSubscribers = {}
 
@@ -24,7 +24,7 @@ runningSubscribers = {}
 # create ROS subscribers that listen for clients requesting to connect/disconnect
 # called on application start-up
 def createCoreSubscribers():
-    os.environ['ROS_MASTER_URI'] = f"http://{os.environ['NET_IP']}:11311" # get from .env
+    os.environ['ROS_MASTER_URI'] = f"http://{os.environ['ROS_IP']}:11311" # get from .env
     rospy.init_node('AIDERS_MAIN')   # initialize the platform's ROS node
     rospy.Subscriber("/droneIds", String, ros.callbacks.droneConnectedOrDisconnected)
     rospy.Subscriber("/deviceIds", String, ros.callbacks.deviceConnectedOrDisconnected)
@@ -85,21 +85,6 @@ def stopDeviceSubscribers(_name):
     stopSubscriberByName(f"/{_name}/TelemetryDevice")
 
 
-##################################
-############# LORA ###############
-##################################
-
-
-# create subscribers for a newly connected lora
-def createLoraMasterSubscribers(_id, _name):
-    createSubscriber(f"/{_name}/TelemetryLora", String, ros.callbacks.loraTelemetryReceived, (time.time(), _id))
-    createSubscriber(f"/{_name}/MonitorLora", String, ros.callbacks.loraMonitorDataReceived, (time.time(), _id))
-
-# stop all the subscribers realted to a specific lora
-def stopLoraMasterSubscribers(_name):
-    stopSubscriberByName(f"/{_name}/TelemetryLora")
-    stopSubscriberByName(f"/{_name}/MonitorLora")
-
 
 ###################################
 ############# UTILS ###############
@@ -124,3 +109,20 @@ def stopSubscriberByName(subscriberName):
         print(f"Subscriber '{subscriberName}' has been stopped.")
     else:
         print(f"No subscriber with name '{subscriberName}' is currently running.")
+
+
+
+##################################
+############# LORA ###############
+##################################
+
+
+# create subscribers for a newly connected lora
+def createLoraMasterSubscribers(_id, _name):
+    createSubscriber(f"/{_name}/TelemetryLora", String, ros.callbacks.loraTelemetryReceived, (time.time(), _id))
+    createSubscriber(f"/{_name}/MonitorLora", String, ros.callbacks.loraMonitorDataReceived, (time.time(), _id))
+
+# stop all the subscribers realted to a specific lora
+def stopLoraMasterSubscribers(_name):
+    stopSubscriberByName(f"/{_name}/TelemetryLora")
+    stopSubscriberByName(f"/{_name}/MonitorLora")

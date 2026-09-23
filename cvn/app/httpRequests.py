@@ -1,0 +1,55 @@
+import json
+import os
+import threading
+import time
+
+import requests
+
+
+if os.environ.get('VIDEO_AND_CV_REMOTE', 0) is True:
+    streamCaptureBaseUrl = f"http://{os.environ['NGINX_HOST']}:{os.environ['NGINX_PORT']}/remote/lsc"
+    detectionBaseUrl = f"http://{os.environ['NGINX_HOST']}:{os.environ['NGINX_PORT']}/remote/cvn"
+else:
+    streamCaptureBaseUrl = f"http://{os.environ['NGINX_HOST']}:{os.environ['NGINX_PORT']}/lsc"
+    detectionBaseUrl = f"http://{os.environ['NGINX_HOST']}:{os.environ['NGINX_PORT']}/cvn"
+
+
+def makePostRequestWithRetries(_url, _payload):
+    thread = threading.Thread(target=postRequestThread, args=(_url, _payload))
+    thread.start()
+
+def postRequestThread(_url, _payload):
+    headers = {
+        'Content-Type': 'application/json'
+    }
+    json_payload = json.dumps(_payload)
+    retries = 1
+    while True:
+        response = requests.post(_url, data=json_payload, headers=headers) # send the POST request
+        if response.status_code == 200:
+            break  # exit the loop
+        if retries == 3:
+            print(f"Request '{_url}' failed. Status code:", response.status_code)
+            break
+        retries += 1
+        time.sleep(1)   # wait before retrying
+
+
+# send a post request to the lsc container to start capturing the stream
+def startDroneLiveStreamCapture(_droneId, _droneName):
+    url = f"{streamCaptureBaseUrl}/startDroneStreamCapture"
+    payload = {
+        "droneId": _droneId,
+        "droneName": _droneName
+    }
+    makePostRequestWithRetries(url, payload)
+
+
+# send a post request to the lsc container to stop capturing the stream
+def stopDroneLiveStreamCapture(_droneName):
+    url = f"{streamCaptureBaseUrl}/stopDroneStreamCapture"
+    payload = {
+        "droneName": _droneName
+    }
+    makePostRequestWithRetries(url, payload)
+

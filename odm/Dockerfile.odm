@@ -1,1 +1,4 @@
-FROM opendronemap/nodeodm
+FROM opendronemap/nodeodm:3.5.2
+
+# HealthCheck
+HEALTHCHECK --interval=30s CMD curl --fail http://localhost:${ODM_PORT}/ || exit 1

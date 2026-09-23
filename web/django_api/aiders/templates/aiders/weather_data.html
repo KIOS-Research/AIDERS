@@ -1,0 +1,182 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Weather Data - AIDERS{% endblock %}
+
+{% block head_block %}
+<link href="{% static 'aiders/css/ui_platform/ui_platform.css' %}" rel="stylesheet" type="text/css" />
+{% endblock %}
+
+{% block body_block %}
+<div class="container-fluid mt-5 pt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>
+                    <i class="fas fa-thermometer-half me-2"></i>
+                    Weather Data
+                </h2>
+                <div>
+                    <a href="{% url 'weather_config' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-cog me-1"></i>
+                        Configuration
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    {% if weather_data %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Recent Weather Readings</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>City</th>
+                                    <th>Temperature</th>
+                                    <th>Feels Like</th>
+                                    <th>Weather</th>
+                                    <th>Humidity</th>
+                                    <th>Pressure</th>
+                                    <th>Wind</th>
+                                    <th>Cloud Cover</th>
+                                    <th>Visibility</th>
+                                    <th>Timestamp</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for weather in weather_data %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ weather.city }}</strong>
+                                        {% if weather.region %}
+                                            <br><small class="text-muted">{{ weather.region }}, {{ weather.country }}</small>
+                                        {% elif weather.country %}
+                                            <br><small class="text-muted">{{ weather.country }}</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">{{ weather.temperature|floatformat:1 }}°C</span>
+                                    </td>
+                                    <td>{{ weather.feels_like|floatformat:1 }}°C</td>
+                                    <td>
+                                        <div>
+                                            <strong>{{ weather.weather_condition }}</strong>
+                                        </div>
+                                        {% if weather.weather_icon %}
+                                            <img src="https:{{ weather.weather_icon }}" alt="{{ weather.weather_condition }}" width="32" height="32">
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ weather.humidity }}%</td>
+                                    <td>{{ weather.pressure|floatformat:1 }} mb</td>
+                                    <td>
+                                        {% if weather.wind_speed > 0 %}
+                                            {{ weather.wind_speed|floatformat:1 }} kph
+                                            {% if weather.wind_dir_text %}
+                                                <br><small>{{ weather.wind_dir_text }} ({{ weather.wind_direction|floatformat:0 }}°)</small>
+                                            {% endif %}
+                                            {% if weather.gust_kph %}
+                                                <br><small>Gusts: {{ weather.gust_kph|floatformat:1 }} kph</small>
+                                            {% endif %}
+                                        {% else %}
+                                            No wind data
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if weather.cloud_cover is not None %}
+                                            {{ weather.cloud_cover }}%
+                                        {% else %}
+                                            N/A
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if weather.visibility %}
+                                            {{ weather.visibility|floatformat:1 }} km
+                                        {% else %}
+                                            N/A
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div>{{ weather.timestamp|date:"M d, Y" }}</div>
+                                        <small class="text-muted">{{ weather.timestamp|date:"H:i:s" }}</small>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Weather Summary Cards -->
+    <div class="row mt-4">
+        {% regroup weather_data by city as city_weather_list %}
+        {% for city_group in city_weather_list %}
+            {% if forloop.counter <= 4 %}
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="card-title mb-0">{{ city_group.grouper }}</h6>
+                    </div>
+                    <div class="card-body">
+                        {% with city_group.list|first as latest %}
+                        <div class="text-center">
+                            <div class="h2 mb-1">{{ latest.temperature|floatformat:1 }}°C</div>
+                            <div class="text-muted mb-2">{{ latest.weather_condition }}</div>
+                            <div class="small">
+                                <div>Humidity: {{ latest.humidity }}%</div>
+                                <div>Wind: {{ latest.wind_speed|floatformat:1 }} kph {{ latest.wind_dir_text }}</div>
+                                <div class="text-muted mt-1">{{ latest.timestamp|date:"M d, H:i" }}</div>
+                            </div>
+                        </div>
+                        {% endwith %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+        <br />
+        <br />
+        <br />
+    
+    {% else %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="fas fa-cloud fa-3x text-muted mb-3"></i>
+                    <h4>No Weather Data Available</h4>
+                    <p class="text-muted">
+                        No weather data has been collected yet. Please configure the weather API settings 
+                        and wait for data to be collected.
+                    </p>
+                    <a href="{% url 'weather_config' %}" class="btn btn-primary">
+                        <i class="fas fa-cog me-1"></i>
+                        Configure Weather API
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+
+{% block script_block %}
+<script>
+// Auto-refresh the page every 5 minutes to show new weather data
+setTimeout(function() {
+    location.reload();
+}, 300000); // 5 minutes
+</script>
+{% endblock %}

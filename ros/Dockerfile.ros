@@ -6,11 +6,10 @@ RUN apt update && apt-get install -y \
     ros-noetic-gps-common \
     ros-noetic-rosbridge-server \
     ros-noetic-fkie-multimaster \
-    ros-noetic-rosserial-arduino \
-    ros-noetic-rosserial \    
     python3 \
     python3-pip \
     python3-rospy \
+    curl \
     netcat
 
 # Set the default Python version
@@ -51,6 +50,9 @@ EXPOSE 8765
 # Set ROS environment variables
 # ENV ROS_IP=192.168.0.2
 # ENV ROS_MASTER_URI=http://$ROS_IP:11311
+
+# HealthCheck
+HEALTHCHECK --interval=30s CMD . /opt/ros/$ROS_DISTRO/setup.sh &&rostopic list && curl --fail http://localhost:${ROS_API_PORT}/ros/healthCheck || exit 1
 
 # run the entrypoint bash script
 ENTRYPOINT ["/bin/bash", "./entrypoint.ros.sh"]

@@ -1,0 +1,30 @@
+server {
+    listen ${NGINXR_PORT};
+    location /media/ {
+        # later should add here only the platform ip and current host ip
+        allow ${NET_IP};
+        allow ${SUBNET};
+        allow ${MAIN_NET_IP};
+        allow ${MAIN_SUBNET};
+        deny all;
+        alias /media/;
+    }
+    location /lsc/ {
+        # later should add here only the platform ip and current host ip
+        allow ${NET_IP};
+        allow ${SUBNET};
+        allow ${MAIN_NET_IP};
+        allow ${MAIN_SUBNET};
+        deny all;
+        proxy_pass http://${LSCR_IP}:${LSCR_API_PORT};
+    }
+    location /cvn/ {
+        # later should add here only the platform ip and current host ip
+        allow ${NET_IP};
+        allow ${SUBNET};
+        allow ${MAIN_NET_IP};
+        allow ${MAIN_SUBNET};
+        deny all;
+        proxy_pass http://${CVNR_IP}:${CVNR_API_PORT};
+    }
+}

@@ -1,15 +1,17 @@
 import os
 import sys
+import time
+
 import mysql.connector
 from mysql.connector import pooling
 from mysql.connector.errors import PoolError
 
-
 dbconfig = {
-    "host": "localhost",
-    "user": os.environ['SQL_USER'],
-    "password": os.environ['SQL_PASSWORD'],
-    "database": os.environ['SQL_DATABASE'],
+    "host": os.environ['DB_HOST'],
+    "port": int(os.environ.get('DB_PORT', 3306)),
+    "user": os.environ['DB_USER'],
+    "password": os.environ['DB_PASSWORD'],
+    "database": os.environ['DB_DATABASE'],
     "connect_timeout": 30
 }
 
@@ -21,18 +23,21 @@ connectionPools = []
 def init(_noOfPools, _poolNamePefix):
     global numberOfPools
     numberOfPools = _noOfPools
-    try:
-        for i in range(1, numberOfPools + 1):
-            poolName = f"{_poolNamePefix}_{i}"
-            connectionPool = pooling.MySQLConnectionPool(pool_name=poolName, pool_size=32, **dbconfig)
-            connectionPools.append(connectionPool)
-        print(f"\n\U0001F525 MySQL connection pools: {numberOfPools}")
-        with open("/db_states.txt", "a") as file:
-            file.write(f"{_poolNamePefix}\n")
-    except Exception as e:
-        print(f"Error connecting to DB: {e}")
-        with open("/db_states.txt", "a") as file:
-            file.write(f"ERROR: {_poolNamePefix}\n")
+    while True:
+        try:
+            for i in range(1, numberOfPools + 1):
+                poolName = f"{_poolNamePefix}_{i}"
+                connectionPool = pooling.MySQLConnectionPool(pool_name=poolName, pool_size=32, **dbconfig)
+                connectionPools.append(connectionPool)
+            print(f"\n\U0001F525 MySQL connection pools: {numberOfPools}")
+            with open("/db_states.txt", "a") as file:
+                file.write(f"{_poolNamePefix}\n")
+            break
+        except Exception as e:
+            print(f"Error connecting to DB: {e}")
+            with open("/db_states.txt", "a") as file:
+                file.write(f"ERROR: {_poolNamePefix}\n")
+            time.sleep(1)
 
 class MySQLConnector:
     def __init__(self):

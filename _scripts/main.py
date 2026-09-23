@@ -105,7 +105,7 @@ def deleteDatabase():
             subprocess.run("docker rm -f db", shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
             subprocess.run(f"docker volume rm {dockerVolume}", shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
             envFilePath = os.path.join(getParentDirectory(), '.env')
-            os.remove(envFilePath) # delete .env file
+            # os.remove(envFilePath) # delete .env file
             writeToInfobox("Database was deleted successfully.")
         except Exception as e:
             writeToInfobox(f"An error occured: {e}")

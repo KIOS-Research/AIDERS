@@ -19,6 +19,7 @@ if [[ "$answer" =~ [Yy] ]]; then
     docker builder prune -a -f
     docker network prune -f
     docker volume prune -f
+    docker volume rm $(docker volume ls -qf dangling=true)
     echo -e "\nDocker data deleted!\n"
 else
     echo -e "\nAborted.\n"

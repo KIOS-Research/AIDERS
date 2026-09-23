@@ -14,6 +14,33 @@
     color: red;
 }
 
+.admin-navbar li a {
+    color: #00134d !important;
+    /* font-weight: bold; */
+    border: 1px solid #00134d;
+    border-radius: 3px;
+    padding: 3px;
+    margin-right: 10px;
+    margin-top: 3px;
+}
+
+.admin-navbar li a:hover {
+    background-color: #0b5ed7;
+    color: white !important;
+}
+
+/* Active navigation link styling */
+.admin-navbar .nav-link.active {
+    background-color: #00134d;
+    color: white !important;
+    border-radius: 4px;
+    font-weight: 500;
+}
+
+.admin-navbar .nav-link.active:hover {
+    background-color: #00134d;
+    color: white !important;
+}
 
 /* .mavlink-form label {
     width: 150px;
@@ -23,4 +50,18 @@
 .helptext {
     color: grey;
     font-size: 13px;
+}
+
+select.native-select {
+    appearance: auto !important;
+    -webkit-appearance: auto !important;
+    -moz-appearance: auto !important; 
+}
+
+#platform-version {
+    position: absolute;
+    bottom: 0px;
+    left: 90px;
+    color: #00134d;
+    font-size: 10px;
 }

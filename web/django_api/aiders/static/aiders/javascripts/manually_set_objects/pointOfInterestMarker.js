@@ -1,5 +1,12 @@
-const pointOfInterestMarkerUpdateTimer = 1000;
+const pointOfInterestMarkerUpdateTimer = 3000;
 var pointOfInterestMarkerIntervalTime = null;
+
+
+if (!pointOfInterestMarkerIntervalTime) {
+	pointOfInterestMarkerIntervalTime = setInterval(() => {
+		updatePointOfInterestMarkers(); // Function to make the POST request
+	}, pointOfInterestMarkerUpdateTimer);
+}
 
 function startPointOfInterestMarker() {
 	console.log("Start Point Of Interest Marker");

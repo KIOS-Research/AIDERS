@@ -5,7 +5,6 @@
         <meta charset="UTF-8" />
         <title>AIDERS - Platform</title>
         <link rel="shortcut icon" type="image/png" href="{% static 'aiders/imgs/aiders_logo_no_background.png' %}" />
-        <meta content="initial-scale=1,maximum-scale=1,user-scalable=no" name="viewport" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <script src="{% static 'libs/jquery/http_ajax.googleapis.com_ajax_libs_jquery_3.5.1_jquery.js' %}"></script>
         <link href="{% static 'libs/bootstrap/bootstrap_v4.css' %}" rel="stylesheet" />
@@ -39,6 +38,7 @@
         <script src="{% static 'libs/mapbox-geocoder-v5/mapbox-gl-geocoder.min.js' %}"></script>
         <link rel="stylesheet" href="{% static 'libs/mapbox-geocoder-v5/mapbox-gl-geocoder.css' %}" type="text/css" />
         <link href="{% static 'aiders/css/video/video_js.css' %}" rel="stylesheet" />
+        <link href="{% static 'aiders/css/platform/dynamicForm.css' %}" rel="stylesheet" />
         <!-- <script src="{% static 'libs/video/video.js' %}"></script> -->
         <script src="{% static 'aiders/javascripts/constants/constants.js' %}" type="text/javascript"></script>
     </head>
@@ -186,19 +186,31 @@
                 </div>
             </div>
         </div>
+
+        <div class="center-element alert alert-warning fade in alert-dismissible show" id="noWaypointFounded" style="display: none">
+            Please place at least one waypoint on the map before proceeding.
+        </div>
+
         <div class="geocoder" id="geocoder"></div>
         <script>
             var CURRENT_OP = '{{ operation.operation_name| safe }}';
             var OPERATION_ID = '{{ operation.id| safe }}';
             var NET_IP = '{{ net_ip }}';
-            var WS_PORT = '{{ ws_port }}';
+            var NGINX_PORT = '{{ nginx_port }}';
             var USE_ONLINE_MAPS = '{{use_online_map}}' === 'True';
+            var BOO_LATITUDE = '{{boo_latitude}}';
+            var BOO_LONGITUDE = '{{boo_longitude}}';            
             var DISASTER_EPICENTER_LATITUDE = '{{disaster_epicenter_latitude}}';
             var DISASTER_EPICENTER_LONGITUDE = '{{disaster_epicenter_longitude}}';
             var TOKEN = '{{ token }}';
-              
-            {% comment %} console.log('NET IP: ', NET_IP); {% endcomment %}
-            {% comment %} console.log('TOKEN: ', TOKEN); {% endcomment %}
+            var CSRF_TOKEN = "{{ csrf_token }}"
+            var USER = "{{ user }}"
+            var USER_EXECUTE_COMMAND_PERMISSION = "{{user.execute_commands}}"
+            var USER_SUPERUSER_PERMISSION = "{{ user.is_superuser}}"
+            var VIDEO_AND_CV_REMOTE = "{{video_and_cv_remote}}"
+            var LEGACY_LSC = "{{legacy_lsc}}"
+            var MTX_USER = "{{ mtx_user }}"
+            var MTX_PASS = "{{ mtx_pass }}"
         </script>
         {% if algorithm_results is not None %}
         <script>
@@ -215,6 +227,13 @@
         <div id="point-selection-message">Click on the map to place mission waypoints... <button class="btn btn-danger panel-btn msn" id="clickCancelSecondary" type="button">CANCEL</button> <button class="btn btn-success panel-btn msn" id="clickGoSecondary" type="button">GO</button></div>
         <div id="selected-drones-list"></div>
 
+
+        <div id="define-area-selection-message">
+            Click on the map to define area bounds...  
+            <button class="btn btn-danger panel-btn" onclick="clearDefineAreaWaypoints()" id="" type="button">CLEAR</button> 
+            <button class="btn btn-success panel-btn" onclick="openUserDefinedAreaDialog()" id="" type="button">CREATE</button>
+        </div>
+
         <div id="sidebar-overlay" class="sidebar-overlay"></div>
 
         <div class="sidebar">
@@ -226,7 +245,7 @@
                     <a href="{% url 'manage_operations' %}">
                         <img class="logo-img" src="{% static 'aiders/imgs/aiders_logo_with_text.png' %}" alt="AIDERS" />
                     </a>
-                    <span id="platform-version">v{{version}}</span>
+                    <span id="platform-version">v{{platform_version}}</span>
                 </span>
             </div>
             <!-- <hr class="info_table_lines" /> -->
@@ -281,6 +300,24 @@
                                 </ul>
                             </div>
                             
+
+                            <div class="drone-sub-section">
+                                <m4><i class="fa fa-exclamation-triangle" style="color: white;"></i> Pilot Notification</m4>
+                                <div class="mt-1">
+
+                                        <button
+                                                aria-pressed="false"
+                                                class="btn btn-outline-success panel-btn bldmp"
+                                                id="sendMessageToPilot"
+                                                onclick="sendMessageToAll()"
+                                                type="button">
+                                                SEND TO SELECTED
+                                            </button>
+
+                                </div>
+                            </div>    
+                            
+                            
                             <div class="drone-sub-section">
                                 <m4><i class="fa fa-map" style="color: white;"></i> Build Map</m4>
                                 <ul id="uav-build-map-list">
@@ -297,10 +334,10 @@
                                     </li>
                                     {% endcomment %}
                                     <li>
-                                        <m1>Overlap</m1>
+                                        <m1>Photo Capture Interval</m1>
                                         <m2 class="px-3">
-                                            <span id="overlapValue" style="color: white">50</span>
-                                            <span style="color: white">%</span>
+                                            <span id="buildMapInterval" style="color: white">5</span>
+                                            <span style="color: white">s.</span>
                                         </m2>
                                     </li>
                                     <li>
@@ -309,10 +346,10 @@
                                             class="form-range"
                                             id="vol"
                                             name="vol"
-                                            min="0"
-                                            max="99"
-                                            value="50"
-                                            onInput="postElementId('vol', this.value); document.getElementById('overlapValue').innerHTML = this.value;" />
+                                            min="1"
+                                            max="10"
+                                            value="5"
+                                            onInput="postElementId('vol', this.value); document.getElementById('buildMapInterval').innerHTML = this.value;" />
                                     </li>
                                     <li>
                                         <m1> Start Build Map</m1>
@@ -370,14 +407,14 @@
                                 </ul>
                             </div>
 
-                            <div class="drone-sub-section">
+                            <!-- <div class="drone-sub-section">
                                 <m4><i class="fa fa-droplet" style="color: white;"></i> Water Sampler</m4>
                                 <ul id="water-collector-list">
                                     <li id="water-sampler-data-list-default">
                                         <m1> No Drone with water sampler found. </m1>
                                     </li>
                                 </ul>
-                            </div>
+                            </div> -->
 
                             {% comment %} COMMENTED OUT JUST FOR THE DOCKER USAGE
                             <m4> Multispectral Build Map</m4>
@@ -419,49 +456,6 @@
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-                {% comment %} Video & Detection {% endcomment %}
-                <!-- <li>
-                    <a href="#" class="arrow-menu">
-                        <i class="fa-solid fa-eye"></i>
-                        <span class="link_name arrow">Video & Detection</span>
-                        <i class="fas fa-chevron-down arrow" style="font-size: 15px"></i>
-                    </a>
-                    <ul class="sub-menu">
-                        <li>
-                            <a class="link_name" href="#">Video & Detection</a>
-                        </li>
-                        <m4>Detection</m4>
-                        <div id="enable-detections-ui-side" class="sidebar-submenu">
-                            <ul id="enable-detections-list"></ul>
-                        </div>
-                        <m4>Video Feed</m4>
-                        <div id="video-feeds-ui-side" class="sidebar-submenu">
-                            <ul id="video-feeds-list"></ul>
-                        </div>
-                        <m4>Detection Feed</m4>
-                        <div id="detection-video-feeds-ui-side" class="sidebar-submenu">
-                            <ul id="det-video-feeds-list"></ul>
-                        </div>
-
-                    </ul>
-                </li> -->
-
-
-
-
                 {% comment %} Phone Manage {% endcomment %}
                 <li id="devices-menu" style="display: none">
                     <a href="#" class="arrow-menu">
@@ -497,6 +491,22 @@
                     </ul>
                 </li>
 
+
+                <li id="static-cameras-menu" style="display: none">
+                    <a href="#" class="arrow-menu">
+                        <i class="fa-solid fa-video-camera"></i>
+                        <span class="link_name arrow">Static Cameras</span>
+                        <span class="connected-clients" id="connected-static-cameras">0</span>
+                        <i class="fas fa-chevron-down arrow" style="font-size: 15px"></i>
+                    </a>
+                    <ul class="sub-menu">
+                        <li>
+                            <a class="link_name" href="#">Static Cameras</a>
+                        </li>
+                        <ul id="static-camera-selection-list"></ul>
+                    </ul>
+                </li>                
+
                 {% comment %} <hr style="background-color: gray; margin-top: 10px; margin-bottom: 10px;"/> {% endcomment %}
 
                 {% comment %} Tools {% endcomment %}
@@ -510,14 +520,150 @@
                         <li>
                             <a class="link_name" href="#">Tools</a>
                         </li>
+
+
+                        <!-- <table style="width: 100%">
+                            <tr>
+                                <td colspan="2" style="padding-left: 0px">
+                                    <m4><i class="fa fa-route" style="color: white;"></i> Mission Planning</m4>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="sidebar-option-title-td">
+                                    Mission Planner 
+                                </td>
+                                <td class="text-right">
+                                    <button
+                                        aria-pressed="false"
+                                        class="btn btn-outline-success panel-btn"
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#missionPlannerModal" 
+                                        id="loadMissionPlannerModal"
+                                        type="button">
+                                        SHOW
+                                    </button>
+                                </td>
+                            </tr>
+                        </table> 
+                         -->
+
+
+
+                        <table style="width: 100%">
+                            <tr>
+                                <td colspan="2" style="padding-left: 0px">
+                                    <m4><i class="fa fa-route" style="color: white;"></i> Telemetry</m4>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td width="60%">Trajectories</td>
+                                <td class="text-right">
+                                    <form style="padding-left: 0px">
+                                        <button aria-pressed="false" class="btn btn-outline-danger panel-btn" id="clearLineLayers"
+                                            type="button">
+                                            CLEAR
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td>
+                                    Operation Coverage 
+                                    <span id="coverageLoader" style="display:none;"><img src="{% static 'aiders/imgs/loading.gif' %}" width="20" /></span>
+                                </td>
+                                <td class="text-right">
+                                    <button
+                                        aria-pressed="false"
+                                        class="btn btn-outline-success panel-btn"
+                                        id="coverageShowBtn"
+                                        type="button">
+                                        SHOW
+                                    </button>
+                                    <button
+                                        aria-pressed="false"
+                                        class="btn btn-outline-danger panel-btn"
+                                        id="coverageClearBtn"
+                                        type="button"
+                                        onclick="clearOperationCoverage()">
+                                        CLEAR
+                                    </button>
+                                </td>
+                            </tr>
+                        </table>                                                     
+
+
+                        <!-- <table style="width: 100%">
+                            <tr>
+                                <td colspan="2" style="padding-left: 0px">
+                                    <m4><i class="fa fa-video" style="color: white;"></i> Session replays</m4>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Drone</td>
+                                <td class="text-right">
+                                    <button
+                                        aria-pressed="false"
+                                        class="btn btn-outline-success panel-btn bldmp"
+                                        id="droneSessionReplayBtn"
+                                        onclick="showAvailableDroneSessions('raw')"
+                                        type="button">
+                                        LOAD
+                                    </button>
+                                </td>
+                            </tr>
+                            {% comment %} <tr>
+                                <td>Detection stream</td>
+                                <td>
+                                    <button
+                                        aria-pressed="false"
+                                        class="btn btn-outline-success panel-btn bldmp"
+                                        id="detectionStreamReplayBtn"
+                                        onclick="showAvailableDroneSessions('detection')"
+                                        type="button">
+                                        LOAD
+                                    </button>
+                                </td>
+                            </tr> {% endcomment %}
+                            <tr>
+                                <td>Mobile Device</td>
+                                <td class="text-right">
+                                    <button
+                                        aria-pressed="false"
+                                        class="btn btn-outline-success panel-btn bldmp"
+                                        id="deviceSessionReplayBtn"
+                                        onclick="showAvailableDeviceSessions()"
+                                        type="button">
+                                        LOAD
+                                    </button>
+                                </td>
+                            </tr>                                
+                        </table>
+                         -->
+
+                        <ul id="ground-vehicle-selection-list"></ul>
+                        <ul id="drone-rid-selection-list"></ul>
+                        
                         <div id="map-tools-ui-side" class="sidebar-submenu">
                             <m4><i class="fa fa-map" style="color: white;"></i> Map Tools</m4>
                             <table>
                                 <!-- <ul id="map-tools-list"> -->
+                                    <tr>
+                                        <td class="tools-option-title">Search Location</td>
+                                        <td class="text-right">
+                                            <input
+                                                checked
+                                                data-onstyle="success"
+                                                data-toggle="toggle"
+                                                id="searchBoxToggle"
+                                                onchange="toggleSearchVisibility(this.id)"
+                                                type="checkbox" />
+                                        </td>
+                                    </tr>                                 
                                     {% if use_online_map == True %}
                                     <tr>
                                         <td class="tools-option-title">Measurement</td>
-                                        <td>
+                                        <td class="text-right">
                                             <input
                                                 data-onstyle="success"
                                                 data-toggle="toggle"
@@ -527,18 +673,7 @@
                                         </td>
                                     </tr>
                                     {% endif %}
-                                    <tr>
-                                        <td class="tools-option-title">Search Location</td>
-                                        <td>
-                                            <input
-                                                checked
-                                                data-onstyle="success"
-                                                data-toggle="toggle"
-                                                id="searchBoxToggle"
-                                                onchange="toggleSearchVisibility(this.id)"
-                                                type="checkbox" />
-                                        </td>
-                                    </tr>
+
                                     <tr>
                                         <td class="tools-option-title">
                                             Click Area Info
@@ -548,7 +683,7 @@
                                                 id="lockUnlockIcn"
                                                 onclick="lockUnlockIcon(this)"></i>
                                         </td>
-                                        <td>
+                                        <td class="text-right">
                                             <input
                                                 data-onstyle="success"
                                                 data-toggle="toggle"
@@ -560,12 +695,40 @@
                                 <!-- </ul> -->
                             </table>
 
+                            <!-- <m4><i class="fa fa-plane" style="color: white;"></i> Aircraft Tracking</m4>
+                            <table>
+                                <tr>
+                                    <td class="tools-option-title">ADS-B Aircraft Tracking</td>
+                                    <td class="text-right">
+                                        <input
+                                            data-onstyle="success"
+                                            data-toggle="toggle"
+                                            id="adsbTrackingToggle"
+                                            onchange="toggleAdsbTracking(this.checked)"
+                                            type="checkbox" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="tools-option-content">• Aircraft Count: <span id="adsbAircraftCount">0</span></td>
+                                    <td class="text-right">
+                                        <button 
+                                            style="margin-right: 3px;"
+                                            class="btn btn-sm btn-primary" 
+                                            id="adsbRefreshBtn"
+                                            onclick="refreshAdsbData()"
+                                            title="Refresh aircraft data">
+                                            <i class="fa fa-refresh"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </table> -->
+
                             <m4><i class="fa fa-cloud-sun" style="color: white;"></i> Weather Data</m4>
                             <ul id="weather-tools-list"></ul>
                             <table>
-                                <tr>
-                                    <td class="tools-option-title">Ground Weather Data</td>
-                                    <td>
+                                <!-- <tr>
+                                    <td class="tools-option-title">Ground Weather Station</td>
+                                    <td class="text-right">
                                         <input
                                             data-onstyle="success"
                                             data-toggle="toggle"
@@ -573,16 +736,65 @@
                                             onchange="weatherClickInfoBox(this.id)"
                                             type="checkbox" />
                                     </td>
+                                </tr> -->
+                                <tr>
+                                    <td class="tools-option-title">API Weather Data</td>
+                                    <td class="text-right">
+                                        <input
+                                            data-onstyle="success"
+                                            data-toggle="toggle"
+                                            id="weatherMapToggle"
+                                            onchange="toggleWeatherMapDisplay(this.checked)"
+                                            checked
+                                            type="checkbox" />
+                                    </td>
                                 </tr>
+                                <!-- <tr>
+                                    <td class="tools-option-content">• Weather Locations: <span id="weatherLocationCount">0</span></td>
+                                    <td class="text-right">
+                                        <button 
+                                            style="margin-right: 3px;"
+                                            class="btn btn-sm btn-primary" 
+                                            id="weatherRefreshBtn"
+                                            onclick="refreshWeatherData()"
+                                            title="Refresh weather data">
+                                            <i class="fa fa-refresh"></i>
+                                        </button>
+                                    </td>
+                                </tr> -->
+                                <!-- <tr>
+                                    <td class="tools-option-title">Reset UI Layout</td>
+                                    <td class="text-right">
+                                        <button 
+                                            class="btn btn-sm btn-warning" 
+                                            id="resetUIStateBtn"
+                                            onclick="if(confirm('Reset UI to default layout? This will reload the page.')) { UIStateManager.clearAndReload(); }"
+                                            title="Clear saved UI state and reload page">
+                                            <i class="fa fa-undo"></i>
+                                        </button>
+                                    </td>
+                                </tr> -->
                             </table>
 
 
                             <m4><i class="fa fa-location-dot" style="color: white;"></i> Custom Pins</m4>
                             <ul id="weather-tools-list"></ul>
                             <table>
+                                <!-- <tr>
+                                    <td class="tools-option-title">Show Custom Pins</td>
+                                    <td class="text-right">
+                                        <input
+                                        data-onstyle="success"
+                                        data-toggle="toggle"
+                                        id="MSO_InfoToggle"
+                                        onchange="startStopMSO(this.id)"
+                                        type="checkbox"
+                                        checked />
+                                    </td>
+                                </tr> -->
                                 <tr>
                                     <td class="tools-option-title">Place a Pin</td>
-                                    <td>
+                                    <td class="text-right">
                                         <input
                                         data-onstyle="success"
                                         data-toggle="toggle"
@@ -591,115 +803,8 @@
                                         type="checkbox" />
                                     </td>
                                 </tr>
-                                <tr>
-                                    <td class="tools-option-title">Show Custom Pins</td>
-                                    <td>
-                                        <input
-                                        data-onstyle="success"
-                                        data-toggle="toggle"
-                                        id="MSO_InfoToggle"
-                                        onchange="startStopMSO(this.id)"
-                                        type="checkbox" />
-                                    </td>
-                                </tr>
                             </table>
 
-
-                            <table style="width: 100%">
-                                <tr>
-                                    <td colspan="3" style="padding-left: 0px">
-                                        <m4><i class="fa fa-route" style="color: white;"></i> Telemetry</m4>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td width="60%">Trajectories</td>
-                                    <td></td>
-                                    <td>
-                                        <form style="padding-left: 0px">
-                                            <button aria-pressed="false" class="btn btn-outline-danger panel-btn" id="clearLineLayers"
-                                                type="button">
-                                                CLEAR
-                                            </button>
-                                        </form>
-                                    </td>
-                                </tr>
-
-                                <tr>
-                                    <td>
-                                        Operation Coverage 
-                                        <span id="coverageLoader" style="display:none;"><img src="{% static 'aiders/imgs/loading.gif' %}" width="20" /></span>
-                                    </td>
-                                    <td>
-                                        <button
-                                            aria-pressed="false"
-                                            class="btn btn-outline-success panel-btn"
-                                            id="coverageShowBtn"
-                                            type="button">
-                                            SHOW
-                                        </button>
-                                    </td>
-                                    <td>
-                                        <button
-                                            aria-pressed="false"
-                                            class="btn btn-outline-danger panel-btn"
-                                            id="coverageClearBtn"
-                                            type="button"
-                                            onclick="clearOperationCoverage()">
-                                            CLEAR
-                                        </button>
-                                    </td>
-                                </tr>
-                                
-                            </table>
-
-
-                            <table style="width: 100%">
-                                <tr>
-                                    <td colspan="2" style="padding-left: 0px">
-                                        <m4><i class="fa fa-video" style="color: white;"></i> Session replays</m4>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>Drone</td>
-                                    <td>
-                                        <button
-                                            aria-pressed="false"
-                                            class="btn btn-outline-success panel-btn bldmp"
-                                            id="droneSessionReplayBtn"
-                                            onclick="showAvailableDroneSessions('raw')"
-                                            type="button">
-                                            LOAD
-                                        </button>
-                                    </td>
-                                </tr>
-                                {% comment %} <tr>
-                                    <td>Detection stream</td>
-                                    <td>
-                                        <button
-                                            aria-pressed="false"
-                                            class="btn btn-outline-success panel-btn bldmp"
-                                            id="detectionStreamReplayBtn"
-                                            onclick="showAvailableDroneSessions('detection')"
-                                            type="button">
-                                            LOAD
-                                        </button>
-                                    </td>
-                                </tr> {% endcomment %}
-                                <tr>
-                                    <td>Mobile Device</td>
-                                    <td>
-                                        <button
-                                            aria-pressed="false"
-                                            class="btn btn-outline-success panel-btn bldmp"
-                                            id="deviceSessionReplayBtn"
-                                            onclick="showAvailableDeviceSessions()"
-                                            type="button">
-                                            LOAD
-                                        </button>
-                                    </td>
-                                </tr>                                
-                            </table>
-                            
 
 
                             <m4><i class="fa fa-helmet-safety" style="color: white;"></i> Safety</m4>
@@ -732,12 +837,12 @@
                             </table>
                             {% endcomment %}                            
 
-
+                           
                             <m4><i class="fa fa-vector-square" style="color: white;"></i> Computer Vision Detections</m4>
-                            <table>
+                            <table id="detectionObjectsTableCheckBox">
                                 <tr>
                                     <td class="tools-option-title">Crowd Localization</td>
-                                    <td>
+                                    <td class="text-right">
                                         <input
                                             data-onstyle="success"
                                             data-toggle="toggle"
@@ -748,7 +853,7 @@
                                 </tr>
                                 <tr>
                                     <td class="tools-option-title">Disaster Classification</td>
-                                    <td>
+                                    <td class="text-right">
                                         <input
                                             data-onstyle="success"
                                             data-toggle="toggle"
@@ -758,50 +863,20 @@
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td class="tools-option-title">Vechicle & Person Tracker</td>
-                                    <td>
+                                    <td class="tools-option-title">Detected Objects</td>
+                                    <td class="text-right">
                                         <input
                                             data-onstyle="success"
                                             data-toggle="toggle"
                                             id="showDetsToggle"
-                                            onchange="toggleVechicleAndPersonTracker(this.checked)"
+                                            onchange="toggleVehicleAndPersonTrackerVisualization(this.checked)"
                                             type="checkbox" />
                                     </td>
                                 </tr>
                                 <tr>
                                     <td class="tools-option-content">• All</td>
                                     <td>
-                                        <input id="showAllDetsCheckboxID" type="checkbox" class="vehicle-and-person-tracker-visual-option" disabled="" onclick="vechicleAndPersonTrackerOptionClick()" value="all">
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="tools-option-content">• Car</td>
-                                    <td>
-                                        <input id="detcarCheckbox" type="checkbox" class="vehicle-and-person-tracker-visual-option" disabled="" onclick="vechicleAndPersonTrackerOptionClick()" value="car">
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="tools-option-content">• Bus</td>
-                                    <td>
-                                        <input id="detbusCheckbox" type="checkbox" class="vehicle-and-person-tracker-visual-option" disabled="" onclick="vechicleAndPersonTrackerOptionClick()" value="bus">
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="tools-option-content">• Truck</td>
-                                    <td>
-                                        <input id="dettruckCheckbox" type="checkbox" class="vehicle-and-person-tracker-visual-option" disabled="" onclick="vechicleAndPersonTrackerOptionClick()" value="truck">
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="tools-option-content">• Motorbike</td>
-                                    <td>
-                                        <input id="detmotorbikeCheckbox" type="checkbox" class="vehicle-and-person-tracker-visual-option" disabled="" onclick="vechicleAndPersonTrackerOptionClick()" value="motorbike">
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="tools-option-content">• Person</td>
-                                    <td>
-                                        <input id="detpersonCheckbox" type="checkbox" class="vehicle-and-person-tracker-visual-option" disabled="" onclick="vechicleAndPersonTrackerOptionClick()" value="person">
+                                        <input id="showAllDetsCheckboxID" type="checkbox" class="vehicle-and-person-tracker-visual-option vehicle-and-person-tracker-visual-option-all" disabled="" onclick="detectionObjectsAllButtonClick(this)" value="all">
                                     </td>
                                 </tr>
                             </table>                        
@@ -829,7 +904,7 @@
                             </tr>
                             <tr>
                                 <td>View or Load Algorithms</td>
-                                <td>
+                                <td class="text-right">
                                     <form action="{% url 'algorithms' operation_name=operation.operation_name %}">
                                         <button aria-pressed="false" class="btn btn-outline-success panel-btn" type="submit">LOAD</button>
                                     </form>
@@ -837,12 +912,58 @@
                             </tr>
                             <tr>
                                 <td colspan="2" style="padding-left: 0px">
+                                    <m4><i class="fa-solid fa-map-location-dot" style="color: white;"></i> Area Visualization</m4>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    Upload KMZ File 
+                                </td>
+                                <td class="text-right">
+                                    <button
+                                        aria-pressed="false"
+                                        class="btn btn-outline-success panel-btn"
+                                        id="loadKmzShowBtn"
+                                        type="button">
+                                        UPLOAD
+                                    </button>
+                                </td>
+                            </tr>
+
+
+
+                            <tr>
+                                <td>Define Area</td>
+                                <td>
+                                    <button
+                                        aria-pressed="false"
+                                        class="btn btn-outline-success panel-btn uda"
+                                        id="triangle_mesh_load"
+                                        onclick="defineArea()"
+                                        type="button">
+                                        CREATE
+                                    </button>
+                                    <button
+                                        aria-pressed="false"
+                                        class="btn btn-outline-danger panel-btn"
+                                        id="clearUserDefindArea"
+                                        type="button"
+                                        onclick="clearUserDefinedArea()">
+                                        CLEAR
+                                    </button>
+                                </td>
+                            </tr>
+
+
+
+                            <tr>
+                                <td colspan="2" style="padding-left: 0px">
                                     <m4><i class="fa fa-fire" style="color: white;"></i> Fire Spread</m4>
                                 </td>
                             </tr>
                             <tr>
                                 <td>Calculate Fire Spread</td>
-                                <td>
+                                <td class="text-right">
                                     <button
                                         aria-pressed="false"
                                         class="btn btn-outline-success panel-btn"
@@ -868,7 +989,7 @@
                             </tr>
                             <tr>
                                 <td>3D Model & Orthophoto</td>
-                                <td>
+                                <td class="text-right">
                                     <button
                                         aria-pressed="false"
                                         class="btn btn-outline-success panel-btn"
@@ -892,30 +1013,10 @@
                                     <m4><i class="fa fa-cubes" style="color: white;"></i> 3D Points & Meshes</m4>
                                 </td>
                             </tr>
-                            <tr>
-                                <td>Load 3D Points</td>
-                                <td>
-                                    <button
-                                        aria-pressed="false"
-                                        class="btn btn-outline-success panel-btn bldmp"
-                                        id="points_mesh_load"
-                                        onclick="loadLidarPoints()"
-                                        type="button">
-                                        LOAD
-                                    </button>
-                                    <button
-                                        aria-pressed="false"
-                                        class="btn btn-outline-danger panel-btn bldmp"
-                                        id="points_mesh_clean"
-                                        onclick="clearLidarPoints()"
-                                        type="button">
-                                        CLEAN
-                                    </button>
-                                </td>
-                            </tr>
+
                             <tr>
                                 <td>Process 3D Meshes</td>
-                                <td>
+                                <td class="text-right">
                                     <button
                                         aria-pressed="false"
                                         class="btn btn-outline-success panel-btn bldmp"
@@ -926,9 +1027,10 @@
                                     </button>
                                 </td>
                             </tr>
+
                             <tr>
                                 <td>Load 3D Meshes</td>
-                                <td>
+                                <td class="text-right">
                                     <button
                                         aria-pressed="false"
                                         class="btn btn-outline-success panel-btn bldmp"
@@ -943,10 +1045,33 @@
                                         id="triangle_mesh_clean"
                                         onclick="clearLidarMesh()"
                                         type="button">
-                                        CLEAN
+                                        CLEAR
                                     </button>
                                 </td>
                             </tr>
+                          
+                            <tr>
+                                <td>Load 3D Points</td>
+                                <td class="text-right">
+                                    <button
+                                        aria-pressed="false"
+                                        class="btn btn-outline-success panel-btn bldmp"
+                                        id="points_mesh_load"
+                                        onclick="loadLidarPoints()"
+                                        type="button">
+                                        LOAD
+                                    </button>
+                                    <button
+                                        aria-pressed="false"
+                                        class="btn btn-outline-danger panel-btn bldmp"
+                                        id="points_mesh_clean"
+                                        onclick="clearLidarPoints()"
+                                        type="button">
+                                        CLEAR
+                                    </button>
+                                </td>
+                            </tr>
+                           
                             {% comment %}
                             <tr>
                                 <td colspan="2" style="padding-left: 0px">
@@ -998,7 +1123,118 @@
                             <table>
                                 <tr>
                                     <td colspan="2" style="padding-left: 0px">
-                                        <m4><i class="fa fa-location-crosshairs" style="color: white;"></i> Cyprus</m4>
+                                        <m4><i class="fa fa-hand-holding-medical" style="color: white;"></i> Emergency & Public Safety</m4>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Hospitals</td>
+                                    <td class="table_second_td">
+                                        <input
+                                            data-onstyle="success"
+                                            data-toggle="toggle"
+                                            id="hospitalsLayerToggle"
+                                            onchange="toggleLayerVisibility(this.id)"
+                                            type="checkbox" />
+                                    </td>
+                                </tr>                                 
+                                <tr>
+                                    <td>Police Stations</td>
+                                    <td class="table_second_td">
+                                        <input
+                                            data-onstyle="success"
+                                            data-toggle="toggle"
+                                            id="policeStationsLayerToggle"
+                                            onchange="toggleLayerVisibility(this.id)"
+                                            type="checkbox" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Fire Stations</td>
+                                    <td class="table_second_td">
+                                        <input
+                                            data-onstyle="success"
+                                            data-toggle="toggle"
+                                            id="fireStationsLayerToggle"
+                                            onchange="toggleLayerVisibility(this.id)"
+                                            type="checkbox" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Shelters</td>
+                                    <td class="table_second_td">
+                                        <input
+                                            data-onstyle="success"
+                                            data-toggle="toggle"
+                                            id="sheltersLayerToggle"
+                                            onchange="toggleLayerVisibility(this.id)"
+                                            type="checkbox" />
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td colspan="2" style="padding-left: 0px">
+                                        <m4><i class="fa fa-tree" style="color: white;"></i> Forestry & Wildfire</m4>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Forest Stations</td>
+                                    <td class="table_second_td">
+                                        <input
+                                            data-onstyle="success"
+                                            data-toggle="toggle"
+                                            id="forestStationsLayerToggle"
+                                            onchange="toggleLayerVisibility(this.id)"
+                                            type="checkbox" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Fire Lookouts</td>
+                                    <td class="table_second_td">
+                                        <input
+                                            data-onstyle="success"
+                                            data-toggle="toggle"
+                                            id="fireLookoutsLayerToggle"
+                                            onchange="toggleLayerVisibility(this.id)"
+                                            type="checkbox" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Firebreaks</td>
+                                    <td class="table_second_td">
+                                        <input
+                                            data-onstyle="success"
+                                            data-toggle="toggle"
+                                            id="firebreaksLayerToggle"
+                                            onchange="toggleLayerVisibility(this.id)"
+                                            type="checkbox" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Fire Hydrants</td>
+                                    <td class="table_second_td">
+                                        <input
+                                            data-onstyle="success"
+                                            data-toggle="toggle"
+                                            id="fireHydrantsLayerToggle"
+                                            onchange="toggleLayerVisibility(this.id)"
+                                            type="checkbox" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Heliports</td>
+                                    <td class="table_second_td">
+                                        <input
+                                            data-onstyle="success"
+                                            data-toggle="toggle"
+                                            id="heliportsLayerToggle"
+                                            onchange="toggleLayerVisibility(this.id)"
+                                            type="checkbox" />
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td colspan="2" style="padding-left: 0px">
+                                        <m4><i class="fa fa-road" style="color: white;"></i> Infrastructure</m4>
                                     </td>
                                 </tr>
                                 <tr>
@@ -1024,23 +1260,18 @@
                                     </td>
                                 </tr>
                                 <tr>
+                                    <td colspan="2" style="padding-left: 0px">
+                                        <m4><i class="fa fa-triangle-exclamation" style="color: white;"></i> Critical Infrastructure</m4>
+                                    </td>
+                                </tr>
+                                <tr>
+                                <tr>
                                     <td>Dams</td>
                                     <td class="table_second_td">
                                         <input
                                             data-onstyle="success"
                                             data-toggle="toggle"
                                             id="damsLayerToggle"
-                                            onchange="toggleLayerVisibility(this.id)"
-                                            type="checkbox" />
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>Hospitals</td>
-                                    <td class="table_second_td">
-                                        <input
-                                            data-onstyle="success"
-                                            data-toggle="toggle"
-                                            id="hospitalsLayerToggle"
                                             onchange="toggleLayerVisibility(this.id)"
                                             type="checkbox" />
                                     </td>
@@ -1068,6 +1299,17 @@
                                     </td>
                                 </tr>
                                 <tr>
+                                    <td>Explosives Storage</td>
+                                    <td class="table_second_td">
+                                        <input
+                                            data-onstyle="success"
+                                            data-toggle="toggle"
+                                            id="explosivesStoresLayerToggle"
+                                            onchange="toggleLayerVisibility(this.id)"
+                                            type="checkbox" />
+                                    </td>
+                                </tr>
+                                <!-- <tr>
                                     <td>Restricted/Allowed Area</td>
                                     <td class="table_second_td">
                                         <input
@@ -1077,9 +1319,26 @@
                                             onchange="toggleLayerVisibility(this.id)"
                                             type="checkbox" />
                                     </td>
-                                </tr>
+                                </tr> -->
+
                                 <tr>
-                                    <td>FIR</td>
+                                    <td colspan="2" style="padding-left: 0px">
+                                        <m4><i class="fa fa-plane" style="color: white;"></i> Airspace</m4>
+                                    </td>
+                                </tr>                                
+                                <tr>
+                                    <td>Geo Zones</td>
+                                    <td class="table_second_td">
+                                        <input
+                                            data-onstyle="success"
+                                            data-toggle="toggle"
+                                            id="geoZonesToggle"
+                                            onchange="toggleLayerVisibility(this.id)"
+                                            type="checkbox" />
+                                    </td>
+                                </tr>                                
+                                <tr>
+                                    <td>Cyprus FIR</td>
                                     <td class="table_second_td">
                                         <input
                                             data-onstyle="success"
@@ -1089,7 +1348,7 @@
                                             type="checkbox" />
                                     </td>
                                 </tr>
-                                <tr>
+                                <!-- <tr>
                                     <td>Operation Areas</td>
                                     <td class="table_second_td">
                                         <input
@@ -1099,7 +1358,34 @@
                                             onchange="toggleLayerVisibility(this.id)"
                                             type="checkbox" />
                                     </td>
+                                </tr> -->
+                                <tr>
+                                    <td colspan="2" style="padding-left: 0px">
+                                        <m4><i class="fa fa-users" style="color: white;"></i> Demographics</m4>
+                                    </td>
+                                </tr>                                
+                                <tr>
+                                    <td>Population</td>
+                                    <td class="table_second_td">
+                                        <input
+                                            data-onstyle="success"
+                                            data-toggle="toggle"
+                                            id="populationLayerToggle"
+                                            onchange="toggleLayerVisibility(this.id)"
+                                            type="checkbox" />
+                                    </td>
                                 </tr>
+                                <!-- <tr>
+                                    <td>ADS-B Aircraft</td>
+                                    <td class="table_second_td">
+                                        <input
+                                            data-onstyle="success"
+                                            data-toggle="toggle"
+                                            id="adsbAircraftLayerToggle"
+                                            onchange="toggleAdsbLayerVisibility(this.id)"
+                                            type="checkbox" />
+                                    </td>
+                                </tr> -->
                                 {% if use_online_map == True %}
                                 <tr>
                                     <td colspan="2" style="padding-left: 0px">
@@ -1198,8 +1484,17 @@
                     </ul>
                 </li>
                 
-                
+                {% comment %} <li>
+                    <!-- Mission Planner modal button-->
+                    <div class="">
+                            <button type="button" class="btn btn-primary" style="" data-bs-toggle="modal" data-bs-target="#missionPlannerModal" id="loadMissionPlannerModal">
+                                Mission Planner
+                            </button>
+                    </div>
+                </li> {% endcomment %}
             </ul>
+
+
             <!-- <li> -->
                 <div class="side-menu-last">
                     <!-- <hr class="info_table_lines" /> -->
@@ -1214,6 +1509,10 @@
                 </div>
             <!-- </li> -->
         </div>
+        <!-- Off-canvas drawer for phones/tablets. Must load here, synchronously: jQuery UI is
+             already available, .sidebar and .logo-menu exist, every feature script comes later,
+             and the closed state is applied before first paint. -->
+        <script src="{% static 'aiders/javascripts/responsive/mobile_drawer.js' %}"></script>
         <section class="main-section">
             <div class="main-content">
                 <div id="csrf">{% csrf_token %}</div>
@@ -1221,74 +1520,84 @@
             </div>
         </section>
         <div id="overlay" class="overlay-section">
-            <div id="fireSpreadBox" class="fireSpreadBox center-div overlay-popup" style="display: none; border-radius: 2%">
-                <span id="close" style="font-size: 20px; cursor: pointer" onclick="hideParentEl(this)">x</span>
-                <h4 class="card-title mb-3 text-dark text-uppercase" style="font-weight: 700">Fire Spread Prediction</h4>
-                <div class="row">
-                    <label style="font-size: 16px">Click anywhere on the map to indicate the starting point of the fire.</label>
+
+            <div id="fireSpreadBox" class="fireSpreadBox overlay-popup" style="display: none; border-radius: 5px; max-width: 650px; margin: auto;">
+                <span id="close" style="font-size: 20px; cursor: pointer; position: absolute; top: -5px; right: 5px;" onclick="hideParentEl(this)">x</span>
+                <div class="card shadow">
+                    <div class="card-body">
+                        <h4 class="card-title mb-3 text-dark text-uppercase text-center" style="font-weight: 700">Fire Spread Prediction</h4>
+                        <div class="mb-3">
+                            <label class="form-text" style="font-size: 16px">Click on the map to indicate the starting point of the fire.</label>
+                        </div>
+                        <form name="fire_prediction_data" class="fire_prediction_data" action="">
+                            <input type="hidden" id="operationInput" name="operationInput" value="{{ operation }}" />
+                            <input type="hidden" id="userInput" name="userInput" value="{{ user }}" />
+            
+                            <div class="form-group mb-3 row">
+                                <label for="timeStepsInput" class="col-sm-5 col-form-label">Total Prediction Time (s)</label>
+                                <div class="col-sm-7">
+                                    <input type="number" min="1" class="form-control" id="timeStepsInput" placeholder="Seconds" />
+                                    <select class="custom-select" hidden id="inlineFormCustomSelect">
+                                        <option>Choose...</option>
+                                        <option selected value="seconds">Seconds</option>
+                                        {% comment %}
+                                        <option value="minutes">Minutes</option>
+                                        {% endcomment %}
+                                    </select>                                    
+                                </div>
+                            </div>
+            
+                            <div class="form-group mb-3 row">
+                                <label for="initialFFInput" class="col-sm-5 col-form-label">Initial Fire Fronts</label>
+                                <div class="col-sm-7">
+                                    <input type="number" min="1" class="form-control" id="initialFFInput" placeholder="Number of fire fronts" />
+                                </div>
+                            </div>
+            
+                            <div class="form-group mb-3 row">
+                                <label for="windAngleInput" class="col-sm-5 col-form-label">Wind Direction (°)</label>
+                                <div class="col-sm-7">
+                                    <input type="number" class="form-control" id="windAngleInput" placeholder="Wind angle in degrees" />
+                                </div>
+                            </div>
+            
+                            <div class="form-group mb-3 row">
+                                <label for="windSpeedInput" class="col-sm-5 col-form-label">Wind Speed (m/s)</label>
+                                <div class="col-sm-7">
+                                    <input type="number" min="0" step="0.01" class="form-control" id="windSpeedInput" placeholder="Ground wind speed" />
+                                </div>
+                            </div>
+            
+                            <div class="form-group mb-3 row">
+                                <label for="fireSpeedInput" class="col-sm-5 col-form-label">Fire Speed (m/s)</label>
+                                <div class="col-sm-7">
+                                    <input type="number" min="0" step="0.01" class="form-control" id="fireSpeedInput" placeholder="Fire speed" />
+                                </div>
+                            </div>
+            
+                            <div class="form-group mb-4 row">
+                                <label for="timeIntervalInput" class="col-sm-5 col-form-label">Time Step Interval (s)</label>
+                                <div class="col-sm-7">
+                                    <input type="number" min="1" class="form-control" id="timeIntervalInput" placeholder="Visualize fire spread (s)" />
+                                </div>
+                            </div>
+            
+                            <div class="text-center">
+                                <button type="button" class="btn btn-primary px-4" id="firepredictionbutton" onclick="submitFireSpreadInput()">Submit</button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
-                <form name="fire_prediction_data" class="fire_prediction_data" action="">
-                    <input type="hidden" id="operationInput" name="operationInput" value="{{ operation }}" />
-                    <input type="hidden" id="userInput" name="userInput" value="{{ user }}" />
-                    <div class="row" style="margin-top: 10px">
-                        <label for="timeStepsInput" class="form-label">Time Steps</label>
-                        <div class="col">
-                            <input type="text" class="form-control" id="timeStepsInput" placeholder="seconds" />
-                        </div>
-                        <div class="col">
-                            <select class="custom-select" hidden id="inlineFormCustomSelect">
-                                <option>Choose...</option>
-                                <option selected value="seconds">Seconds</option>
-                                {% comment %}
-                                <option value="minutes">Minutes</option>
-                                {% endcomment %}
-                            </select>
-                        </div>
-                    </div>
-                    <div class="row" style="margin-top: 10px">
-                        <label for="initialFFInput" class="form-label">Initial Fire Fronts</label>
-                        <div class="col">
-                            <input type="number" class="form-control" placeholder="Number of initial fire fronts" id="initialFFInput" />
-                        </div>
-                    </div>
-                    <div class="row" style="margin-top: 10px">
-                        <label for="windAngleInput" class="form-label">Wind Angle(°)</label>
-                        <div class="col">
-                            <input type="number" class="form-control" id="windAngleInput" placeholder="Wind angle in radians" />
-                        </div>
-                    </div>
-                    <div class="row" style="margin-top: 10px">
-                        <label for="windSpeedInput" class="form-label">Wind Speed(m/s)</label>
-                        <div class="col">
-                            <input type="number" class="form-control" id="windSpeedInput" placeholder="Ground Wind speed in m/s" />
-                        </div>
-                    </div>
-                    <div class="row" style="margin-top: 10px">
-                        <label for="fireSpeedInput" class="form-label">Fire Speed(m/s)</label>
-                        <div class="col">
-                            <input type="number" class="form-control" id="fireSpeedInput" placeholder="Fire speed in m/s" />
-                        </div>
-                    </div>
-                    <div class="row" style="margin-top: 10px">
-                        <label for="timeIntervalInput" class="form-label">Time Interval</label>
-                        <div class="col">
-                            <input
-                                type="number"
-                                class="form-control"
-                                time="interval"
-                                id="timeIntervalInput"
-                                placeholder="Visualize fire spread in seconds" />
-                        </div>
-                    </div>
-                    <button type="button" class="btn btn-form-sbmt" id="firepredictionbutton" onclick="submitFireSpreadInput()">Submit</button>
-                </form>
             </div>
+
+
             <div class="calculation-box1 overlay-popup" style="display: none" id="calculation-box-div1">
                 <h3 style="font-size: 15px; display: inline">Area of the selected points:</h3>
                 <div id="calculated-area1">Null</div>
                 <h3 style="font-size: 15px">Length of the selected points:</h3>
                 <div id="calculated-area2">Null</div>
             </div>
+
             <div id="clickInfoBox" class="clickInfoBox overlay-popup" style="display: none">
                 <div>
                     <b>Click Anywhere on the map! </b>
@@ -1402,49 +1711,45 @@
             </div>
         </div>
 
-        <div id="setDetectedObjectModal" class="modal" tabindex="-1" role="dialog">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="setDetectedObjectModalLabel">Set Detected-Object Data</h5>
-                        <button type="button" class="close" data-dismiss="modal" 
-                        onclick="CancelSetDetectedObjectData()" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                            
-                    <form id="SetDetectedObjectDataForm" action="" novalidate="novalidate"
-                        class="single-action-form" method="post">
-                        
-                        <div class="modal-body">
-                    
-                            <div id="form-content">
 
-                                <div class="form-group">
-                                    <label for="add_md_descr">Description</label>
-                                    <input name="description" type="text" class="form-control" id="detected_object_descInput" placeholder="Description">
-                                </div>
-                                
-                                <input type="hidden" id="detected_object_track_id" name="track_id" class="form-control">
-
-                            </div>
-                        
-                        </div>
-
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-outline-dark" data-dismiss="modal" 
-                            onclick="CancelSetDetectedObjectData()">Cancel</button>
-
-                            <button type="button" name="" value="" class="btn btn-primary form-control-button"
-                                onclick="submitSetDetectedObjectData()" >
-                                Submit
-                            </button>
-                        </div>
-                        
-                    </form>
-                </div>
+<!-- Mission Planner Modal -->
+<div class="modal" id="missionPlannerModal" tabindex="-1" aria-labelledby="missionPlannerModalLabel">
+    <div class="modal-dialog" id="customModalDialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="missionPlannerModalLabel">Mission Planner</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" onclick="$('#missionPlannerModal').hide();">X</button>
+            </div>
+            <div class="modal-body">
+                <iframe id="missionPlannerIframe" src="" width="100%" frameborder="0"></iframe>
             </div>
         </div>
+    </div>
+</div>
+
+
+<script>
+    $(document).ready(function () {
+        // Make the modal draggable
+        $("#missionPlannerModal .modal-dialog").draggable({
+            handle: ".modal-header", // Allow dragging by the header
+            containment: "window"   // Keep the modal within the window bounds
+        });
+
+        // Show the modal when the button is clicked
+        try {
+            document.getElementById('loadMissionPlannerModal').addEventListener('click', function () {
+                $("#missionPlannerModal").show();
+                console.log('Loading external URL into iframe...');
+                const externalUrl = 'https://example.com';
+                document.getElementById('missionPlannerIframe').src = externalUrl;
+            });
+        } catch (error) {
+            console.log('Mission Planner modal is commented out');
+        }
+    });
+</script>
+
 
         <div id="addUserSetObjectModal" class="modal" tabindex="-1" role="dialog">
             <div class="modal-dialog">
@@ -1488,11 +1793,69 @@
                         </div>
 
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-outline-dark" data-dismiss="modal" 
+                            <button type="button" class="btn btn-danger" data-dismiss="modal" 
                             onclick="$('#addUserSetObjectModal').hide() ;">Cancel</button>
 
                             <button type="button" name="" value="" class="btn btn-primary form-control-button"
                                 onclick="submitAddUserSetObjectData()" >
+                                Submit
+                            </button>
+                        </div>
+                        
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div id="editCrisisClassificationModal" class="modal" tabindex="-1" role="dialog">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="editCrisisClassificationModalTitle">Edit Crisis Incident: </h5>
+                        <button type="button" class="close" data-dismiss="modal" 
+                        onclick="$('#editCrisisClassificationModal').hide();" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+            
+                    <!-- <div class="modal-body">
+                        <p>Are you Sure ?</p>
+                    </div> -->
+                
+                    <form id="editCrisisClassificationModalForm" action="" novalidate="novalidate"
+                        class="single-action-form" method="post">
+                        
+                        <div class="modal-body">
+                    
+                            <div id="form-content">
+
+                                <div class="form-group">
+                                    <label for="add_md_descr">Description</label>
+                                    <input name="editCrisisClassificationDescription" type="text" class="form-control" id="editCrisisClassificationDescription" placeholder="Description">
+                                </div>
+        
+                                <div class="form-group">
+                                    <label for="add_md_latInput">Mark as Resolved</label>
+                                    <input name="editCrisisClassificationResolved" type="checkbox" id="editCrisisClassificationResolved">
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="add_md_latInput">Mark as False Alarm</label>
+                                    <input name="editCrisisClassificationFalseAlarm" type="checkbox" id="editCrisisClassificationFalseAlarm">
+                                </div>
+                            </div>
+                        
+                        </div>
+
+                        <input type="hidden" id="editCrisisClassificationId" name="editCrisisClassificationId" class="form-control">
+                        <input type="hidden" id="editCrisisClassificationIncidentId" name="editCrisisClassificationIncidentId" class="form-control">
+
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-danger" data-dismiss="modal" 
+                            onclick="$('#editCrisisClassificationModal').hide() ;">Cancel</button>
+
+                            <button type="button" name="" value="" class="btn btn-primary form-control-button"
+                                onclick="submitCrisisClassificationModal()" >
                                 Submit
                             </button>
                         </div>
@@ -1541,7 +1904,7 @@
                     </div>
                         <div class="modal-footer">
                         
-                            <button type="button" class="btn btn-outline-dark" data-dismiss="modal" 
+                            <button type="button" class="btn btn-danger" data-dismiss="modal" 
                                 onclick="CancelObjectUpdate()">Cancel</button>
 
                             <button type="button" name="" value="" class="btn btn-primary form-control-button"
@@ -1601,11 +1964,24 @@
             </div>
         </div>
 
-
+        <script>
+            let allDroneInfo = [];
+        </script>
         {% include 'aiders/forms/coverage.html' %}
+        {% include 'aiders/forms/upload_kmz.html' %}
+        {% include 'aiders/forms/user-defined-area-form.html' %}
+        {% include 'aiders/forms/pilot-notification.html' %}
+        {% include 'aiders/forms/device-notification.html' %}
+        {% include 'aiders/forms/mso-notification.html' %}
+        {% include 'aiders/forms/mso-drone-notification.html' %}
 
         <div id="audioPathDing" data-path="{% static 'aiders/audio/ding.mp3' %}"></div>
+        <div id="audioPathAlert" data-path="{% static 'aiders/audio/alert.mp3' %}"></div>
+        <div id="notifCrisis" data-path="{% static 'aiders/audio/notif-crisis.wav' %}"></div>
         {% include 'aiders/partials/mavlink_logs.html' %}
+        {% include 'aiders/partials/crisis_logs.html' %}
+        {% include 'aiders/partials/display_client_notifications.html' %}
+        {% include 'aiders/partials/operation_chat.html' %}
 
 
         <script>
@@ -1663,18 +2039,21 @@
                 });
             }
         </script>
+
+
         {% if use_online_map == True %}
         <script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.3.0/mapbox-gl-draw.js"></script>
         <link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.3.0/mapbox-gl-draw.css" type="text/css" />
         {% endif %}
+        <script src="{% static 'aiders/javascripts/panel/panelModify.js' %}" type="text/javascript"></script>
         <script src="{% static 'aiders/javascripts/dutils/dutils.js' %}" type="text/javascript"></script>
         <script src="{% static 'aiders/javascripts/dutils/dutils_conf_urls.js' %}" type="text/javascript"></script>
         <script src="{% static 'aiders/javascripts/search_bar/geocoder_lat_lng.js' %}" type="text/javascript"></script>
-        <script src="{% static 'aiders/javascripts/detection/detection_models.js' %}" type="text/javascript"></script>
         <script src="{% static 'aiders/javascripts/drone/drone_data.js' %}" type="text/javascript"></script>
         <script src="{% static '/aiders/javascripts/build_map/buildMap.js' %}" type="text/javascript"></script>
         <script src="{% static 'aiders/javascripts/water_sampler/water_collector.js' %}" type="text/javascript"></script>
         <script src="{% static 'aiders/javascripts/panel/panel.js' %}" type="text/javascript"></script>
+        <script defer src="{% static 'aiders/javascripts/live_stream/reader.js' %}" type="text/javascript"></script>
         <script src="{% static 'aiders/javascripts/live_stream/live_stream.js' %}" type="text/javascript"></script>
         <script src="{% static 'aiders/javascripts/popups/popups.js' %}" type="text/javascript"></script>
         <script src="{% static 'aiders/javascripts/map_layers/layer_creation.js' %}" type="text/javascript"></script>
@@ -1682,9 +2061,11 @@
 
         <script src="{% static 'aiders/javascripts/map/map.js' %}" type="text/javascript"></script>
         <script src="{% static 'aiders/javascripts/platform/platform.js' %}" type="text/javascript"></script>
+        <script src="{% static 'aiders/javascripts/live_stream/frames_ws.js' %}" type="text/javascript"></script>
 
 
         <script src="{% static 'aiders/javascripts/map_layers/layer_operations.js' %}" type="text/javascript"></script>
+        <script src="{% static 'aiders/javascripts/map_layers/map_layers_state_manager.js' %}" type="text/javascript"></script>
         <script src="{% static 'aiders/javascripts/constants/colors.js' %}"></script>
         <script src="{% static 'aiders/javascripts/drone/drone_operations.js' %}" type="text/javascript"></script>
         <script src="{% static 'aiders/javascripts/device/device_operations.js' %}" type="text/javascript"></script>
@@ -1695,7 +2076,8 @@
         <script src="{% static 'aiders/javascripts/mission/uav_missions.js' %}" type="text/javascript"></script>
         <script src="{% static 'aiders/javascripts/utils/utils.js' %}" type="text/javascript"></script>
         <script src="{% static 'aiders/javascripts/map_measure/user_drawing.js' %}" type="text/javascript"></script>
-        <script src="{% static 'aiders/javascripts/detection/detection.js' %}" type="text/javascript"></script>
+        <script src="{% static 'aiders/javascripts/detection/detectors.js' %}" type="text/javascript"></script>
+        <script src="{% static 'aiders/javascripts/detection/detection_objects.js' %}" type="text/javascript"></script>
         <script src="{% static 'aiders/javascripts/manually_set_objects/manually_set_objects.js' %}" type="text/javascript"></script>
         <script src="{% static 'aiders/javascripts/manually_set_objects/manually_set_objects_receiver.js' %}" type="text/javascript"></script>
         <script src="{% static 'aiders/javascripts/manually_set_objects/manually_set_objects_draggable.js' %}" type="text/javascript"></script>
@@ -1713,17 +2095,53 @@
         <link href="{% static 'aiders/css/panel/panel.css' %}" rel="stylesheet" />
         
         <script src="{% static 'aiders/javascripts/weather/weather_data.js' %}"></script>
+        <script src="{% static 'aiders/javascripts/weather/weather_map.js' %}"></script>
         <script src="{% static 'aiders/javascripts/map_layers/object_loader.js' %}"></script>
         <script src="{% static 'aiders/javascripts/motor_failure_risk/motor_failure_risk_calculator.js' %}"></script>
         <script src="{% static 'aiders/javascripts/mission/fetch_path_plan.js' %}"></script>
-        <script src="{% static 'aiders/javascripts/drone/join_operation.js' %}"></script>
+        <script src="{% static 'aiders/javascripts/display_on_map/display_geojson.js' %}"></script>
         <script src="{% static 'aiders/javascripts/display_on_map/display_data_on_map.js' %}"></script>
         <script src="{% static 'aiders/javascripts/drone/lidarPointCloud.js' %}"></script>
         <script src="{% static 'aiders/javascripts/drone/lidarMesh.js' %}"></script>
-        <script src="{% static 'aiders/javascripts/lora/visualize_lora_devices.js' %}"></script>
         <script src="{% static 'aiders/javascripts/coverage/coverage.js' %}"></script>
         <script src="{% static 'aiders/javascripts/detection/crowd_loc_results.js' %}"></script>
         <script src="{% static 'aiders/javascripts/detection/disaster_class_results.js' %}"></script>
         <script src="{% static 'aiders/javascripts/detection/computer_vision_websocket.js' %}"></script>
+
+        <script src="{% static 'aiders/javascripts/platform/httpRequest.js' %}"></script>
+
+        <script src="{% static 'aiders/javascripts/crisis/crisis_data.js' %}" type="text/javascript"></script>
+        <!-- <script src="{% static 'aiders/javascripts/crisis/test.js' %}" type="text/javascript"></script> -->
+        <script src="{% static 'aiders/javascripts/crisis/crisis_classification_websocket.js' %}"></script>
+
+        <script src="{% static 'aiders/javascripts/pilot-notification/pilot-notification.js' %}"></script>
+        <script src="{% static 'aiders/javascripts/device-notification/device-notification.js' %}"></script>
+        <script src="{% static 'aiders/javascripts/defined_area/user_defined_area.js' %}" type="text/javascript"></script>
+        
+        <!-- ADS-B Aircraft Tracking -->
+        <script src="{% static 'aiders/javascripts/adsb/adsb_aircraft.js' %}" type="text/javascript"></script>
+        <link href="{% static 'aiders/css/adsb/adsb_aircraft.css' %}" rel="stylesheet" />
+
+        <!-- Weather Map -->
+        <link href="{% static 'aiders/css/weather/weather_map.css' %}" rel="stylesheet" />
+
+        <!-- Mobile/tablet responsive layer. Must stay after every other <link> on this page -
+             five stylesheets load from inside <body>, so this cannot live in <head>. -->
+        <link href="{% static 'aiders/css/responsive/platform-mobile.css' %}" rel="stylesheet" type="text/css" />
+
+        <!-- static cameras -->
+        <script src="{% static 'aiders/javascripts/static_cameras/static_cameras.js' %}" type="text/javascript"></script>
+        <script src="{% static 'aiders/javascripts/ground_vehicles/ground_vehicles.js' %}" type="text/javascript"></script>
+        <script src="{% static 'aiders/javascripts/drone_rids/drone_rids.js' %}" type="text/javascript"></script>
+        <script src="{% static 'aiders/javascripts/adsb/adsb_aircraft.js' %}" type="text/javascript"></script>
+
+        
+        <!-- KMZ Support -->
+        <script src="https://unpkg.com/jszip@3.10.1/dist/jszip.min.js"></script>
+        <script src="https://unpkg.com/togeojson"></script>
+
+        <!-- UI State Manager - Saves and restores UI state across page reloads -->
+        <script src="{% static 'aiders/javascripts/state_manager/ui_state_manager-2.js' %}" type="text/javascript"></script>
+
     </body>
 </html>

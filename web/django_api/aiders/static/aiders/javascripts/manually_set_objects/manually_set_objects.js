@@ -1,32 +1,32 @@
 {
     let isTogglePressed = false
- 
+
     var object_on_update_id = null;
 
     function toggleAddManuallySetObject(toggleButtonID)
     {
         isTogglePressed = $("#" + toggleButtonID).is(':checked');
     }
-    
+
     map.on('click', function (e){
-        
+
         //console.log(isTogglePressed)
-        
+
         if ( isTogglePressed ) 
         {   
             //console.log(e)
             html_value =    `
                             <br>
                             <ul class="map_popup_list">
-                            <li  onclick='displayAddUserSetObjectForm(${JSON.stringify(e.lngLat)})'> 
-                            Add Object Location
+                            <li  onclick='displayAddUserSetObjectForm(${JSON.stringify(e.lngLat)})' class='btn btn-primary btn-sm' style='cursor: pointer;'> 
+                            Place Pin
                             </li>
                             </ul> `;
 
             new maplibregl.Popup()
-            .setLngLat(e.lngLat)
-            .setHTML(html_value)
-            .addTo(map);
+                .setLngLat(e.lngLat)
+                .setHTML(html_value)
+                .addTo(map);
         }
     });
 
@@ -39,7 +39,7 @@
         // set the coordinates in the form 
         let latInputEl = document.getElementById('add_user_set_obj_latInput');
         let lonInputEl = document.getElementById('add_user_set_obj_lonInput');
-        
+
         latInputEl.value = lngLat.lat
         lonInputEl.value = lngLat.lng
 
@@ -51,7 +51,7 @@
         let data = formDataToJson($("#addUserSetObjectDataForm").serializeArray())
 
         let data_o = JSON.stringify( data )
-        
+
         //console.log(data)
         //console.log(data_o)
         let acronym = data.acronym
@@ -65,7 +65,7 @@
         $.ajax({
 
             type: "POST",
-            url: dutils.urls.resolve('add_manual_object', { operation_name: CURRENT_OP }),       
+            url: dutils.urls.resolve('add_manual_object', { operation_name: CURRENT_OP }),
             contentType: "application/json",
             data: object_data,
             success: function (response)
@@ -127,7 +127,7 @@
             success: function (response)
             {
                 //alert("Object Successfully Saved!");
-                
+
                 let index = null ;
                 for (let j = 0; j < Manually_Set_Objects.length; j++)
                 {
@@ -161,7 +161,7 @@
                         Manually_Set_Objects[index]['description'] = description_data.description;
                         Manually_Set_Objects[index]['updated_at'] = description_data.updated_at;
                         Manually_Set_Objects[index]['updated_by'] = description_data.updated_by;
-    
+
                     }
 
                     //update location/line data + line layer
@@ -171,42 +171,42 @@
 
                         Manually_Set_Objects[index]['currentLocation']['lat'] = parseFloat(data.latitude) ;
                         Manually_Set_Objects[index]['currentLocation']['lon'] = parseFloat(data.longitude);
-                        
+
                         Manually_Set_Objects[index]['coords_set_by'] = location_data.coords_set_by ; 
                         Manually_Set_Objects[index]['coords_set_by_username'] = location_data.coords_set_by_username ; 
                         Manually_Set_Objects[index]['coords_set_at'] = location_data.coords_set_at ; 
-    
+
                         let currentCoord = [
                             Manually_Set_Objects[index]['currentLocation']['lon'],
                             Manually_Set_Objects[index]['currentLocation']['lat'],
                             0,
-                        ]; 
-    
+                        ];
+
                         let prevLon = Manually_Set_Objects[index]['prevLocation']['lon'];
                         let prevLat = Manually_Set_Objects[index]['prevLocation']['lat'];
-    
+
                         let prevCoord = [
                             prevLon,
                             prevLat,
                             0,
-                        ]; 
-    
+                        ];
+
                         if (prevLat === '' && prevLon === '') {
                             //We dont have previous location because this is the first time
                             prevCoord = currentCoord;
-                        } 
-    
+                        }
+
                         let currentLineData = {
                             source: prevCoord,
                             dest: currentCoord,
                         };
-    
+
                         Manually_Set_Objects[index]['prevLocation']['lat'] = Manually_Set_Objects[index]['currentLocation']['lat'];
                         Manually_Set_Objects[index]['prevLocation']['lon'] = Manually_Set_Objects[index]['currentLocation']['lon'];
                         Manually_Set_Objects[index]['lineData'] = Manually_Set_Objects[index]['lineData'].concat(currentLineData);
-                        
+
                         let msoLineLayer = Manually_Set_Objects[index]['lineLayer'];
-                      
+
                         if (msoLineLayer) {
                             map.setLayoutProperty(msoLineLayer.id, 'visibility', 'visible');
                             msoLineLayer.setProps({
@@ -218,17 +218,17 @@
 
                 setTimeout(() => {
 
-                    alert('Object Successfully Saved!');
+                    alert('Pin Successfully Saved!');
                     object_on_update_id  = null;
                 }, 100);
 
                 //$("#updateUserSetObjectModal").modal('hide') ;
-                
+
                 $("#updateUserSetObjectModal").hide() ;
             },
             error: function (error)
             {   
-                alert("Object Not Saved! Error: ${error.responseText}" , {
+                alert("Pin Not Saved! Error: ${error.responseText}" , {
                     position: 'center-center',
                     timeout: 2000,
                     showOnlyTheLastOne: true

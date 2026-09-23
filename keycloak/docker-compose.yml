@@ -1,0 +1,43 @@
+services:
+  keycloak-db:
+    image: postgres:17.4-alpine3.21
+    container_name: keycloak-db
+    env_file:
+      - ./.env
+    environment:
+      DB_VENDOR: ${KEYCLOAK_DB_VENDOR}
+      DB_ADDR: ${KEYCLOAK_DB_ADDR}
+      DB_DATABASE: ${KEYCLOAK_DB_DATABASE}
+      DB_USER: ${KEYCLOAK_DB_USER}
+      DB_PASSWORD: ${KEYCLOAK_DB_PASSWORD}      
+    volumes:
+      - keycloak-db-data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:25.0.6
+    container_name: keycloak
+    env_file:
+      - ./.env
+    environment:
+      DB_VENDOR: ${KEYCLOAK_DB_VENDOR}
+      DB_ADDR: ${KEYCLOAK_DB_ADDR}
+      DB_DATABASE: ${KEYCLOAK_DB_DATABASE}
+      DB_USER: ${KEYCLOAK_DB_USER}
+      DB_PASSWORD: ${KEYCLOAK_DB_PASSWORD}      
+    ports:
+      - "8083:8080"
+    volumes:
+      - keycloak-data:/opt/keycloak/data
+    depends_on:
+      - keycloak-db
+    command: >
+      start-dev
+    restart: unless-stopped
+
+volumes:
+  keycloak-db-data:
+  keycloak-data:
+
+networks:
+  keycloak-network:

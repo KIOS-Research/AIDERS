@@ -1,24 +1,148 @@
+# Define a map to check the Referer header ODM website
+map $http_referer $is_odm_referer {
+    "~^(http|https)://[^/]+/odm/" 1;
+    default 0;
+}
+
 server {
     listen ${NGINX_PORT};
-    server_name ${NET_IP};
+    server_name ${WEB_IP};
 
     location / {
-        proxy_pass ${WEB_URL};
-        proxy_set_header Host $host;
+        # Check if the path is from ODM website
+        if ($is_odm_referer) {
+            rewrite ^/(.*)$ /odm/$1 last;
+        }
+        proxy_pass http://${WEB_IP}:${WEB_PORT};
+        proxy_set_header Host $http_host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
         # proxy_set_header X-CSRFToken $http_csrf_token;
         # proxy_redirect off;
+        # proxy_pass_request_headers on;
         proxy_pass_header X-CSRFToken;
+        # To allow image requests because are larger than the default value
+        client_max_body_size 15M;
+        
+        # Increase timeouts for long-running operations like report generation
+        proxy_connect_timeout 600s;
+        proxy_send_timeout 600s;
+        proxy_read_timeout 600s;
     }
 
     location /static/ {
         alias /app/aiders/static/;
+        # Revalidate instead of trusting the browser's heuristic freshness, so that
+        # a map layer's geojson amended in place is picked up on the next reload.
+        # nginx answers an unchanged file with a 304 off its ETag, so this costs a
+        # round trip per asset rather than a re-download.
+        add_header Cache-Control "no-cache";
     }
 
-    location /media/ {
+    # unprotected media access
+    # location /media/ {
+    #     alias /app/aiders/media/;
+    # }
+
+    # internal location (not accessible directly)
+    location /protected-media/ {
+        internal;
         alias /app/aiders/media/;
+    }
+
+    location /ws/chat/ {
+        # daphne, not gunicorn: WEB_PORT is WSGI and cannot upgrade
+        proxy_pass http://${WEB_IP}:${WEB_WS_PORT};
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "Upgrade";
+        proxy_set_header Host $http_host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location /ws/ {
+        proxy_pass http://${WS_IP}:${WS_PORT};
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "Upgrade";
+        proxy_set_header Host $http_host;
+    }
+
+    location /wsi/ {
+        proxy_pass http://${WSI_IP}:${WSI_PORT};
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "Upgrade";
+        proxy_set_header Host $http_host;
+    }
+
+    location /wsm/ {
+        proxy_pass http://${WSM_IP}:${WSM_PORT};
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "Upgrade";
+        proxy_set_header Host $http_host;
+    }
+
+    location /lsc/ {
+        allow ${NET_IP};
+        allow ${SUBNET};
+        deny all;
+        proxy_pass http://${LSC_IP}:${LSC_API_PORT};
+    }
+
+    location /cv/ {
+        allow ${NET_IP};
+        allow ${SUBNET};
+        deny all;
+        set $cv_host_upstream "http://${CV_IP}:${CV_API_PORT}";
+        proxy_pass $cv_host_upstream;
+        proxy_next_upstream error timeout invalid_header http_500 http_502 http_503 http_504;
+
+    }
+
+    location /cvn/ {
+        allow ${NET_IP};
+        allow ${SUBNET};
+        deny all;
+        proxy_pass http://${CVN_IP}:${CVN_API_PORT};
+    }
+
+    location /api/streamcv/ {
+        proxy_pass http://${STREAMCV_IP}:${STREAMCV_PORT};
+        proxy_set_header Host $http_host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+
+        # MJPEG streaming: disable buffering so frames arrive instantly
+        proxy_buffering off;
+        proxy_cache off;
+        chunked_transfer_encoding off;
+
+        # Keep the MJPEG connection open indefinitely
+        proxy_read_timeout 86400s;
+        proxy_send_timeout 86400s;
+    }
+
+    location /odm/ {
+        client_max_body_size 15M;
+        rewrite ^/odm(/.*)$ $1 break;
+        proxy_pass http://${ODM_IP}:${ODM_PORT};
+    }
+
+    # location /geo/ {
+    #     rewrite ^/geo(/.*)$ $1 break;
+    #     proxy_pass http://${GEO_IP}:${GEO_PORT};
+    # }
+
+    location /remote/ {
+        set $remote_media_host_upstream "http://${VIDEO_AND_CV_SERVER}:${VIDEO_AND_CV_PORT}";
+        rewrite ^/remote/(.*) /$1 break;
+        proxy_pass $remote_media_host_upstream;
+        proxy_next_upstream error timeout invalid_header http_500 http_502 http_503 http_504;
     }
 
     error_page 500 502 503 504 /50x.html;

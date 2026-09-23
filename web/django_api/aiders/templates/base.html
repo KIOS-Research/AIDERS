@@ -15,6 +15,9 @@
         <title>{% block title %}AIDERS{% endblock %}</title>
         <link rel="shortcut icon" type="image/png" href="{% static 'aiders/imgs/aiders_logo_no_background.png' %}" />
         {% block head_block %}{% endblock %}
+        <!-- Mobile/tablet responsive layer. Must stay last: head_block is where pages inject
+             dataTables.css, login.css and (on login.html) platform.css. -->
+        <link href="{% static 'aiders/css/responsive/admin-mobile.css' %}" rel="stylesheet" type="text/css" />
     </head>
     <style>
         {% block style_block %}
@@ -25,32 +28,50 @@
             <a class="text-decoration-none text-dark" href="{% url 'login' %}">
                 <img src="{% static 'aiders/imgs/aiders_logo_with_text.png' %}" alt="logo" height="40px;" />
             </a>
+            <span id="platform-version">v{{platform_version}}</span>
         </div>
         {% if user.is_authenticated %}
-        <div class="navbar-nav d-flex flex-grow-1">
+        <div class="navbar-nav admin-navbar d-flex flex-grow-1">
             <li class="nav-item">
-                <a class="nav-link" href="{% url 'manage_operations' %}">Operations</a>
+                <a class="nav-link {% if request.resolver_match.url_name == 'manage_operations' or request.resolver_match.url_name == 'new_operation' or request.resolver_match.url_name == 'edit_operation' %}active{% endif %}" href="{% url 'manage_operations' %}">Operations</a>
+            </li>
+            {% if perms.aiders.manage_operations %}
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'drones_list' or request.resolver_match.url_name == 'mavlinkAdd' or request.resolver_match.url_name == 'mavlinkEdit' %}active{% endif %}" href="{% url 'drones_list' %}">Drones</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'devices_list' %}active{% endif %}" href="{% url 'devices_list' %}">Devices</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'baloras_list' %}active{% endif %}" href="{% url 'baloras_list' %}">Balora</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'static_cameras_list' or request.resolver_match.url_name == 'static_camera_create' or request.resolver_match.url_name == 'static_camera_edit' %}active{% endif %}" href="{% url 'static_cameras_list' %}">Static Cameras</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'ground_vehicles_list' %}active{% endif %}" href="{% url 'ground_vehicles_list' %}">Ground Vehicles</a>
+                </li>                
+            {% endif %}
+            {% if perms.aiders.manage_users %}
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'users' or request.resolver_match.url_name == 'users_permissions_view' %}active{% endif %}" href="{% url 'users' %}">Users</a>
+                </li>
+            {% endif %}      
+            <li class="nav-item">
+                <a class="nav-link {% if request.resolver_match.url_name == 'weather_config' or request.resolver_match.url_name == 'weather_data' %}active{% endif %}" href="{% url 'weather_config' %}">Weather</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="{% url 'users' %}">Users</a>
+                <a class="nav-link {% if request.resolver_match.url_name == 'settings' %}active{% endif %}" href="{% url 'settings' %}">Settings</a>
             </li>
-            <li class="nav-item">
-                <a class="nav-link" href="{% url 'drones_list' %}">Drones</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="{% url 'devices_list' %}">Devices</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="{% url 'baloras_list' %}">Balora</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="{% url 'settings' %}">Settings</a>
-            </li>
+
         </div>
         {% endif %}
         <div class="collapse navbar-collapse flex-grow-1 text-right" id="myNavbar">
             <ul class="navbar-nav ms-auto flex-nowrap">
-                {% if user.is_superuser %}
+                <div class="me-4">
+                    <a class="nav-link" href="{% url 'about' %}">About</a>
+                </div>
+                {% if false %}
                 <div class="me-4">
                     <a title="Shortcut(Ctrl + Shift + Enter)" class="nav-link" href="{% url 'platform_monitoring' %}">Monitoring</a>
                 </div>
@@ -71,6 +92,7 @@
                 {% endif %}
             </ul>
         </div>
+        
     </nav>
     <body>
         {% block body_block %}{% endblock %}

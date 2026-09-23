@@ -1,13 +1,22 @@
 FROM python:3.9
 
 # Install required dependencies
-RUN apt-get update && apt-get install -y \ 
-    netcat-traditional \
+RUN apt-get update && apt-get install -y \
+	netcat-openbsd \
 	default-libmysqlclient-dev \
 	# django.contrib.gis library
 	binutils libproj-dev gdal-bin \
 	# PDF library
-	wkhtmltopdf
+	# wkhtmltopdf \
+	# allauth
+	libxml2-dev libxmlsec1-dev libxmlsec1-openssl
+
+# PDF library
+RUN wget -q https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-2/wkhtmltox_0.12.6.1-2.jammy_amd64.deb && \
+    dpkg -i wkhtmltox_0.12.6.1-2.jammy_amd64.deb || true && \
+    apt-get update && \
+    apt-get install -f -y && \
+    rm wkhtmltox_0.12.6.1-2.jammy_amd64.deb
 
 RUN rm -rf /var/lib/apt/lists/* && rm -rf /var/cache/apt && apt-get clean
 
@@ -27,6 +36,9 @@ ENV DBUS_SESSION_BUS_ADDRESS=unix:path=/var/run/dbus/system_bus_socket
 # Django for gdal library
 ENV CPLUS_INCLUDE_PATH=/usr/include/gdal
 ENV C_INCLUDE_PATH=/usr/include/gdal
+
+# HealthCheck
+# HEALTHCHECK --interval=30s CMD curl --fail http://localhost:${WEB_PORT}/ || exit 1
 
 # run the entrypoint bash script
 ENTRYPOINT ["/bin/bash", "./entrypoint.web.sh"]

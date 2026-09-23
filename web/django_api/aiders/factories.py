@@ -521,18 +521,19 @@ class LidarPointFactory(factory.django.DjangoModelFactory):
     lidar_point_session = factory.Iterator(LidarPointSession.objects.all())
 
 
-def create_groups():
-    new_group, created = Group.objects.get_or_create(name="edit_permissions")
-    ct = ContentType.objects.get_for_model(User)
-    permission = Permission.objects.create(codename="edit_permissions", name="edit_permissions", content_type=ct)
-    new_group.permissions.add(permission)
+# def create_groups():
+#     print("+++++++++++++++++++++++++++ Factories create_groups() +++++++++++++++++++++++++++", flush=True)
+#     new_group, created = Group.objects.get_or_create(name="edit_permissions")
+#     ct = ContentType.objects.get_for_model(User)
+#     permission = Permission.objects.create(codename="edit_permissions", name="edit_permissions", content_type=ct)
+#     new_group.permissions.add(permission)
 
-    new_group, created = Group.objects.get_or_create(name="create_operations")
-    ct = ContentType.objects.get_for_model(User)
-    permission = Permission.objects.create(codename="create_operations", name="create_operations", content_type=ct)
-    new_group.permissions.add(permission)
+#     new_group, created = Group.objects.get_or_create(name="create_operations")
+#     ct = ContentType.objects.get_for_model(User)
+#     permission = Permission.objects.create(codename="create_operations", name="create_operations", content_type=ct)
+#     new_group.permissions.add(permission)
 
-    new_group, created = Group.objects.get_or_create(name="join_operations")
-    ct = ContentType.objects.get_for_model(User)
-    permission = Permission.objects.create(codename="join_operations", name="join_operations", content_type=ct)
-    new_group.permissions.add(permission)
+#     new_group, created = Group.objects.get_or_create(name="join_operations")
+#     ct = ContentType.objects.get_for_model(User)
+#     permission = Permission.objects.create(codename="join_operations", name="join_operations", content_type=ct)
+#     new_group.permissions.add(permission)

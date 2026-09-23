@@ -1,0 +1,27 @@
+FROM python:3.9
+
+# Install required dependencies
+RUN apt-get update && apt-get install -y \ 
+    netcat-traditional \
+    libgl1-mesa-glx && \
+    rm -rf /var/lib/apt/lists/*
+
+# Copy the python dependencies
+COPY lscr/requirements.txt /app/requirements.txt
+# Install Python dependencies
+RUN pip install -r /app/requirements.txt
+
+# copy the entrypoint bash script
+COPY lscr/entrypoint.lscr.sh .
+
+# Copy the python application
+COPY lscr/app /app
+
+# Expose the port for the webserver
+EXPOSE 8766
+
+# HealthCheck
+HEALTHCHECK --interval=30s CMD curl --fail http://localhost:${LSCR_API_PORT}/lsc/healthCheck || exit 1
+
+# run the entrypoint bash script
+ENTRYPOINT ["/bin/bash", "./entrypoint.lscr.sh"]

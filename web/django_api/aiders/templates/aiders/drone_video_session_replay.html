@@ -1,0 +1,526 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block title %}
+Drone Video Session Replay - {{session_data.drone.drone_name}}
+{% endblock %}
+
+{% block head_block %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+<style>
+.video-container {
+    position: relative;
+    width: 100%;
+    {% comment %} max-width: 800px; {% endcomment %}
+}
+
+.video-player {
+    width: 100%;
+    height: auto;
+}
+
+.session-info {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 20px;
+}
+
+.telemetry-panel {
+    background-color: #e9ecef;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 20px;
+}
+
+.map-container {
+    height: 400px;
+    border-radius: 8px;
+    margin-top: 20px;
+}
+
+.control-panel {
+    background-color: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 15px;
+    margin-top: 20px;
+}
+
+.telemetry-value {
+    font-weight: bold;
+    color: #007bff;
+}
+
+.monitoring-value {
+    font-weight: bold;
+    color: #28a745;
+}
+</style>
+{% endblock %}
+
+{% block body_block %}
+<div class="container-fluid" style="padding: 0px 50px;">
+    <div class="row pt-3">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'live_stream_sessions' operation_name=session_data.drone.operation.operation_name %}">Live Stream Sessions</a></li>
+                    <li class="breadcrumb-item active">Video Replay - {{session_data.drone.drone_name}}</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Video Player Column -->
+        <div class="col-lg-8">
+            <h3>{{session_data.drone.drone_name}} - Session {{session_data.session_id}} Replay</h3>
+            
+
+            <!-- Video Player -->
+            <div class="video-container">
+                <video id="sessionVideo" class="video-player">
+                    <source src="{{session_data.video_url}}" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+            </div>
+
+            <!-- Control Panel -->
+            <div class="control-panel">
+                <div class="row">
+                    <div class="col-md-2">
+                        <button id="playBtn" class="btn btn-success"><i class="fa-solid fa-play"></i></button>
+                        <button id="pauseBtn" class="btn btn-warning"><i class="fa-solid fa-pause"></i></button>
+                        <button id="resetBtn" class="btn btn-primary"><i class="fa-solid fa-rotate-left"></i></button>
+                    </div>
+                    <div class="col-9">
+                        <input type="range" id="progressRange" class="form-range" min="0" max="{{session_data.session_duration_seconds}}" value="0">
+                        <div class="d-flex justify-content-between">
+                            <span id="currentTime">00:00:00</span>
+                            <span>{{session_data.duration}}</span>
+                        </div>
+                    </div>                    
+                    <div class="col-md-1">
+                        <select id="speedControl" class="form-select">
+                            <option value="0.25">0.25x</option>
+                            <option value="0.5">0.5x</option>
+                            <option value="1" selected>1x</option>
+                            <option value="1.5">1.5x</option>
+                            <option value="2">2x</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row mt-3">
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Telemetry and Map Column -->
+        <div class="col-lg-4">
+            <!-- Real-time Telemetry -->
+            <div class="telemetry-panel">
+                <h5>Current Telemetry</h5>
+                <div id="telemetryData">
+                    <div class="row">
+                        <div class="col-6"><strong>Latitude:</strong></div>
+                        <div class="col-6"><span id="telemetry-lat" class="telemetry-value">--</span></div>
+                    </div>
+                    <div class="row">
+                        <div class="col-6"><strong>Longitude:</strong></div>
+                        <div class="col-6"><span id="telemetry-lon" class="telemetry-value">--</span></div>
+                    </div>
+                    <div class="row">
+                        <div class="col-6"><strong>Altitude:</strong></div>
+                        <div class="col-6"><span id="telemetry-alt" class="telemetry-value">--</span> m</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-6"><strong>Heading:</strong></div>
+                        <div class="col-6"><span id="telemetry-heading" class="telemetry-value">--</span>°</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-6"><strong>Velocity:</strong></div>
+                        <div class="col-6"><span id="telemetry-velocity" class="telemetry-value">--</span> m/s</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-6"><strong>Battery:</strong></div>
+                        <div class="col-6"><span id="telemetry-battery" class="telemetry-value">--</span>%</div>
+                    </div>
+                    {% if session_data.has_monitoring_data %}
+                    <hr>
+                    <div class="row">
+                        <div class="col-6"><strong>CPU Usage:</strong></div>
+                        <div class="col-6"><span id="monitoring-cpu" class="monitoring-value">--</span>%</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-6"><strong>CPU Temp:</strong></div>
+                        <div class="col-6"><span id="monitoring-temp" class="monitoring-value">--</span>°C</div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Map -->
+            <div class="map-container" id="mapContainer"></div>
+
+            <!-- Session Information -->
+            <div class="session-info">
+                <h5>Session Information</h5>
+                <div class="row">
+                    <div class="col-md-4"><strong>Session ID:</strong> {{session_data.session_id}}</div>
+                    <div class="col-md-4"><strong>Duration:</strong> {{session_data.duration}}</div>
+                    <div class="col-md-4"><strong>Distance:</strong> {{session_data.distance}} km</div>
+                </div>
+                <div class="row mt-2">
+                    <div class="col-md-4"><strong>Max Altitude:</strong> {{session_data.max_altitude}} m</div>
+                    <div class="col-md-4"><strong>Max Velocity:</strong> {{session_data.max_velocity}} m/s</div>
+                    <div class="col-md-4"><strong>Battery Used:</strong> {{session_data.battery_used}}%</div>
+                </div>
+                {% if session_data.has_monitoring_data %}
+                <div class="row mt-2">
+                    <div class="col-md-6"><strong>Max CPU Usage:</strong> {{session_data.max_cpu_usage}}%</div>
+                    <div class="col-md-6"><strong>Max CPU Temp:</strong> {{session_data.max_cpu_temp}}°C</div>
+                </div>
+                {% endif %}
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+console.log('Starting script initialization...');
+
+// Test if we can parse the JSON data
+let allData = {};
+try {
+    const rawData = '{{ session_data_json|escapejs }}';
+    console.log('Raw data length:', rawData.length);
+    allData = JSON.parse(rawData);
+    console.log('Parsed data successfully:', allData);
+} catch (e) {
+    console.error('Error parsing session data JSON:', e);
+    allData = {
+        session_data: {},
+        telemetry_data: [],
+        monitoring_data: []
+    };
+}
+
+const sessionData = allData.session_data || {};
+const telemetryData = allData.telemetry_data || [];
+const monitoringData = allData.monitoring_data || [];
+
+console.log('Session data:', sessionData);
+console.log('Telemetry points:', telemetryData.length);
+console.log('Monitoring points:', monitoringData.length);
+
+// Video elements
+const video = document.getElementById('sessionVideo');
+const progressRange = document.getElementById('progressRange');
+const currentTimeSpan = document.getElementById('currentTime');
+
+if (!video) {
+    console.error('Video element not found');
+} else {
+    console.log('Video element found');
+}
+
+// Map setup
+let map, droneMarker, pathPolyline;
+let telemetryPath = [];
+
+// Initialize map
+function initMap() {
+    try {
+        console.log('Initializing map...');
+        map = L.map('mapContainer').setView([0, 0], 13);
+        
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; OpenStreetMap contributors',
+            referrerPolicy: 'origin'
+        }).addTo(map);
+
+        // Create path from all telemetry points
+        if (telemetryData && telemetryData.length > 0) {
+            telemetryPath = telemetryData.map(t => [t.lat || 0, t.lon || 0]);
+            console.log('Created telemetry path with', telemetryPath.length, 'points');
+            
+            if (telemetryPath.length > 0) {
+                // Set initial view to first telemetry point
+                map.setView(telemetryPath[0], 15);
+                
+                // Draw complete path
+                pathPolyline = L.polyline(telemetryPath, {
+                    color: 'blue',
+                    weight: 3,
+                    opacity: 0.7
+                }).addTo(map);
+
+                // Create drone marker
+                droneMarker = L.marker(telemetryPath[0], {
+                    icon: L.divIcon({
+                        className: 'drone-marker',
+                        html: '<i class="fa-solid fa-location-dot" style="color: red; font-size: 28px;"></i>', // Use FontAwesome icon
+                        iconSize: [90, 90],
+                        iconAnchor: [11, 28]
+                    })
+                }).addTo(map);
+
+                // Fit map to show entire path
+                map.fitBounds(pathPolyline.getBounds(), {padding: [20, 20]});
+                console.log('Map initialized successfully');
+            }
+        } else {
+            console.warn('No telemetry data available for map display');
+        }
+    } catch (error) {
+        console.error('Error initializing map:', error);
+    }
+}
+
+// Find closest telemetry data for current video time
+function findClosestTelemetry(currentTime) {
+    if (!telemetryData || telemetryData.length === 0) return null;
+    
+    let closest = telemetryData[0];
+    let minDiff = Math.abs(currentTime - (closest.video_time || 0));
+    
+    for (let i = 1; i < telemetryData.length; i++) {
+        const diff = Math.abs(currentTime - (telemetryData[i].video_time || 0));
+        if (diff < minDiff) {
+            minDiff = diff;
+            closest = telemetryData[i];
+        }
+    }
+    
+    return closest;
+}
+
+// Find closest monitoring data for current video time
+function findClosestMonitoring(currentTime) {
+    if (!monitoringData || monitoringData.length === 0) return null;
+    
+    let closest = monitoringData[0];
+    let minDiff = Math.abs(currentTime - (closest.video_time || 0));
+    
+    for (let i = 1; i < monitoringData.length; i++) {
+        const diff = Math.abs(currentTime - (monitoringData[i].video_time || 0));
+        if (diff < minDiff) {
+            minDiff = diff;
+            closest = monitoringData[i];
+        }
+    }
+    
+    return closest;
+}
+
+// Update telemetry display
+function updateTelemetryDisplay(telemetry, monitoring) {
+    try {
+        if (telemetry) {
+            const latEl = document.getElementById('telemetry-lat');
+            const lonEl = document.getElementById('telemetry-lon');
+            const altEl = document.getElementById('telemetry-alt');
+            const headingEl = document.getElementById('telemetry-heading');
+            const velocityEl = document.getElementById('telemetry-velocity');
+            const batteryEl = document.getElementById('telemetry-battery');
+            
+            if (latEl) latEl.textContent = (telemetry.lat || 0).toFixed(6);
+            if (lonEl) lonEl.textContent = (telemetry.lon || 0).toFixed(6);
+            if (altEl) altEl.textContent = (telemetry.alt || 0).toFixed(1);
+            if (headingEl) headingEl.textContent = (telemetry.heading || 0).toFixed(0);
+            if (velocityEl) velocityEl.textContent = (telemetry.velocity || 0).toFixed(1);
+            if (batteryEl) batteryEl.textContent = (telemetry.battery_percentage || 0).toFixed(0);
+            
+            // Update drone position on map
+            if (droneMarker && telemetry.lat && telemetry.lon) {
+                droneMarker.setLatLng([telemetry.lat, telemetry.lon]);
+            }
+        }
+        
+        if (monitoring && sessionData.has_monitoring_data) {
+            const cpuEl = document.getElementById('monitoring-cpu');
+            const tempEl = document.getElementById('monitoring-temp');
+            
+            if (cpuEl) cpuEl.textContent = (monitoring.cpu_usage || 0).toFixed(1);
+            if (tempEl) tempEl.textContent = (monitoring.cpu_temp || 0).toFixed(1);
+        }
+    } catch (error) {
+        console.error('Error updating telemetry display:', error);
+    }
+}
+
+// Format time as HH:MM:SS
+function formatTime(seconds) {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+}
+
+// Video event listeners
+if (video) {
+    // Track if duration has been properly set
+    let durationSet = false;
+    let seeking = false;
+    
+    // Function to update progress range max value
+    function updateProgressRangeMax() {
+        if (video.duration && !isNaN(video.duration) && isFinite(video.duration)) {
+            if (progressRange) {
+                progressRange.max = video.duration;
+                durationSet = true;
+                console.log('Progress range max set to:', video.duration);
+            }
+        }
+    }
+    
+    video.addEventListener('timeupdate', function() {
+        try {
+            const currentTime = video.currentTime;
+            
+            // Only update progress range if not seeking
+            if (!seeking && progressRange) {
+                progressRange.value = currentTime;
+            }
+            
+            if (currentTimeSpan) currentTimeSpan.textContent = formatTime(currentTime);
+            
+            // Check if we need to update duration (fallback)
+            if (!durationSet) {
+                updateProgressRangeMax();
+            }
+            
+            // Update telemetry based on current video time
+            const currentTelemetry = findClosestTelemetry(currentTime);
+            const currentMonitoring = findClosestMonitoring(currentTime);
+            updateTelemetryDisplay(currentTelemetry, currentMonitoring);
+        } catch (error) {
+            console.error('Error in timeupdate event:', error);
+        }
+    });
+
+    // Multiple events to ensure duration is captured
+    video.addEventListener('loadedmetadata', function() {
+        try {
+            console.log('Video metadata loaded, duration:', video.duration);
+            updateProgressRangeMax();
+        } catch (error) {
+            console.error('Error in loadedmetadata event:', error);
+        }
+    });
+    
+    video.addEventListener('loadeddata', function() {
+        try {
+            console.log('Video data loaded, duration:', video.duration);
+            updateProgressRangeMax();
+        } catch (error) {
+            console.error('Error in loadeddata event:', error);
+        }
+    });
+    
+    video.addEventListener('canplay', function() {
+        try {
+            console.log('Video can play, duration:', video.duration);
+            updateProgressRangeMax();
+        } catch (error) {
+            console.error('Error in canplay event:', error);
+        }
+    });
+    
+    video.addEventListener('durationchange', function() {
+        try {
+            console.log('Video duration changed to:', video.duration);
+            updateProgressRangeMax();
+        } catch (error) {
+            console.error('Error in durationchange event:', error);
+        }
+    });
+} else {
+    console.error('Cannot add video event listeners: video element not found');
+}
+
+// Control buttons
+const playBtn = document.getElementById('playBtn');
+const pauseBtn = document.getElementById('pauseBtn');
+const resetBtn = document.getElementById('resetBtn');
+const speedControl = document.getElementById('speedControl');
+
+if (video && playBtn) {
+    playBtn.addEventListener('click', () => {
+        console.log('Play button clicked');
+        video.play();
+    });
+}
+if (video && pauseBtn) {
+    pauseBtn.addEventListener('click', () => {
+        console.log('Pause button clicked');
+        video.pause();
+    });
+}
+if (video && resetBtn) {
+    resetBtn.addEventListener('click', () => {
+        console.log('Reset button clicked');
+        video.currentTime = 0;
+        video.pause();
+    });
+}
+
+// Speed control
+if (video && speedControl) {
+    speedControl.addEventListener('change', function() {
+        console.log('Speed changed to:', this.value);
+        video.playbackRate = parseFloat(this.value);
+    });
+}
+
+// Progress range control
+if (video && progressRange) {
+    progressRange.addEventListener('input', function() {
+        const newTime = parseFloat(this.value);
+        if (!isNaN(newTime) && isFinite(newTime) && video.duration) {
+            // Ensure the time is within valid bounds
+            const clampedTime = Math.max(0, Math.min(newTime, video.duration));
+            console.log('Progress changed to:', clampedTime);
+            seeking = true;
+            video.currentTime = clampedTime;
+        }
+    });
+    
+    progressRange.addEventListener('change', function() {
+        seeking = false;
+    });
+}
+
+// Initialize when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    try {
+        console.log('DOM content loaded, initializing...');
+        
+        // Initialize map
+        initMap();
+        
+        // Initialize with first telemetry data if available
+        if (telemetryData.length > 0) {
+            console.log('Initializing with first telemetry data');
+            updateTelemetryDisplay(telemetryData[0], monitoringData.length > 0 ? monitoringData[0] : null);
+        }
+        
+        console.log('Initialization complete');
+    } catch (error) {
+        console.error('Error during initialization:', error);
+    }
+});
+
+console.log('Script initialization complete');
+</script>
+{% endblock %}
+
+{% block script_block %}
+{% endblock %}

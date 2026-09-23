@@ -8,6 +8,7 @@ import mavsdk.action
 
 import database.queries
 import httpRequests
+import kafka_broadcaster
 
 class Uav:
 
@@ -38,7 +39,7 @@ class Uav:
             "homeLatitude": 0,
             "homeLongitude": 0, 
             "droneState": "", # Flying, Landed, In_Mission, Paused_Mission
-            "gimbalAngle": -90,
+            "gimbalAngle": -60,
             "batteryPercentage": 0,
             "vtolState": "MC", # MC, FW, TRANSITION_TO_FW, TRANSITION_TO_MC
         }
@@ -68,6 +69,7 @@ class Uav:
             self.telemetryUpdatedAt = time.time()
             database.queries.saveMavlinkLog(self.id, self.operationId, "CONNECTED")
             database.queries.saveDroneTelemetry(self.id, 0, self.telemetryObj, None, self.operationId, []) # init telemetry data in the database
+            database.queries.createDroneTelemetryLatest(self.id)
 
             # start telemetry loops
             asyncio.ensure_future(self.receivePositionTelemetry()) # start receiving position telemetry
@@ -81,7 +83,11 @@ class Uav:
             asyncio.ensure_future(self.storeTelemetryObject()) # start loop for saving telemetry object to the database
             # asyncio.ensure_future(self.receiveStatus())
 
-            httpRequests.startDroneLiveStreamCapture(droneId, self.name)    # start live stream capture
+            # legacyLSC
+            # httpRequests.startDroneLiveStreamCapture(droneId, self.name)    # start live stream capture
+
+            # TODO: call ffrb container to start rebroadcasting the RTMP stream
+
 
         except asyncio.TimeoutError:
             print(f"\U0000274C '{self.name}' FAILED TO CONNECT!", flush=True)
@@ -177,7 +183,8 @@ class Uav:
         
     async def receiveVtolState(self):
         async for vtol_state in self.system.telemetry.vtol_state():
-            self.telemetryObj["vtolState"] = vtol_state
+            # print("VTOL State:", vtol_state, flush=True)
+            self.telemetryObj["vtolState"] = getattr(vtol_state, "name", str(vtol_state))
             self.telemetryUpdatedAt = time.time()
 
 
@@ -216,10 +223,13 @@ class Uav:
                     math.radians(40),
                     self.telemetryObj["altitude"], 
                     math.radians(0),
-                    math.radians(45),
+                    math.radians(self.telemetryObj["gimbalAngle"]+90),
                     math.radians(self.telemetryObj["heading"]+180 % 360))
             
+            kafka_broadcaster.broadcastTelemetry(self.name, self.id, self.telemetryObj)
             database.queries.saveDroneTelemetry(self.id, connectionDuration, self.telemetryObj, missionLogId, self.operationId, fov_polygon) # save telemetry data to the database
+            database.queries.updateDroneTelemetryLatest(self.id, connectionDuration, self.telemetryObj, missionLogId, self.operationId, fov_polygon)
+            # save telemetry data to table telemetryLatest
             await asyncio.sleep(0.5)
 
         print(f"\U0001F480 TELEMETRY THREAD FOR '{self.name}' STOPPED!", flush=True)
@@ -369,7 +379,7 @@ class Uav:
 
             # Upload the mission to the drone
             # await self.system.mission.clear_mission()
-            await self.system.mission.set_return_to_launch_after_mission(True)
+            await self.system.mission.set_return_to_launch_after_mission(False)
             await self.system.mission.upload_mission(mission_plan)
 
             database.queries.saveMavlinkLog(self.id, self.operationId, "MISSION UPLOADED")

@@ -1,0 +1,46 @@
+FROM debian:bullseye-slim
+
+# Install dependencies including ffmpeg for post-processing recordings
+RUN apt-get update && apt-get install -y \
+    curl \
+    ca-certificates \
+    tar \
+    ffmpeg \
+    bash \
+    && apt-get clean
+
+# Create post-processing script for recordings
+RUN printf '#!/bin/bash\n\
+if [ -z "$MTX_SEGMENT_PATH" ]; then\n\
+    echo "MTX_SEGMENT_PATH is empty"\n\
+    exit 1\n\
+fi\n\
+TEMP_FILE="/tmp/recording_temp.mp4"\n\
+echo "Processing: $MTX_SEGMENT_PATH"\n\
+ffmpeg -y -i "$MTX_SEGMENT_PATH" -c copy -movflags +faststart -f mp4 "$TEMP_FILE" 2>&1\n\
+if [ $? -eq 0 ]; then\n\
+    cp "$TEMP_FILE" "$MTX_SEGMENT_PATH"\n\
+    rm -f "$TEMP_FILE"\n\
+    echo "Successfully processed: $MTX_SEGMENT_PATH"\n\
+else\n\
+    echo "Failed to process: $MTX_SEGMENT_PATH"\n\
+    rm -f "$TEMP_FILE"\n\
+fi\n\
+' > /process_recording.sh && chmod +x /process_recording.sh
+
+# Download and install MediaMTX using the latest release
+RUN ARCH=$(uname -m) && \
+    if [ "$ARCH" = "x86_64" ]; then ARCH="amd64"; fi && \
+    if [ "$ARCH" = "aarch64" ]; then ARCH="arm64v8"; fi && \
+    echo "Detected architecture: $ARCH" && \
+    DOWNLOAD_URL=$(curl -s https://api.github.com/repos/bluenviron/mediamtx/releases/latest | grep "browser_download_url.*linux_${ARCH}\.tar\.gz\"" | cut -d '"' -f 4) && \
+    echo "Download URL: $DOWNLOAD_URL" && \
+    curl -L -o /tmp/mediamtx.tar.gz "$DOWNLOAD_URL" && \
+    tar -xzf /tmp/mediamtx.tar.gz -C /tmp && \
+    mv /tmp/mediamtx /mediamtx && \
+    chmod +x /mediamtx && \
+    rm -rf /tmp/mediamtx.tar.gz /tmp/mediamtx.yml && \
+    ls -la /mediamtx
+
+# Set the entrypoint to the MediaMTX binary
+ENTRYPOINT ["/mediamtx"]

@@ -7,3 +7,5 @@ pymavlink
 mavsdk==2.0.1
 vector3d
 numpy
+confluent-kafka
+python-dotenv==0.19.2

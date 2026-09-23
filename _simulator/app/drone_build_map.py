@@ -3,15 +3,13 @@ import requests
 from datetime import datetime
 import time
 
-# TODO: Fix the overlap
-
 
 class DroneBuildMap:
-    def __init__(self, drone, overlap, netIp):
+    def __init__(self, drone, interval, netIp):
         self.drone = drone
-        self.overlap = overlap
+        self.interval = interval
         self.running = True
-        self.url = f"http://{netIp}:8000/postBuildMapImg/"
+        self.url = f"http://{netIp}:8888/postBuildMapImg/"
 
     def start(self):
         self.thread = threading.Thread(target=self.loop)
@@ -47,7 +45,7 @@ class DroneBuildMap:
             else:
                 print(f"Request {self.url} failed.")
             pass
-            time.sleep(5)
+            time.sleep(self.interval)
 
     def stop(self):
         self.running = False

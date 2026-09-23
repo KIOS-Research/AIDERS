@@ -63,34 +63,37 @@ Aiders - MAVLink
     {% else %}
         <div id="connect-elements-wrapper">
 
-            <table class="pb-2">
-                <tr id="protocol-wrapper">
-                    <td>Protocol:</td>
-                    <td>
-                        <input type="radio" id="udp" name="mavlink-protocol" value="udp" checked="checked">
-                        <label for="udp">UDP</label>
-                        <input type="radio" id="udpin" name="mavlink-protocol" value="udpin">
-                        <label for="udpin">UDPIN</label>
-                        <input type="radio" id="udpout" name="mavlink-protocol" value="udpout">
-                        <label for="udpout">UDPOUT</label>
-                        <input type="radio" id="tcp" name="mavlink-protocol" value="tcp">
-                        <label for="tcp">TCP</label>
-                        <input type="radio" id="tcpin" name="mavlink-protocol" value="tcpin">
-                        <label for="tcpin">TCPIN</label>
-                        <input type="radio" id="tcpout" name="mavlink-protocol" value="tcpout">
-                        <label for="tcpout">TCPOUT</label>                        
-                    </td>
-                </tr>
-                <tr id="library-wrapper">
-                    <td>Library:</td>
-                    <td>
-                        <input type="radio" id="mavsdk" name="mavlink-library" value="mavsdk" checked="checked">
-                        <label for="mavsdk">MAVSDK</label>
-                        <input type="radio" id="pymavlink" name="mavlink-library" value="pymavlink">
-                        <label for="pymavlink">PyMAVLink</label>
-                    </td>
-                </tr>
-            </table>            
+            {% if drone.connection_type == "MAVPROXY" %}
+                <table class="pb-2">
+                    <tr id="protocol-wrapper">
+                        <td>Protocol:</td>
+                        <td>
+                            <input type="radio" id="udp" name="mavlink-protocol" value="udp" checked="checked">
+                            <label for="udp">UDP</label>
+                            <input type="radio" id="udpin" name="mavlink-protocol" value="udpin">
+                            <label for="udpin">UDPIN</label>
+                            <input type="radio" id="udpout" name="mavlink-protocol" value="udpout">
+                            <label for="udpout">UDPOUT</label>
+                            <input type="radio" id="tcp" name="mavlink-protocol" value="tcp">
+                            <label for="tcp">TCP</label>
+                            <input type="radio" id="tcpin" name="mavlink-protocol" value="tcpin">
+                            <label for="tcpin">TCPIN</label>
+                            <input type="radio" id="tcpout" name="mavlink-protocol" value="tcpout">
+                            <label for="tcpout">TCPOUT</label>                        
+                        </td>
+                    </tr>
+                    <tr id="library-wrapper">
+                        <td>Library:</td>
+                        <td>
+                            <input type="radio" id="pymavlink" name="mavlink-library" value="pymavlink" checked="checked">
+                            <label for="pymavlink">PyMAVLink</label>                      
+                            <input type="radio" id="mavsdk" name="mavlink-library" value="mavsdk">
+                            <label for="mavsdk">MAVSDK</label>
+                        </td>
+                    </tr>
+                </table>
+            {% endif %}
+
             <br />
             <button id="mavlink-connect-btn" type="button" class="btn btn-success"><i class="fa fa-link "></i> Connect</button>
         </div>
@@ -178,16 +181,23 @@ Aiders - MAVLink
     }
 
 
-    function postMavlinkConnectRequest() {
+    function postMavlinkConnectRequest() {   
         console.log('Connecting to UAV...');
-        let selectedProtocol = document.querySelector('input[name="mavlink-protocol"]:checked').value;
-        let selectedLibrary = document.querySelector('input[name="mavlink-library"]:checked').value;
+        let selectedProtocolElement = document.querySelector('input[name="mavlink-protocol"]:checked');
+        let selectedProtocol = selectedProtocolElement ? selectedProtocolElement.value : null;
+
+        let selectedLibraryElement = document.querySelector('input[name="mavlink-library"]:checked');
+        let selectedLibrary = selectedLibraryElement ? selectedLibraryElement.value : null;
+
+
         let requestData = {
+            id: '{{ drone.id }}',
             name: '{{ drone.drone_name }}',
             model: '{{ drone.model }}',
             ip: '{{ drone.ip }}',
             port: '{{ drone.port }}',
             operationId: '{{ drone.operation_id }}',
+            connectionType: '{{ drone.connection_type }}',
             protocol: selectedProtocol,
             library: selectedLibrary
         }

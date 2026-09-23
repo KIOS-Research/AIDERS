@@ -1,0 +1,33 @@
+<div id="device-not-dialog">
+    <div class="dialog-content">
+        <form id="deviceNotForm" name="deviceNotForm" style="display: block;">
+            <input id="selected-device-input" value="" type="hidden">
+            <input id="username" name="username" value="{{ user.username }}" type="hidden">
+
+            <div class="row">
+                <div class="col-12">
+                    <div class="mission-popup-title">Device</div>
+                    <div class="selected-device">
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-12">
+
+                    <div class="form-group">
+                        <div class="mission-popup-title">Message</div>
+                        <input class="form-control" type="text" id="device-message" name="device-message">
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-12">
+                    <p class="errorMessage"></p>
+                </div>
+            </div>
+        </form>
+
+    </div>
+</div>

@@ -1,0 +1,53 @@
+<div id="user-defined-area-dialog">
+    <div class="dialog-content">
+        <form id="userDefinedAareaForm" name="userDefinedAareaForm" style="display: block;">
+
+            <input id="userId" name="userId" value="{{ user.id }}" type="hidden">
+            <input id="operationId" name="operationId" value="{{ operation.id }}" type="hidden">
+            {% csrf_token %}
+
+            <div class="row">
+                <div class="col-12">
+                    <div class="form-group">
+                        <div class="mission-popup-title">Name</div>
+                        <input class="form-control" type="text" id="name" name="name">
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-12">
+                    <div class="form-group">
+                        <div class="mission-popup-title">Description</div>
+                        <input class="form-control" type="text" id="description" name="description">
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-12">
+                    <div class="form-group">
+                        <div class="mission-popup-title">Color</div>
+                        <input class="form-control" type="color" id="color" name="color" value="#ff0000">
+                    </div>
+                </div>
+            </div>
+
+            <!-- <div class="row">
+                <div class="col-12">
+                    <div class="form-group">
+                        <div class="mission-popup-title">Altitude</div>
+                        <input class="form-control" type="number" id="altitude" name="altitude">
+                    </div>
+                </div>
+            </div> -->
+
+            <div class="row">
+                <div class="col-12">
+                    <p class="errorMessage"></p>
+                </div>
+            </div>
+        </form>
+
+    </div>
+</div> 

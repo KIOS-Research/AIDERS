@@ -5,8 +5,10 @@ import os
 import shutil
 import threading
 import zipfile
-from datetime import datetime
+from datetime import datetime, timedelta
 from decimal import Decimal
+import pytz
+import requests
 
 from django import forms
 from django.conf import settings
@@ -20,10 +22,12 @@ from django.core import serializers as core_serializers
 from django.core.exceptions import PermissionDenied
 from django.core.files.storage import default_storage
 from django.forms.models import model_to_dict
+
 from django.http import (
     FileResponse,
     Http404,
     HttpResponse,
+    HttpResponseForbidden,
     HttpResponseNotFound,
     HttpResponseRedirect,
     JsonResponse,
@@ -41,6 +45,8 @@ from logic.algorithms.build_map import build_map_request_handler, img_georeferen
 from logic.algorithms.external_request import patho_request
 from logic.algorithms.flying_report import flying_report
 from logic.algorithms.mission import mission_request_handler
+from logic.algorithms.operation_report.operation_report_generator import OperationReportGenerator
+from aiders.utils.timeout_decorators import with_timeout
 from logic.algorithms.safe_drones import calculations_safe_drones
 from logic.Constants import Constants
 from PIL import Image
@@ -49,22 +55,35 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .factories import *
+# from .factories import *
+from django.contrib.gis.geos import Point
 from .forms import *
 from .httpRequests import (
     postDetectionStartToCv,
     postDetectionStopToCv,
     postRequestForLidarStartOrStop,
     postRequestForOpenWaterSamplingValve,
+    startDroneLiveStreamCapture,
+    postRequestForPilotNotification,
+    postRequestForDeviceNotification,
 )
-from .models import ManuallySetObject, ManuallySetObjectLocation, Operation
+from .models import DetectionSession, GroundVehicle, LiveStreamSession, ManuallySetObject, ManuallySetObjectLocation, Operation, StaticCamera
 from .permissions import IsOwnerOrReadOnly
 from .serializers import *
 
 logger = logging.getLogger(__name__)
 
+SENSOR_DATA_DURATION_HOURS = 0.17 #To initialize the duration to display previous data of SENSIRION
+
 # Function for creating Thread instances with stop function and timer function
 
+
+@login_required
+def serve_media(request, path):
+    response = HttpResponse()
+    response['X-Accel-Redirect'] = '/protected-media/' + path
+    del response['Content-Type']  # let nginx set it
+    return response
 
 class MyThread(threading.Thread):
     """Thread class with a stop() method. The thread itself has to check
@@ -88,62 +107,62 @@ class MyThread(threading.Thread):
         return self._time
 
 
-class DatabaseFiller(APIView):
-    """
-    A class that populates the database with dummy data.
-    It utilizes the Factory notion, using the Factory Boy library
-    Reference: https://factoryboy.readthedocs.io/en/stable/orms.html
-    """
+# class DatabaseFiller(APIView):
+#     """
+#     A class that populates the database with dummy data.
+#     It utilizes the Factory notion, using the Factory Boy library
+#     Reference: https://factoryboy.readthedocs.io/en/stable/orms.html
+#     """
 
-    def get(self, request):
-        UserFactory.create_batch(20)
-        OperationFactory.create_batch(20)
-        mission_points = MissionPointFactory.create_batch(10)
-        MissionFactory.create_batch(20, mission_points=tuple(mission_points))
-        mission = Mission.objects.all().first()
-        drones = DroneFactory.create_batch(20)
-        WeatherStationFactory.create_batch(50)
-        TelemetryFactory.create_batch(50)
-        LiveStreamSessionFactory.create_batch(20)
-        RawFrameFactory.create_batch(20)
-        DetectionFactory.create_batch(20)
-        DetectionSessionFactory.create_batch(50)
-        DetectionFrameFactory.create_batch(20)
-        DetectedObjectFactory.create_batch(20)
-        AlgorithmFactory.create_batch(20)
-        WaterSamplerFactory.create_batch(20)
-        ErrorMessageFactory.create_batch(20)
-        FrontEndUserInputFactory.create_batch(20)
-        LidarPointSessionFactory.create_batch(20)
-        LidarPointFactory.create_batch(20)
-        BuildMapImageFactory.create_batch(50)
-        BuildMapSessionFactory.create_batch(20)
-        ControlDeviceFactory.create_batch(20)
-        MissionLogFactory.create_batch(20)
-        return redirect("login")
+#     def get(self, request):
+#         UserFactory.create_batch(20)
+#         OperationFactory.create_batch(20)
+#         mission_points = MissionPointFactory.create_batch(10)
+#         MissionFactory.create_batch(20, mission_points=tuple(mission_points))
+#         mission = Mission.objects.all().first()
+#         drones = DroneFactory.create_batch(20)
+#         WeatherStationFactory.create_batch(50)
+#         TelemetryFactory.create_batch(50)
+#         LiveStreamSessionFactory.create_batch(20)
+#         RawFrameFactory.create_batch(20)
+#         DetectionFactory.create_batch(20)
+#         DetectionSessionFactory.create_batch(50)
+#         DetectionFrameFactory.create_batch(20)
+#         DetectedObjectFactory.create_batch(20)
+#         AlgorithmFactory.create_batch(20)
+#         WaterSamplerFactory.create_batch(20)
+#         ErrorMessageFactory.create_batch(20)
+#         FrontEndUserInputFactory.create_batch(20)
+#         LidarPointSessionFactory.create_batch(20)
+#         LidarPointFactory.create_batch(20)
+#         BuildMapImageFactory.create_batch(50)
+#         BuildMapSessionFactory.create_batch(20)
+#         ControlDeviceFactory.create_batch(20)
+#         MissionLogFactory.create_batch(20)
+#         return redirect("login")
 
 
-class OperationListCreateAPIView(LoginRequiredMixin, generics.ListCreateAPIView):
-    """
-    List all operations or create new one. The get and create methods are inherited,
-    using the generics.ListCreateAPIView.
-    Tutorial Reference: https://www.django-rest-framework.org/tutorial/3-class-based-views/
-    """
+# class OperationListCreateAPIView(LoginRequiredMixin, generics.ListCreateAPIView):
+#     """
+#     List all operations or create new one. The get and create methods are inherited,
+#     using the generics.ListCreateAPIView.
+#     Tutorial Reference: https://www.django-rest-framework.org/tutorial/3-class-based-views/
+#     """
 
-    queryset = Operation.objects.all()
-    serializer_class = OperationSerializer
+#     queryset = Operation.objects.all()
+#     serializer_class = OperationSerializer
 
-    """
-     Ensure that authenticated requests get read-write access, and unauthenticated requests get read-only access
-    """
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
+#     """
+#      Ensure that authenticated requests get read-write access, and unauthenticated requests get read-only access
+#     """
+#     permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
 
-    def perform_create(self, serializer):
-        """
-        Allows us to modify how the instance save is managed,
-        and handle any information that is implicit in the incoming request or requested URL.
-        """
-        serializer.save(operator=self.request.user)  # Operations are associated with the user that created them
+#     def perform_create(self, serializer):
+#         """
+#         Allows us to modify how the instance save is managed,
+#         and handle any information that is implicit in the incoming request or requested URL.
+#         """
+#         serializer.save(operator=self.request.user)  # Operations are associated with the user that created them
 
 
 class DroneListCreateAPIView(LoginRequiredMixin, generics.ListCreateAPIView):
@@ -217,6 +236,8 @@ class DetectionRetrieveAPIView(LoginRequiredMixin, generics.RetrieveUpdateDestro
 
 class DetectionStartOrStopAPIView(LoginRequiredMixin,generics.ListAPIView):
     def post(self, request, *args, **kwargs):
+        if not User.checkIfUserAllowToExecudeCommands(request.user):
+            return HttpResponseForbidden("You do not have permission to execute commands.")
         data = request.data
         detectionStatus = data.get("detectionStatus")
         userId = request.user.pk
@@ -234,6 +255,7 @@ class DetectionStartOrStopAPIView(LoginRequiredMixin,generics.ListAPIView):
             return HttpResponse("Invalid detectionStatus", status=status.HTTP_400_BAD_REQUEST)
         return HttpResponse(apiResponse, status=status.HTTP_200_OK)
 
+
 class LidarStartOrStopAPIView(LoginRequiredMixin, generics.ListAPIView):
     def post(self, request, *args, **kwargs):
         data = request.data
@@ -244,6 +266,8 @@ class LidarStartOrStopAPIView(LoginRequiredMixin, generics.ListAPIView):
         operationName = data.get("operationName")
         operationId = Operation.getOperationIdByName(operationName)
         latestSession = LidarPointSession.getLatestActiveSessionByDroneId(droneId)
+        droneType = Drone.objects.get(drone_name=droneName).type
+
         if lidarCommand == "START":
             if latestSession is not None:
                 return JsonResponse(
@@ -252,16 +276,16 @@ class LidarStartOrStopAPIView(LoginRequiredMixin, generics.ListAPIView):
             latestSession = LidarPointSession.objects.create(
                 user_id=userId, operation_id=operationId, drone_id=droneId, is_active=True
             )
-            postRequestForLidarStartOrStop(droneId, droneName, latestSession.id, lidarCommand)
+            postRequestForLidarStartOrStop(droneId, droneName, latestSession.id, droneType, lidarCommand)
             return JsonResponse(
                 {"message": "Lidar Session is started.", "lidar_session_id": latestSession.id}, status=200
             )
         elif lidarCommand == "STOP":
-            print(latestSession is not None, flush=True)
+            # print(latestSession is not None, flush=True)
             if latestSession is not None:
                 deactivateSession = LidarPointSession.deactivateSession(latestSession)
                 if deactivateSession:
-                    postRequestForLidarStartOrStop(droneId, droneName, latestSession.id, lidarCommand)
+                    postRequestForLidarStartOrStop(droneId, droneName, latestSession.id, droneType, lidarCommand)
                     return JsonResponse(
                         {"message": "Lidar Session is deactivated.", "lidar_session_id": latestSession.id}, status=200
                     )
@@ -269,7 +293,6 @@ class LidarStartOrStopAPIView(LoginRequiredMixin, generics.ListAPIView):
                 {"message": "There is no lidar session active."}, status=200
             )
         return JsonResponse({"message": "Lidar command Not Valid."}, status=400)
-
 
 class MissionListCreateAPIView(LoginRequiredMixin, generics.ListCreateAPIView):
     queryset = Mission.objects.all()
@@ -462,26 +485,26 @@ class TelemetryListCreateAPIView(LoginRequiredMixin, generics.ListCreateAPIView)
     serializer_class = TelemetrySerializer
 
 
-class ControlDeviceDataAPIView(LoginRequiredMixin, generics.ListCreateAPIView):
-    def control_device_save_data_to_db(self):
-        try:
-            ControlDevice.objects.create(
-                drone=self["drone"],
-                cpu_usage=self["cpu_usage"],
-                cpu_core_usage=self["cpu_core_usage"],
-                cpu_core_frequency=self["cpu_core_frequency"],
-                cpu_temp=self["cpu_temp"],
-                cpu_fan_RPM=self["cpu_fan_RPM"],
-                gpu_usage=self["gpu_usage"],
-                gpu_frequency=self["gpu_frequency"],
-                gpu_temp=self["gpu_temp"],
-                ram_usage=self["ram_usage"],
-                swap_usage=self["swap_usage"],
-                swap_cache=self["swap_cache"],
-                emc_usage=self["emc_usage"],
-            )
-        except Exception as e:
-            logger.error(f'Control Device {self["drone"].drone_name} Serializer data are not valid. Error: {e}.')
+# class ControlDeviceDataAPIView(LoginRequiredMixin, generics.ListCreateAPIView):
+#     def control_device_save_data_to_db(self):
+#         try:
+#             ControlDevice.objects.create(
+#                 drone=self["drone"],
+#                 cpu_usage=self["cpu_usage"],
+#                 cpu_core_usage=self["cpu_core_usage"],
+#                 cpu_core_frequency=self["cpu_core_frequency"],
+#                 cpu_temp=self["cpu_temp"],
+#                 cpu_fan_RPM=self["cpu_fan_RPM"],
+#                 gpu_usage=self["gpu_usage"],
+#                 gpu_frequency=self["gpu_frequency"],
+#                 gpu_temp=self["gpu_temp"],
+#                 ram_usage=self["ram_usage"],
+#                 swap_usage=self["swap_usage"],
+#                 swap_cache=self["swap_cache"],
+#                 emc_usage=self["emc_usage"],
+#             )
+#         except Exception as e:
+#             logger.error(f'Control Device {self["drone"].drone_name} Serializer data are not valid. Error: {e}.')
 
 
 class TelemetryRetrieveAPIView(LoginRequiredMixin, generics.RetrieveUpdateDestroyAPIView):
@@ -504,41 +527,30 @@ class TelemetryRetrieveAPIView(LoginRequiredMixin, generics.RetrieveUpdateDestro
         self.check_object_permissions(self.request, obj)
         return obj
 
+def postGetMissionPointsFromMissionId(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        missionId = data.get("missionId")
+        return JsonResponse({'data': Mission.getMissionDataById(missionId) }, status=200)
+    else:
+        return JsonResponse({'message': 'Invalid request method. Only POST requests are accepted.'}, status=400)
 
-class MissionPointsListCreateAPIView(LoginRequiredMixin, generics.ListCreateAPIView):
-    queryset = MissionPoint.objects.all()
-    serializer_class = MissionPointSerializer
-
-    def list(self, request, *args, **kwargs):
-        """
-        Overriding the default method. We want a special use case here. We want to list
-        the mission points for a particular mission for which the specified drone is part od
-        Args:
-            request:
-            *args:
-            **kwargs:
-        Returns:
-        """
-        operation_name = self.kwargs.get("operation_name")
-        drone_name = self.kwargs.get("drone_name")
-
-        # Get the mission points for the mission that this drone is currently participating
-        qs = Drone.objects.filter(drone_name=drone_name, operation=Operation.objects.get(operation_name=operation_name))
-        drone = get_object_or_404(qs)
-        mission = drone.mission
-        if not mission:
-            raise Http404("This drone is not in any active missions at the moment")
-
-        mission_points = mission.mission_points.all()
-        queryset = self.filter_queryset(mission_points)
-
-        page = self.paginate_queryset(queryset)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
-
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
+def postGetAllActiveSessionDetectionObjectsFromOperationId(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        operationId = data.get("operationId")
+        return JsonResponse({'data': {"detectionObjects": DetectedObject.getAllActiveDetectionObjectsByOperationId(operationId), "detectionDescriptions" : DetectedObjectDescription.getAllActiveDetectionDescriptionsByOperationId(operationId)} }, status=200)
+    else:
+        return JsonResponse({'message': 'Invalid request method. Only POST requests are accepted.'}, status=400)
+    
+def postGetAllDetectionInfoFromDroneIdAndSessionId(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        droneId   = data.get("droneId")
+        sessionId = data.get("sessionId")
+        return JsonResponse({'data': {"detectionInfo": DetectionInfo.getAllDetectionInfoByDroneIdAndSessionId(droneId, sessionId)} }, status=200)
+    else:
+        return JsonResponse({'message': 'Invalid request method. Only POST requests are accepted.'}, status=400)
 
 
 class UserList(LoginRequiredMixin, generics.ListAPIView):
@@ -546,58 +558,67 @@ class UserList(LoginRequiredMixin, generics.ListAPIView):
     serializer_class = UserSerializer
 
     def get(self, request, *args, **kwargs):
+        if not request.user.has_perm("aiders.manage_users"):
+            return HttpResponseForbidden("You do not have permission.")
         users = User.objects.exclude(username="AnonymousUser")
         return render(request, "aiders/users.html", {"users": users})
 
 
 class DroneList(LoginRequiredMixin, generics.ListAPIView):
-    queryset = Drone.objects.all()
-    serializer_class = DroneSerializer
+
+    # queryset = Drone.objects.all()
+    # serializer_class = DroneSerializer
 
     def get(self, request, *args, **kwargs):
+        if not request.user.has_perm("aiders.manage_operations"):
+            return HttpResponseForbidden("You do not have permission.")
         drones = Drone.objects.all()
         return render(request, "aiders/drones.html", {"drones": drones})
 
-    def save_drone_to_db(self):
-        serializer = DroneSerializer(data=self)
-        if serializer.is_valid():
-            drone = serializer.save()
-            logger.info(f"Drone Serializer id {drone.pk} is saved.")
-        else:
-            logger.error(f"Drone Serializer data are not valid. Error: {serializer.errors}.")
+    # def save_drone_to_db(self):
+    #     serializer = DroneSerializer(data=self)
+    #     if serializer.is_valid():
+    #         drone = serializer.save()
+    #         logger.info(f"Drone Serializer id {drone.pk} is saved.")
+    #     else:
+    #         logger.error(f"Drone Serializer data are not valid. Error: {serializer.errors}.")
 
 
 class DeviceList(LoginRequiredMixin, generics.ListAPIView):
-    queryset = Device.objects.all()
-    serializer_class = DeviceSerializer
+    # queryset = Device.objects.all()
+    # serializer_class = DeviceSerializer
 
     def get(self, request, *args, **kwargs):
+        if not request.user.has_perm("aiders.manage_operations"):
+            return HttpResponseForbidden("You do not have permission.")        
         devices = Device.objects.all()
         return render(request, "aiders/devices.html", {"devices": devices})
 
-    def save_device_to_db(self):
-        serializer = DeviceSerializer(data=self)
-        if serializer.is_valid():
-            device = serializer.save()
-            logger.info(f"Device Serializer id {device.pk} is saved.")
-        else:
-            logger.error(f"Device Serializer data are not valid. Error: {serializer.errors}.")
+    # def save_device_to_db(self):
+    #     serializer = DeviceSerializer(data=self)
+    #     if serializer.is_valid():
+    #         device = serializer.save()
+    #         logger.info(f"Device Serializer id {device.pk} is saved.")
+    #     else:
+    #         logger.error(f"Device Serializer data are not valid. Error: {serializer.errors}.")
 
 
 class BaloraList(LoginRequiredMixin, generics.ListAPIView):
-    queryset = BaloraMaster.objects.all()
-    serializer_class = LoraSerializer
+    # queryset = BaloraMaster.objects.all()
+    # serializer_class = LoraSerializer
 
     def get(self, request, *args, **kwargs):
+        if not request.user.has_perm("aiders.manage_operations"):
+            return HttpResponseForbidden("You do not have permission.")           
         loras = BaloraMaster.objects.all()
         return render(request, "aiders/balora.html", {"loras": loras})
 
-    def save_lora_to_db(self):
-        serializer = LoraSerializer(data=self)
-        if serializer.is_valid():
-            balora = serializer.save()
-        else:
-            logger.error(f"Balora Serializer data are not valid. Error: {serializer.errors}.")
+    # def save_lora_to_db(self):
+    #     serializer = LoraSerializer(data=self)
+    #     if serializer.is_valid():
+    #         balora = serializer.save()
+    #     else:
+    #         logger.error(f"Balora Serializer data are not valid. Error: {serializer.errors}.")
 
     def save_lora_network_to_db(self, baloraMaster):
         return (
@@ -612,6 +633,70 @@ class BaloraList(LoginRequiredMixin, generics.ListAPIView):
             loraTelemetry = serializer.save()
         else:
             logger.error(f"Balora Serializer data are not valid. Error: {serializer.errors}.")
+
+
+class StaticCameraList(LoginRequiredMixin, generics.ListAPIView):
+    def get(self, request, *args, **kwargs):
+        if not request.user.has_perm("aiders.manage_operations"):
+            return HttpResponseForbidden("You do not have permission.")           
+        static_cameras = StaticCamera.objects.all()
+        return render(request, "aiders/static_cameras.html", {"static_cameras": static_cameras})
+
+
+class GroundVehicleList(LoginRequiredMixin, generics.ListAPIView):
+    def get(self, request, *args, **kwargs):
+        if not request.user.has_perm("aiders.manage_operations"):
+            return HttpResponseForbidden("You do not have permission.")
+        ground_vehicles = GroundVehicle.objects.all()
+        return render(request, "aiders/ground_vehicles.html", {"ground_vehicles": ground_vehicles})
+
+
+@login_required
+def static_camera_create_view(request):
+    if not request.user.has_perm("aiders.manage_operations"):
+        return HttpResponseForbidden("You do not have permission.")
+        
+    if request.method == "POST":
+        form = StaticCameraForm(request.POST)
+        if form.is_valid():
+            form.save()
+            # TODO: start stream rebroadcast if connected_with_platform is True
+            # if form.cleaned_data['connected_with_platform']:
+            #     startStreamRebroadcast(static_camera.name, static_camera.stream_url)            
+            messages.success(request, "Static Camera created successfully.")
+            return redirect('static_cameras_list')
+    else:
+        form = StaticCameraForm()
+    
+    return render(request, "aiders/static_camera_form.html", {"form": form, "title": "Add New Static Camera"})
+
+
+@login_required
+def static_camera_edit_view(request, camera_id):
+    if not request.user.has_perm("aiders.manage_operations"):
+        return HttpResponseForbidden("You do not have permission.")
+    
+    try:
+        static_camera = StaticCamera.objects.get(id=camera_id)
+    except StaticCamera.DoesNotExist:
+        messages.error(request, "Static camera not found.")
+        return redirect("static_cameras_list")
+    
+    if request.method == "POST":
+        form = StaticCameraForm(request.POST, instance=static_camera)
+        if form.is_valid():
+            form.save()
+            # TODO: start stream rebroadcast if connected_with_platform is True
+            # if form.cleaned_data['connected_with_platform']:
+            #     startStreamRebroadcast(static_camera.name, static_camera.stream_url)
+            messages.success(request, f"Static camera '{form.cleaned_data['name']}' updated successfully!")
+            return redirect("static_cameras_list")
+        else:
+            messages.error(request, "Please correct the errors below.")
+    else:
+        form = StaticCameraForm(instance=static_camera)
+    
+    return render(request, "aiders/static_camera_form.html", {"form": form, "title": "Edit Static Camera"})
 
 
 class BaloraModifyOperationView(LoginRequiredMixin, generic.UpdateView):
@@ -701,7 +786,32 @@ class ManageOperationsView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
         operations = Operation.objects.all()
         users = User.objects.all()
-        return render(request, "aiders/manage_operations.html", {"operations": operations, "users": users, "use_online_maps": False})
+        # Get user's permissions for each operation
+        user_view_operation_ids = []
+        for op in operations:
+            permission_name = f"aiders.view_operation_{op.id}"  # Dynamic permission name
+            if request.user.has_perm(permission_name):
+                user_view_operation_ids.append(op.id)
+
+        user_manage_operation_ids = []
+        for op in operations:
+            permission_name = f"aiders.manage_operation_{op.id}"  # Dynamic permission name
+            if request.user.has_perm(permission_name):
+                user_manage_operation_ids.append(op.id)
+
+        # get chat id for each operation
+        for operation in operations:
+            try:
+                operation.chat_id = ChatRoom.objects.filter(operation_id=operation.id).last().id
+                if not operation.chat_id:
+                    operation.chat_id = "No chat ID available"
+
+                # print(operation.chat_id, flush=True)
+            except Exception as e:
+                operation.chat_id = "No chat ID available"
+                logger.error(f"Error retrieving chat ID for operation {operation.id}: {e}")
+
+        return render(request, "aiders/manage_operations.html", {"operations": operations, "users": users, "user_view_operation_ids":user_view_operation_ids, "user_manage_operation_ids":user_manage_operation_ids})
 
 
 # class JoinOperationView(LoginRequiredMixin,View):
@@ -711,57 +821,100 @@ class ManageOperationsView(LoginRequiredMixin, View):
 #         return render(request, 'aiders/join_operation.html', {'operation': operation})
 
 
-class ManagePermissionsView(LoginRequiredMixin, generic.UpdateView):
-    def get(self, request, *args, **kwargs):
-        if not request.user.has_perm("aiders.edit_permissions"):
-            raise PermissionDenied("You do not have permission to read the permissions.")
-        users = User.objects.exclude(username="AnonymousUser")
-        for user in users:
-            self.add_user_perm(user)
-        operation_groups = ""
-        all_groups = Group.objects.all()
-        for group in all_groups:
-            if str(group.name).__contains__(" operation join"):
-                operation_groups = operation_groups + (group.name).replace(" operation join", "") + ","
-        return render(request, "aiders/manage_permissions.html", {"users": users, "all_groups": operation_groups})
+# class ManagePermissionsView(LoginRequiredMixin, generic.UpdateView):
+#     def get(self, request, *args, **kwargs):
+#         if not request.user.has_perm("aiders.manage_users"):
+#             raise PermissionDenied("You do not have permission to read the permissions.")
+#         users = User.objects.exclude(username="AnonymousUser")
+#         for user in users:
+#             self.add_user_perm(user)
+#         operation_groups = ""
+#         all_groups = Group.objects.all()
+#         for group in all_groups:
+#             if str(group.name).__contains__(" operation join"):
+#                 operation_groups = operation_groups + (group.name).replace(" operation join", "") + ","
+#                 print("operation_groups", operation_groups, flush=True)
 
-    def post(self, request, *args, **kwargs):
-        if not request.user.has_perm("aiders.edit_permissions"):
-            raise PermissionDenied("You do not have permission to change the permissions.")
-        for user in User.objects.exclude(username="AnonymousUser"):
-            User.update_permissions(user.id, "permission_edit_permissions", str(user.id) in request.POST.getlist("permission_edit_permissions"))
-            User.update_permissions(user.id, "permission_create_operations", str(user.id) in request.POST.getlist("permission_create_operations"))
-        users = User.objects.exclude(username="AnonymousUser")
+#         return render(request, "aiders/manage_permissions.html", {"users": users, "all_groups": operation_groups})
 
-        for user in users:
-            self.add_user_perm(user)
-        operation_groups = ""
-        all_groups = Group.objects.all()
-        for group in all_groups:
-            if str(group.name).__contains__(" operation join"):
-                operation_groups = operation_groups + (group.name).replace(" operation join", "") + ","
-        return render(request, "aiders/manage_permissions.html", {"users": users, "all_groups": operation_groups}, status=status.HTTP_202_ACCEPTED)
+    # def post(self, request, *args, **kwargs):
+    #     if not request.user.has_perm("aiders.manage_users"):
+    #         raise PermissionDenied("You do not have permission to change the permissions.")
+    #     User.updateUserAllowExecuteCommandsById(request.POST.getlist("execute_commands"))
+    #     # for user in User.objects.exclude(username="AnonymousUser"):
+    #     #     User.update_permissions(user.id, "permission_edit_permissions", str(user.id) in request.POST.getlist("permission_edit_permissions"))
+    #     #     User.update_permissions(user.id, "permission_create_operations", str(user.id) in request.POST.getlist("permission_create_operations"))
+    #     users = User.objects.exclude(username="AnonymousUser")
 
-    def add_user_perm(self, user):
-        user.permission_edit_permissions = user.has_perm("aiders.edit_permissions")
-        user.permission_create_operations = user.has_perm("aiders.create_operations")
+    #     for user in users:
+    #         self.add_user_perm(user)
+    #     operation_groups = ""
+    #     all_groups = Group.objects.all()
+    #     for group in all_groups:
+    #         if str(group.name).__contains__(" operation join"):
+    #             operation_groups = operation_groups + (group.name).replace(" operation join", "") + ","
+    #     return render(request, "aiders/manage_permissions.html", {"users": users, "all_groups": operation_groups}, status=status.HTTP_202_ACCEPTED)
+
+    # def add_user_perm(self, user):
+    #     user.permission_edit_permissions = user.has_perm("aiders.manage_users")
+    #     user.permission_create_operations = user.has_perm("aiders.manage_operations")
+    #     user.save()
+
+
+# class ManageUserPermissionsView(LoginRequiredMixin, generic.UpdateView):
+#     def post(self, request, *args, **kwargs):
+#         if not request.user.has_perm("aiders.manage_users"):
+#             raise PermissionDenied("You do not have permission to change the permissions.")
+#         user_name = self.kwargs.get("user_name")
+#         group_list = request.POST.get("selected")
+#         group_list = group_list.split(",")
+#         for group in Group.objects.all():
+#             if str(group.name).__contains__(" operation join"):
+#                 User.objects.filter(username=user_name)[0].groups.remove(group)
+#         for group_name in group_list:
+#             group_object = Group.objects.filter(name=f"{group_name} operation join").last()
+#             User.objects.filter(username=user_name)[0].groups.add(group_object)
+#         return HttpResponse(status=status.HTTP_200_OK)
+
+
+def users_permissions_view(request):
+    if not request.user.has_perm("aiders.manage_users"):
+        raise PermissionDenied("You do not have permission to view the permissions.")
+    # Retrieve all users and permissions
+    users = User.objects.all().exclude(username="AnonymousUser")
+    permissions = Permission.objects.filter(id__gt=264).exclude(codename__regex=r'\d$').order_by('id')
+
+    # Pass the data to the template
+    context = {
+        'users': users,
+        'permissions': permissions,
+    }
+    return render(request, 'aiders/users_permissions_view.html', context)
+
+
+def deactivate_user_account(request, user_id):
+    if not request.user.has_perm("aiders.manage_users"):
+        raise PermissionDenied("You do not have permission to deactivate user accounts.")
+    if int(user_id) == int(request.user.id):
+        raise PermissionDenied("You cannot deactivate your own account.")
+    else:
+        user = get_object_or_404(User, pk=user_id)
+        user.is_active = False
         user.save()
+    return redirect('users')  # Redirect to the users permissions view after deactivation
 
 
-class ManageUserPermissionsView(LoginRequiredMixin, generic.UpdateView):
-    def post(self, request, *args, **kwargs):
-        if not request.user.has_perm("aiders.edit_permissions"):
-            raise PermissionDenied("You do not have permission to change the permissions.")
-        user_name = self.kwargs.get("user_name")
-        group_list = request.POST.get("selected")
-        group_list = group_list.split(",")
-        for group in Group.objects.all():
-            if str(group.name).__contains__(" operation join"):
-                User.objects.filter(username=user_name)[0].groups.remove(group)
-        for group_name in group_list:
-            group_object = Group.objects.filter(name=f"{group_name} operation join").last()
-            User.objects.filter(username=user_name)[0].groups.add(group_object)
-        return HttpResponse(status=status.HTTP_200_OK)
+def activate_user_account(request, user_id):
+    if not request.user.has_perm("aiders.manage_users"):
+        raise PermissionDenied("You do not have permission to deactivate user accounts.")
+    if int(user_id) == int(request.user.id):
+        raise PermissionDenied("You cannot activate your own account.")
+    else:   
+        user = get_object_or_404(User, pk=user_id)
+        user.is_active = True
+        user.save()
+    return redirect('users')  # Redirect to the users permissions view after activation
+
 
 
 def index(request):
@@ -771,8 +924,11 @@ def index(request):
     """
     context = {"auth_form": AuthenticationForm}
     if request.user.is_authenticated:
+
         userQuery = User.objects.filter(pk=request.user.id)
         user = get_object_or_404(userQuery)
+
+
         if joined_op_obj := user.joined_operation:
             if request.method == "POST":
                 previous_page = resolve(request.POST.get("next", "/")).func.view_class
@@ -788,10 +944,21 @@ def index(request):
                     return HttpResponseRedirect(reverse("home"))
             elif request.method == "GET":
                 disasterEpicenterGPS=Operation.getDisasterEpicenterGPSByOperationId(joined_op_obj.id)
-                context = {"operation": joined_op_obj, "net_ip": os.environ.get("NET_IP", "localhost"), "ws_port": os.environ.get("WS_PORT", 8000), "version": os.environ.get("VERSION", 1)}
+                booGPS=Operation.getBooGPSByOperationId(joined_op_obj.id)
+                context = {
+                    "operation": joined_op_obj,
+                    "net_ip": os.environ.get("NET_IP"),
+                    "nginx_port": os.environ.get("NGINX_PORT"),
+                    "video_and_cv_remote": os.environ.get("VIDEO_AND_CV_REMOTE", 0),
+                    "legacy_lsc": os.environ.get("LEGACY_LSC", 0),
+                    "mtx_user": os.environ.get("MTX_USER", ""),
+                    "mtx_pass": os.environ.get("MTX_PASS", "")}
                 if disasterEpicenterGPS is not None:
                     context["disaster_epicenter_latitude"] = disasterEpicenterGPS['latitude']
                     context["disaster_epicenter_longitude"] = disasterEpicenterGPS['longitude']
+                if booGPS is not None:
+                    context["boo_latitude"] = booGPS['latitude']
+                    context["boo_longitude"] = booGPS['longitude']
                 user_wants_to_load_algorithm_results_on_map = request.session.get("checkedAlgoResultIDs") != None
                 if user_wants_to_load_algorithm_results_on_map:
                     algorithm_result_ids = request.session.get("checkedAlgoResultIDs")
@@ -809,6 +976,8 @@ def index(request):
         else:
             context = {"join_operation_form": JoinOperationForm}
 
+        
+
         use_online_map = UserPreferences.objects.get(user=request.user).use_online_map
         # context = {'auth_form': AuthenticationForm,'use_online_map':use_online_map}
 
@@ -823,7 +992,8 @@ def index(request):
         context["use_online_map"] = use_online_map
         return render(request, "aiders/platform.html", context)
 
-    return render(request, "aiders/login.html", context)
+    # return render(request, "aiders/login.html", context)
+    return redirect("login")
 
 
 class DroneModifyOperationView(LoginRequiredMixin, generic.UpdateView):
@@ -930,13 +1100,19 @@ def getActiveDeviceSessionImagesByDeviceId(request, *args, **kwargs):
 
 class BuildMapStartOrStopSession(LoginRequiredMixin, generic.UpdateView):
     def post(self, request, *args, **kwargs):
+        if not User.checkIfUserAllowToExecudeCommands(request.user):
+            return HttpResponseForbidden("You do not have permission to execute commands.")
         operationName = self.kwargs.get("operation_name")
-        drone_name = request.POST.get("drone_name")
-        activateBuildMap = request.POST.get("start_build_map_boolean")
-        overlap = request.POST.get("overlap")
-        drone = Drone.objects.get(drone_name=drone_name)
-        if activateBuildMap == "true":
-            build_map_request_handler.PostRequestForBuildMapStartOrStop(drone_name, "START", overlap)
+
+        postData = json.loads(request.body)
+        print(postData, flush=True)
+        droneName = postData.get("drone_name")
+        activateBuildMap = postData.get("start_build_map_boolean")
+        interval = postData.get("interval")
+
+        drone = Drone.objects.get(drone_name=droneName)
+        if activateBuildMap == True:
+            build_map_request_handler.PostRequestForBuildMapStartOrStop(droneName, "START", interval, drone.connection_type)
             latestActiveBuildMapSession = BuildMapSession.getLatestActiveSessionIdByDroneId(drone.id)
             drone.build_map_activated = True
             drone.save()
@@ -946,7 +1122,7 @@ class BuildMapStartOrStopSession(LoginRequiredMixin, generic.UpdateView):
             else:
                 print("Active build map session", flush=True)
                 BuildMapSessionId = BuildMapSession.createBuildMapSessionByUserIdOperationNameDrone(User.objects.get(id = request.user.id), operationName, drone)
-            logger.info("User sending build map request Start for drone {}.".format(drone_name))
+            logger.info("User sending build map request Start for drone {}.".format(droneName))
             return JsonResponse({'data': BuildMapSessionId}, status=200)
         else:
             drone.build_map_activated = False
@@ -955,8 +1131,8 @@ class BuildMapStartOrStopSession(LoginRequiredMixin, generic.UpdateView):
                 operation=Operation.objects.get(operation_name=operationName), drone=drone, is_active=True
             ).update(end_time=datetime.datetime.now(tz=Constants.CYPRUS_TIMEZONE_OBJ), is_active=False)
             # BuildMapSessionId = BuildMapSession.deactivateBuildMapSessionByOperationNameDrone(operationName, drone)
-            build_map_request_handler.PostRequestForBuildMapStartOrStop(drone_name, "STOP", overlap)
-            logger.info("User sending build map request Stop for drone {}.".format(drone_name))
+            build_map_request_handler.PostRequestForBuildMapStartOrStop(droneName, "STOP", interval, drone.connection_type)
+            logger.info("User sending build map request Stop for drone {}.".format(droneName))
             print("STOP build map session", flush=True)
             return JsonResponse({'data': 1}, status=200)
 
@@ -984,7 +1160,6 @@ def buildMapGetLatestImages(request, *args, **kwargs):
 
 def buildMapGetLatestImagesBySessionId(request, *args, **kwargs):
     if request.method == 'POST':
-        print(request.body)
         data = json.loads(request.body)
         
         buildMapSessionId = data.get("buildMapSessionId")
@@ -1016,8 +1191,10 @@ class LidarPointsAPIView(LoginRequiredMixin, generic.UpdateView):
 
 @csrf_exempt
 def BuildMapImageView(request):
+
     if request.method != "POST":
         return
+    # print(request.POST, flush=True)
     img_file = request.FILES.get("image_file")
     img_name = request.POST.get("image_name")
     drone_name = request.POST.get("drone_name")
@@ -1036,11 +1213,11 @@ def BuildMapImageView(request):
         extra_data = True
     except Exception:
         extra_data = False
+
     drone_instance = Drone.objects.get(drone_name=drone_name)
     destinations = img_georeference.calcPoints(
         drone_lat, drone_lon, drone_bearing, drone_alt, img_name, drone_instance.model, drone_instance.camera_model
     )
-
     try:
         if drone_instance.is_connected_with_platform and drone_instance.build_map_activated:
             Session = BuildMapSession.objects.filter(drone=Drone.objects.get(drone_name=drone_name)).last()
@@ -1074,12 +1251,12 @@ def BuildMapImageView(request):
                     centre=Point(drone_lon, drone_lat),
                     altitude=Decimal(drone_alt),
                     bearing=Decimal(drone_bearing),
-                    d_roll=None,
-                    d_pitch=None,
-                    d_yaw=None,
-                    g_roll=None,
-                    g_pitch=None,
-                    g_yaw=None,
+                    d_roll=0,
+                    d_pitch=0,
+                    d_yaw=0,
+                    g_roll=0,
+                    g_pitch=0,
+                    g_yaw=0,
                     session=Session,
                 )
             logger.info(f"Saved Image Successfully for Build Map Session {Session.id}.")
@@ -1116,6 +1293,7 @@ def DataImageView(request):
 def DeviceImageView(request):
     if request.method == "POST":
         try:
+            print(request.POST, flush=True)
             device_name = request.POST.get("deviceName")
             session = DeviceSession.objects.filter(
                 is_active=True,
@@ -1127,8 +1305,13 @@ def DeviceImageView(request):
 
             img_file = request.FILES.get("image_file")
             img_name = request.POST.get("img_name")
-            device_latitude = float(request.POST.get("latitude"))
-            device_longitude = float(request.POST.get("longitude"))
+            # device_latitude = float(request.POST.get("latitude"))
+            # device_longitude = float(request.POST.get("longitude"))
+
+            # get latest device telemetry from the database instead
+            device_telemetry = DeviceTelemetry.objects.filter(device__name=device_name).last()
+            device_latitude = device_telemetry.latitude
+            device_longitude = device_telemetry.longitude
 
             temp_image = Image.open(img_file)
             temp_image.save(default_storage.path(os.path.join(session.folder_path, img_file.name)))
@@ -1207,6 +1390,7 @@ class FirePredictionCreateAPIView(LoginRequiredMixin, generic.UpdateView):
         raise Http404
 
 
+# legacy login
 def login_view(request):
     if request.method == "GET":
         redirect_to = request.GET.get("next")
@@ -1261,6 +1445,7 @@ def login_view(request):
             return render(request, "aiders/login.html", {"auth_form": AuthenticationForm, "next": redirect_to})
 
 
+# legacy logout
 def logout_view(request):
     from rest_framework.authtoken.models import Token
     Token.objects.filter(user=request.user).delete()
@@ -1268,6 +1453,49 @@ def logout_view(request):
     logout(request)
     # Redirect to a success page
     return redirect("login")
+
+
+
+# login for keycloak
+def custom_login(request):
+    print("****************************** custom_login **********************************", flush=True)
+    redirect_to = request.GET.get("next")
+    if request.user.is_authenticated:
+        if redirect_to != None:
+            return HttpResponseRedirect(redirect_to)
+        return HttpResponseRedirect(reverse("manage_operations"))
+    # return render(request, "aiders/login.html", {"auth_form": AuthenticationForm, "next": redirect_to})
+    return redirect("/accounts/oidc/keycloak/login/") # redirect to keycloak login page
+
+
+
+# logout for keycloak
+def custom_logout(request):
+    from rest_framework.authtoken.models import Token
+    Token.objects.filter(user=request.user).delete()    
+    # from allauth.socialaccount.models import SocialToken
+    # id_token = None
+    # try:
+    #     token = SocialToken.objects.filter(account__user=request.user, account__provider='keycloak').last()
+    #     if token and 'id_token' in token.extra_data:
+    #         print("ID Token found:", token.extra_data['id_token'], flush=True)
+    #         id_token = token.extra_data['id_token']
+    #     else:
+    #         print("ID Token not found in token.extra_data", flush=True)
+    # except Exception as e:
+    #     print("Error retrieving id_token:", e, flush=True)
+
+    logout(request) # django logout
+
+    # keycloak_logout_url = (
+    #     "http://" + os.environ.get("NET_IP") + ":8083/realms/master/protocol/openid-connect/logout"
+    #     f"?post_logout_redirect_uri=http://" + os.environ.get("NET_IP") + ":8888/"
+    # )
+    # if id_token:
+    #     keycloak_logout_url += f"&id_token_hint={id_token}"
+    
+    keycloak_logout_url = "http://" + os.environ.get("NET_IP") + ":" + os.environ.get("KEYCLOAK_PORT") + "/realms/master/protocol/openid-connect/logout"    
+    return redirect(keycloak_logout_url)
 
 
 # # check if a token exists in the database
@@ -1289,7 +1517,7 @@ def logout_view(request):
 
 
 def new_operation_form_view(request):
-    if not request.user.has_perm("aiders.create_operations"):
+    if not request.user.has_perm("aiders.manage_operations"):
         raise PermissionDenied("You do not have permission to create the operation.")
     if request.method == "POST":
         form = NewOperationFormForm(request.POST)
@@ -1366,22 +1594,46 @@ def new_operation_form_save(request):
             lora_instance.operation = operation_instance
             lora_instance.save()
         operation_instance.baloras_to_operate.set(lora_allow_list)
-    # Save Permissions
-    group_join_operation = Group.objects.create(name=f"{operation_instance.operation_name} operation join")
-    group_edit_operation = Group.objects.create(name=f"{operation_instance.operation_name} operation edit")
-    assign_perm("join_operation", group_join_operation, operation_instance)
-    assign_perm("edit_operation", group_edit_operation, operation_instance)
 
+    # Create join and manage permissions for the this operation
+    ct = ContentType.objects.get_for_model(Operation)
+    view_permission = Permission.objects.create(codename=f"view_operation_{operation_instance.id}", name=f"view operation {operation_instance.operation_name}", content_type=ct)
+    manage_permission = Permission.objects.create(codename=f"manage_operation_{operation_instance.id}", name=f"manage operation {operation_instance.operation_name}", content_type=ct)
+    request.user.user_permissions.add(view_permission)   # give creator access
+    request.user.user_permissions.add(manage_permission) # give creator access
+    # Add the permissions to the users that are allowed to view/manage the operation
     for user_id in request.POST.getlist("users_allow"):
-        User.objects.filter(pk=user_id)[0].groups.add(group_join_operation)
+        current_user = User.objects.get(pk=user_id)
+        current_user.user_permissions.add(view_permission)
+        if current_user.has_perm("aiders.manage_operations"):
+            current_user.user_permissions.add(manage_permission)
 
+    # group_join_operation = Group.objects.create(name=f"{operation_instance.operation_name} operation join") # ?
+    # group_edit_operation = Group.objects.create(name=f"{operation_instance.operation_name} operation edit") # ?
+    # assign_perm("join_operation", group_join_operation, operation_instance)
+    # assign_perm("edit_operation", group_edit_operation, operation_instance)
+
+    # for user_id in request.POST.getlist("users_allow"):
+    #     User.objects.filter(pk=user_id)[0].groups.add(group_join_operation)
+
+    # Get or create chat room for this operation
+    room, created = ChatRoom.get_or_create_for_operation(operation_instance)
+    
+    # Add user as member if not already
+    member, member_created = ChatRoomMember.objects.get_or_create(
+        room=room,
+        user=request.user,
+        defaults={'is_active': True}
+    )
+        
     logger.info(f"Operation with id {operation_instance.pk} is created successfully.")
     return redirect("manage_operations")
 
 
 def edit_operation_form_view(request, operation_name):
-    if not request.user.has_perm("aiders.create_operations"):
-        raise PermissionDenied("You do not have permission to create the operation.")
+    op = Operation.objects.get(operation_name=operation_name)
+    if not request.user.has_perm("aiders.manage_operations") or not request.user.has_perm(f"aiders.manage_operation_{op.id}"):
+        raise PermissionDenied("You do not have permission to edit the operation.")
     if request.method == "POST":
         if operation_name == request.POST.get("operation_name"):
             return edit_operation_form_save(operation_name, request)
@@ -1392,7 +1644,7 @@ def edit_operation_form_view(request, operation_name):
     users_allow = []
     for user in User.objects.all():
         if user.username != "AnonymousUser":
-            if user.has_perm("join_operation", operation_instance):
+            if user.has_perm(f"aiders.view_operation_{operation_instance.id}"):
                 users_allow.append(user)
             else:
                 users_all.append(user)
@@ -1430,6 +1682,22 @@ def edit_operation_form_save(operation_name, request):
     operation_instance = Operation.objects.get(operation_name=operation_name)
     operation_instance.location = request.POST.get("location")
     operation_instance.description = request.POST.get("description")
+
+    # handle base of operations coordinates
+    if request.POST.get("boo_latitude") == '':
+        booLatitudeValue = None
+    else:
+        booLatitudeValue = request.POST.get("boo_latitude")
+    if request.POST.get("boo_longitude") == '':
+        booLongitudeValue = None
+    else:
+        booLongitudeValue = request.POST.get("boo_longitude")
+    operation_instance.boo_latitude = booLatitudeValue
+    operation_instance.boo_longitude = booLongitudeValue
+
+    print(operation_instance.boo_latitude, operation_instance.boo_longitude, flush=True)
+
+    # handle disaster epicenter coordinates
     if request.POST.get("disaster_epicenter_latitude") == '':
         disasterEpicenterLatitudeValue = None
     else:
@@ -1442,12 +1710,30 @@ def edit_operation_form_save(operation_name, request):
     operation_instance.disaster_epicenter_longitude = disasterEpicenterLongitudeValue
 
     operation_instance.save()
-    Group.objects.get(name=f"{operation_instance.operation_name} operation join").delete()
-    group_join_operation = Group.objects.create(name=f"{operation_instance.operation_name} operation join")
-    assign_perm("join_operation", group_join_operation, operation_instance)
+    # Group.objects.get(name=f"{operation_instance.operation_name} operation join").delete()
+    # group_join_operation = Group.objects.create(name=f"{operation_instance.operation_name} operation join")
+    # assign_perm("join_operation", group_join_operation, operation_instance)
 
+    # for user_id in request.POST.getlist("users_allow"):
+    #     User.objects.filter(pk=user_id)[0].groups.add(group_join_operation)
+
+    # Get join and manage permissions for the this operation
+    view_permission = Permission.objects.get(codename=f"view_operation_{operation_instance.id}")
+    manage_permission = Permission.objects.get(codename=f"manage_operation_{operation_instance.id}")
+    # Remove the users that already had the permissions but were removed from the operation
+    for user_id in request.POST.getlist("users_all"):
+        current_user = User.objects.get(pk=user_id)
+        current_user.user_permissions.remove(view_permission)
+        current_user.user_permissions.remove(manage_permission)
+    request.user.user_permissions.add(view_permission)   # give creator access
+    request.user.user_permissions.add(manage_permission) # give creator access        
+    # Add the permissions to the users that are allowed to view/manage the operation
     for user_id in request.POST.getlist("users_allow"):
-        User.objects.filter(pk=user_id)[0].groups.add(group_join_operation)
+        current_user = User.objects.get(pk=user_id)
+        current_user.user_permissions.add(view_permission)
+        if current_user.has_perm("aiders.manage_operations"):
+            current_user.user_permissions.add(manage_permission)
+
     # Save Operation Drones
     drone_allow_list = Drone.objects.none()
     for drone_id in request.POST.getlist("drones_allow"):
@@ -1500,8 +1786,14 @@ def edit_operation_form_save(operation_name, request):
     return redirect("manage_operations")
 
 
+def about_view(request):
+    """About Us page view - accessible to all users"""
+    return render(request, "aiders/about.html")
+
 class ExecuteAlgorithmAPIView(LoginRequiredMixin, APIView):
     def post(self, request, *args, **kwargs):
+        if not User.checkIfUserAllowToExecudeCommands(request.user):
+            return HttpResponseForbidden("You do not have permission to execute commands.")
         return Response(
             utils.handleAlgorithmExecution(
                 Operation.objects.get(operation_name=kwargs["operation_name"]).pk,
@@ -1513,26 +1805,36 @@ class ExecuteAlgorithmAPIView(LoginRequiredMixin, APIView):
         )
 
 
-class ExecuteMissionAPIView(LoginRequiredMixin, APIView):
-    def get(self, request, *args, **kwargs):
-        operation_name = kwargs["operation_name"]
-        drone_name = kwargs["drone_name"]
-        user = request.user
-        operation = Operation.objects.get(operation_name=operation_name)
-        drone = Drone.objects.get(drone_name=drone_name)
+# class ExecuteMissionAPIView(LoginRequiredMixin, APIView):
+class ExecuteMissionAPIView(APIView):
+    # def get(self, request, *args, **kwargs):
+    #     operation_name = kwargs["operation_name"]
+    #     drone_name = kwargs["drone_name"]
+    #     user = request.user
+    #     operation = Operation.objects.get(operation_name=operation_name)
+    #     drone = Drone.objects.get(drone_name=drone_name)
 
-        mission_log = MissionLog.objects.filter(action="START_MISSION", user=user.pk, drone=drone, operation=operation).last()
-        return Response(mission_log.mission.mission_type)
+    #     mission_log = MissionLog.objects.filter(action="START_MISSION", user=user.pk, drone=drone, operation=operation).last()
+    #     return Response(mission_log.mission.mission_type)
+
 
     def post(self, request, *args, **kwargs):
-        # print("Request of the Execute Mission:", request, "\nand kwargs:", kwargs)
+        # if not User.checkIfUserAllowToExecudeCommands(request.user):
+        #     return HttpResponseForbidden("You do not have permission to execute commands.")
+        
+        actionDetails = request.data
+        # TODO: check if user is logged in with django
+        # TODO: ELSE
+        # TODO: check bearer token against Keycloak
+        # TODO: figure out a way to assign the mission to a user_id if missions comes from Kafka
+        user_id = 2 # TODO: get the user's PK from the request
+        # TODO: check if user has permission to issue commands
+
         operation_name = kwargs["operation_name"]
         drone_name = kwargs["drone_name"]
-        actionDetails = request.data
-        user_name = request.user.username
+        # user_name = request.user.username
         operation = Operation.objects.get(operation_name=operation_name)
 
-        User = get_user_model()
         action = actionDetails["action"]
         grid = actionDetails["grid"]
         captureAndStoreImages = actionDetails["captureAndStoreImages"]
@@ -1562,7 +1864,7 @@ class ExecuteMissionAPIView(LoginRequiredMixin, APIView):
             missionGimbal,
             missionRepeat,
             action,
-            request.user.pk,
+            user_id, 
             dronePK,
         )
         # elif missionType == Mission.SEARCH_AND_RESCUE_MISSION:
@@ -1578,19 +1880,11 @@ class AlgorithmListView(LoginRequiredMixin, generic.ListView):
     queryset = Algorithm.objects.all()
     success_url = reverse_lazy("home")
 
-    # def get(self, request, *args, **kwargs):
-    #     context = self.get_context_data()
-    #     return self.render_to_response(context)
-    #
-    #     # self.object = self.get_object()
-    #     # context = self.get_context_data(object=self.object)
-    #     # return self.render_to_response(context)
-
     def get_context_data(self, **kwargs):
         # Call the base implementation first to get the context
         operation = Operation.objects.get(operation_name=self.kwargs.get("operation_name"))
 
-        if not self.request.user.has_perm("join_operation", Operation.objects.filter(operation_name=self.kwargs.get("operation_name"))[0]):
+        if not self.request.user.has_perm(f"aiders.view_operation_{operation.id}"):
             raise PermissionDenied("You do not have permission to join the operation.")
 
         # User has to join the operation in order to view the operation's algorithms
@@ -1606,6 +1900,9 @@ class AlgorithmListView(LoginRequiredMixin, generic.ListView):
 @login_required
 @csrf_protect
 def stop_operation_view(request, operation_name):
+    op = Operation.objects.get(operation_name=operation_name)
+    if not request.user.has_perm("aiders.manage_operations") or not request.user.has_perm(f"aiders.manage_operation_{op.id}"):
+        raise PermissionDenied("You do not have permission to manage operations.")    
     if request.method == "GET":
         opQuery = Operation.objects.filter(operation_name=operation_name)
 
@@ -1616,6 +1913,7 @@ def stop_operation_view(request, operation_name):
                 operation.active = False
                 operation.save()
                 return redirect("manage_operations")
+    return redirect("manage_operations")
 
 
 @login_required
@@ -1634,18 +1932,19 @@ def leave_operation_view(request):
 @login_required
 @csrf_protect
 def join_operation_view(request, operation_name):
-    if not request.user.has_perm("join_operation", Operation.objects.filter(operation_name=operation_name)[0]):
+    op = Operation.objects.get(operation_name=operation_name)
+    if not request.user.has_perm(f"aiders.view_operation_{op.id}"):
         raise PermissionDenied("You do not have permission to join the operation.")
     if request.method == "POST":
         opQuery = Operation.objects.filter(operation_name=operation_name)
         if opQuery.exists():
             operation = get_object_or_404(opQuery)
-            if operation.active:
-                User.objects.filter(pk=request.user.id).update(joined_operation=operation)
-                # get_object_or_404(user_query)
-                return redirect("home")
-            else:
-                raise Http404("Operation Not Found")
+            # if operation.active:
+            User.objects.filter(pk=request.user.id).update(joined_operation=operation)
+            # get_object_or_404(user_query)
+            return redirect("home")
+            # else:
+            #     raise Http404("Operation Not Found")
         else:
             raise Http404("Operation Not Found")
     return JsonResponse({"success": False})
@@ -1657,6 +1956,7 @@ def register_request(request):
         form = NewUserForm(request.POST)
         if form.is_valid():
             user = form.save()
+            UserPreferences.initalizeUserPreferences(user)
             login(request, user, backend="django.contrib.auth.backends.ModelBackend")
             return redirect("manage_operations")
     else:
@@ -1777,14 +2077,14 @@ def last_raw_frame_api_view(request, operation_name, drone_name):
     return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
-@api_view(["GET"])
-def detection_types_api_view(request, operation_name):
-    if request.method == "GET":
-        from logic.algorithms.object_detection.src.models.label import get_labels_all
+# @api_view(["GET"])
+# def detection_types_api_view(request, operation_name):
+#     if request.method == "GET":
+#         from logic.algorithms.object_detection.src.models.label import get_labels_all
 
-        return Response({"detection_types": list(get_labels_all())})
+#         return Response({"detection_types": list(get_labels_all())})
 
-    return Response(status=status.HTTP_400_BAD_REQUEST)
+#     return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(["GET"])
@@ -1880,7 +2180,7 @@ class buildMapSessionsAPIView(LoginRequiredMixin, generic.ListView):
         # Call the base implementation first to get the context
         operation = Operation.objects.get(operation_name=self.kwargs.get("operation_name"))
 
-        if not self.request.user.has_perm("join_operation", Operation.objects.filter(operation_name=self.kwargs.get("operation_name"))[0]):
+        if not self.request.user.has_perm(f"aiders.view_operation_{operation.id}"):
             raise PermissionDenied("You do not have permission to join the operation.")
 
         context = super(buildMapSessionsAPIView, self).get_context_data(**kwargs)
@@ -1971,27 +2271,27 @@ class waterCollectionActivatedAPIView(LoginRequiredMixin, View):
         return HttpResponse(apiResponse, status=status.HTTP_200_OK)
 
 
-class ballisticActivatedAPIView(LoginRequiredMixin, View):
-    def post(self, request, *args, **kwargs):
-        drone_name = request.POST.get("drone_id")
-        operation_name = kwargs.get("operation_name")
-        if Drone.objects.get(drone_name=drone_name).ballistic_available:
-            try:
-                # ballistic.publish_message(drone_name, 1)
-                Ballistic.objects.create(
-                    drone=Drone.objects.get(drone_name=drone_name),
-                    operation=Operation.objects.get(operation_name=operation_name),
-                    user=User.objects.get(pk=request.user.pk),
-                    telemetry=Telemetry.objects.filter(drone=Drone.objects.get(drone_name=drone_name)).last(),
-                )
-                logger.info(f"Ballistic activated for drone {drone_name}.")
-                return HttpResponse("Sending message to drone.", status=status.HTTP_200_OK)
-            except Exception as e:
-                logger.error(f"Ballistic encounter an error for drone {drone_name}. Error: {e}")
-        return HttpResponse(
-            f"Ballistic encounter an error for drone {drone_name}.",
-            status=status.HTTP_200_OK,
-        )
+# class ballisticActivatedAPIView(LoginRequiredMixin, View):
+#     def post(self, request, *args, **kwargs):
+#         drone_name = request.POST.get("drone_id")
+#         operation_name = kwargs.get("operation_name")
+#         if Drone.objects.get(drone_name=drone_name).ballistic_available:
+#             try:
+#                 # ballistic.publish_message(drone_name, 1)
+#                 Ballistic.objects.create(
+#                     drone=Drone.objects.get(drone_name=drone_name),
+#                     operation=Operation.objects.get(operation_name=operation_name),
+#                     user=User.objects.get(pk=request.user.pk),
+#                     telemetry=Telemetry.objects.filter(drone=Drone.objects.get(drone_name=drone_name)).last(),
+#                 )
+#                 logger.info(f"Ballistic activated for drone {drone_name}.")
+#                 return HttpResponse("Sending message to drone.", status=status.HTTP_200_OK)
+#             except Exception as e:
+#                 logger.error(f"Ballistic encounter an error for drone {drone_name}. Error: {e}")
+#         return HttpResponse(
+#             f"Ballistic encounter an error for drone {drone_name}.",
+#             status=status.HTTP_200_OK,
+#         )
 
 
 class BaloraPM25APIView(LoginRequiredMixin, View):
@@ -1999,11 +2299,209 @@ class BaloraPM25APIView(LoginRequiredMixin, View):
         return JsonResponse(
             list(
                 BaloraTelemetry.objects.filter(
-                    operation__operation_name=kwargs.get("operation_name"), baloraMaster__is_connected_with_platform=True
+                    operation__operation_name=kwargs.get("operation_name"), baloraMaster__is_connected_with_platform=True,
+                    time__gte = timezone.now() - timedelta(hours=SENSOR_DATA_DURATION_HOURS) 
                 ).values("pm25", "latitude", "longitude")
             ),
             safe=False,
         )
+    
+class BaloraPM1APIView(LoginRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        return JsonResponse(
+            list(
+                BaloraTelemetry.objects.filter(
+                    operation__operation_name=kwargs.get("operation_name"), baloraMaster__is_connected_with_platform=True,
+                    time__gte = timezone.now() - timedelta(hours=SENSOR_DATA_DURATION_HOURS)  
+                ).values("pm1", "latitude", "longitude")
+            ),
+            safe=False,
+        )
+class BaloraNOxAPIView(LoginRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        return JsonResponse(
+            list(
+                BaloraTelemetry.objects.filter(
+                    operation__operation_name=kwargs.get("operation_name"), baloraMaster__is_connected_with_platform=True,
+                    time__gte = timezone.now() - timedelta(hours=SENSOR_DATA_DURATION_HOURS) 
+                ).values("nox", "latitude", "longitude")
+            ),
+            safe=False,
+        )
+    
+class BaloraVOCAPIView(LoginRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        return JsonResponse(
+            list(
+                BaloraTelemetry.objects.filter(
+                    operation__operation_name=kwargs.get("operation_name"), baloraMaster__is_connected_with_platform=True,
+                    time__gte = timezone.now() - timedelta(hours=SENSOR_DATA_DURATION_HOURS)  
+                ).values("voc", "latitude", "longitude")
+            ),
+            safe=False,
+        )
+    
+# class BaloraPM25AverageAPIView(LoginRequiredMixin, View):
+#     def get(self, request, *args, **kwargs):
+#         # Fetch all telemetry records for the specified operation
+#         raw_values = list(
+#             BaloraTelemetry.objects.filter(
+#                 operation__operation_name=kwargs.get("operation_name"),
+#                 baloraMaster__is_connected_with_platform=True
+#             )
+#             .values("pm25", "latitude", "longitude")
+#             .order_by("id")  # Ensure records are ordered correctly
+#         )
+
+#         # Process data in batches of 10
+#         batch_size = 10
+#         for i in range(0, len(raw_values), batch_size):
+#             batch = raw_values[i:i + batch_size]
+#             batch_avg = sum(item["pm25"] for item in batch) / len(batch)  # Calculate average for the batch
+
+#             # Update each item's pm25 to only contain the average
+#             for item in batch:
+#                 item["pm25"] = batch_avg
+
+#         # Return the response
+#         return JsonResponse(raw_values, safe=False)
+    
+# class BaloraPM1AverageAPIView(LoginRequiredMixin, View):
+#     def get(self, request, *args, **kwargs):
+#         # Fetch all telemetry records for the specified operation
+#         raw_values = list(
+#             BaloraTelemetry.objects.filter(
+#                 operation__operation_name=kwargs.get("operation_name"),
+#                 baloraMaster__is_connected_with_platform=True
+#             )
+#             .values("pm1", "latitude", "longitude")
+#             .order_by("id")  # Ensure records are ordered correctly
+#         )
+
+#         # Process data in batches of 10
+#         batch_size = 10
+#         for i in range(0, len(raw_values), batch_size):
+#             batch = raw_values[i:i + batch_size]
+#             batch_avg = sum(item["pm1"] for item in batch) / len(batch)  # Calculate average for the batch
+
+#             # Update each item's pm1 to only contain the average
+#             for item in batch:
+#                 item["pm1"] = batch_avg
+
+#         # Return the response
+#         return JsonResponse(raw_values, safe=False)
+    
+# class BaloraNOxAverageAPIView(LoginRequiredMixin, View):
+#     def get(self, request, *args, **kwargs):
+#         # Fetch all telemetry records for the specified operation
+#         raw_values = list(
+#             BaloraTelemetry.objects.filter(
+#                 operation__operation_name=kwargs.get("operation_name"),
+#                 baloraMaster__is_connected_with_platform=True
+#             )
+#             .values("nox", "latitude", "longitude")
+#             .order_by("id")  # Ensure records are ordered correctly
+#         )
+
+#         # Process data in batches of 10
+#         batch_size = 10
+#         for i in range(0, len(raw_values), batch_size):
+#             batch = raw_values[i:i + batch_size]
+            
+#             # Replace None with 0 in the 'nox' field
+#             for item in batch:
+#                 item["nox"] = item["nox"] or 0  # Use 0 if 'nox' is None
+            
+#             # Calculate the average for the batch
+#             batch_avg = sum(item["nox"] for item in batch) / len(batch)
+
+#             # Update each item's nox to only contain the average
+#             for item in batch:
+#                 item["nox"] = batch_avg
+
+#         # Return the response
+#         return JsonResponse(raw_values, safe=False)
+
+# class BaloraVOCAverageAPIView(LoginRequiredMixin, View):
+#     def get(self, request, *args, **kwargs):
+#         # Fetch all telemetry records for the specified operation
+#         raw_values = list(
+#             BaloraTelemetry.objects.filter(
+#                 operation__operation_name=kwargs.get("operation_name"),
+#                 baloraMaster__is_connected_with_platform=True
+#             )
+#             .values("voc", "latitude", "longitude")
+#             .order_by("id")  # Ensure records are ordered correctly
+#         )
+
+#         # Process data in batches of 10
+#         batch_size = 10
+#         for i in range(0, len(raw_values), batch_size):
+#             batch = raw_values[i:i + batch_size]
+
+#             # Replace None with 0 for the "voc" values
+#             valid_values = [item["voc"] if item["voc"] is not None else 0 for item in batch]
+
+#             # Calculate average for the batch
+#             batch_avg = sum(valid_values) / len(batch)
+
+#             # Update each item's voc to only contain the average
+#             for item in batch:
+#                 item["voc"] = batch_avg
+
+#         # Return the response
+#         return JsonResponse(raw_values, safe=False)
+
+
+# class BaloraTempAverageAPIView(LoginRequiredMixin, View):
+#     def get(self, request, *args, **kwargs):
+#         # Fetch all telemetry records for the specified operation
+#         raw_values = list(
+#             BaloraTelemetry.objects.filter(
+#                 operation__operation_name=kwargs.get("operation_name"),
+#                 baloraMaster__is_connected_with_platform=True
+#             )
+#             .values("temp", "latitude", "longitude")
+#             .order_by("id")  # Ensure records are ordered correctly
+#         )
+
+#         # Process data in batches of 10
+#         batch_size = 10
+#         for i in range(0, len(raw_values), batch_size):
+#             batch = raw_values[i:i + batch_size]
+#             batch_avg = sum(item["temp"] for item in batch) / len(batch)  # Calculate average for the batch
+
+#             # Update each item's temp to only contain the average
+#             for item in batch:
+#                 item["temp"] = batch_avg
+
+#         # Return the response
+#         return JsonResponse(raw_values, safe=False)
+    
+# class BaloraHumidityAverageAPIView(LoginRequiredMixin, View):
+#     def get(self, request, *args, **kwargs):
+#         # Fetch all telemetry records for the specified operation
+#         raw_values = list(
+#             BaloraTelemetry.objects.filter(
+#                 operation__operation_name=kwargs.get("operation_name"),
+#                 baloraMaster__is_connected_with_platform=True
+#             )
+#             .values("humidity", "latitude", "longitude")
+#             .order_by("id")  # Ensure records are ordered correctly
+#         )
+
+#         # Process data in batches of 10
+#         batch_size = 10
+#         for i in range(0, len(raw_values), batch_size):
+#             batch = raw_values[i:i + batch_size]
+#             batch_avg = sum(item["humidity"] for item in batch) / len(batch)  # Calculate average for the batch
+
+#             # Update each item's humidity to only contain the average
+#             for item in batch:
+#                 item["humidity"] = batch_avg
+
+#         # Return the response
+#         return JsonResponse(raw_values, safe=False)
 
 
 class rangeFinderAPIView(LoginRequiredMixin, View):
@@ -2072,6 +2570,8 @@ class ControlDeviceMonitoringView(LoginRequiredMixin, View):
                 return HttpResponse(status=status.HTTP_404_NOT_FOUND)
             return render(request, "aiders/monitoring_control_device.html", {"drone_name": drone_name})
         return HttpResponse(status=status.HTTP_401_UNAUTHORIZED)
+    
+
 
 def getLidarSessionOfPoints(request, *args, **kwargs):
     if request.method == 'GET':
@@ -2235,6 +2735,108 @@ class FlyingReportTableAPIView(LoginRequiredMixin, generics.ListAPIView):
 
 
 
+#########################################
+# OPERATION REPORT
+#########################################
+
+class OperationReportAPIView(LoginRequiredMixin, View):
+    """
+    Generate comprehensive operation reports with flight paths and statistics
+    """
+    def get(self, request, *args, **kwargs):
+        operation_name = self.kwargs.get("operation_name")
+        operation = get_object_or_404(Operation, operation_name=operation_name)
+        
+        # Check permissions
+        if not request.user.has_perm(f"aiders.view_operation_{operation.id}"):
+            raise PermissionDenied("You do not have permission to view this operation.")
+        
+        form = OperationReportForm(initial=self.default_date_range(operation))
+        return render(
+            request,
+            "aiders/operation_report.html",
+            {
+                "form": form,
+                "operation_name": operation_name,
+                "operation": operation
+            }
+        )
+
+    @staticmethod
+    def default_date_range(operation):
+        """Pre-fill the date pickers with the operation's own time range"""
+        return {
+            "start_date": timezone.localtime(operation.created_at),
+            "end_date": timezone.localtime(operation.ended_at) if operation.ended_at else timezone.localtime(),
+        }
+
+    @method_decorator(with_timeout(600))  # 10 minutes timeout
+    def post(self, request, *args, **kwargs):
+        operation_name = self.kwargs.get("operation_name")
+        operation = get_object_or_404(Operation, operation_name=operation_name)
+        
+        # Check permissions
+        if not request.user.has_perm(f"aiders.view_operation_{operation.id}"):
+            raise PermissionDenied("You do not have permission to view this operation.")
+        
+        form = OperationReportForm(request.POST)
+        if form.is_valid():
+            return self.valid_form(request, operation, operation_name, form)
+        
+        return render(
+            request,
+            "aiders/operation_report.html",
+            {
+                "form": form,
+                "operation_name": operation_name,
+                "operation": operation
+            }
+        )
+
+    def valid_form(self, request, operation, operation_name, form):
+        try:
+            # Get form data
+            start_date = form.cleaned_data.get('start_date')
+            end_date = form.cleaned_data.get('end_date')
+            include_flight_paths = form.cleaned_data.get('include_flight_paths')
+            include_statistics = form.cleaned_data.get('include_statistics')
+            enhanced_maps = form.cleaned_data.get('enhanced_maps', True)
+            
+            # Create report generator
+            generator = OperationReportGenerator()
+            
+            # Generate the report
+            pdf_buffer = generator.generate_operation_report(
+                operation=operation,
+                start_date=start_date,
+                end_date=end_date,
+                include_flight_paths=include_flight_paths,
+                include_statistics=include_statistics,
+                enhanced_maps=enhanced_maps
+            )
+            
+            # Create the response
+            response = HttpResponse(pdf_buffer.getvalue(), content_type='application/pdf')
+            response['Content-Disposition'] = f'attachment; filename="operation_report_{operation_name}_{timezone.now().strftime("%Y%m%d_%H%M%S")}.pdf"'
+            
+            return response
+            
+        except Exception as e:
+            logger.error(f"Error generating operation report: {str(e)}")
+            messages.error(request, f"Error generating report: {str(e)}")
+            
+            return render(
+                request,
+                "aiders/operation_report.html",
+                {
+                    "form": form,
+                    "operation_name": operation_name,
+                    "operation": operation
+                }
+            )
+
+
+
 class ExternalAPI(LoginRequiredMixin, generics.ListAPIView):
     def get(self, request, *args, **kwargs):
         if all(thread.name != "external_api_" + self.kwargs.get("operation_name") for thread in threading.enumerate()):
@@ -2268,6 +2870,181 @@ def safeDronesStop(request):
     return HttpResponse(status=status.HTTP_200_OK)
 
 
+# a page that lists all live stream sessions for a specific operation
+class LiveStreamSessionListView(LoginRequiredMixin, generic.ListView):
+    model = LiveStreamSession
+    template_name = "aiders/live_stream_sessions.html"
+    context_object_name = "live_stream_sessions"
+    success_url = reverse_lazy("home")
+
+    def get_queryset(self):
+        operation = Operation.objects.get(operation_name=self.kwargs.get("operation_name"))
+        
+        if not self.request.user.has_perm(f"aiders.view_operation_{operation.id}"):
+            raise PermissionDenied("You do not have permission to view the operation.")
+        
+        # Get all drones for this operation, then get all their live stream sessions
+        drones = operation.drone_set.all()
+        return LiveStreamSession.objects.filter(drone__in=drones).order_by('-start_time')
+
+    def get_context_data(self, **kwargs):
+        operation = Operation.objects.get(operation_name=self.kwargs.get("operation_name"))
+        
+        # User has to join the operation in order to view the operation's live stream sessions
+        User.objects.filter(pk=self.request.user.id).update(joined_operation=operation)
+
+        context = super(LiveStreamSessionListView, self).get_context_data(**kwargs)
+        
+        # Add duration calculation for each session
+        sessions_with_duration = []
+        for session in context['live_stream_sessions']:
+            session_data = {
+                'session': session,
+                'duration_str': None
+            }
+            
+            if session.end_time:
+                duration = session.end_time - session.start_time
+                total_seconds = int(duration.total_seconds())
+                
+                # Calculate hours, minutes, seconds
+                hours, remainder = divmod(total_seconds, 3600)
+                minutes, seconds = divmod(remainder, 60)
+                
+                # Format duration string
+                if hours > 0:
+                    if minutes > 0:
+                        session_data['duration_str'] = f"{hours}h {minutes}m"
+                    else:
+                        session_data['duration_str'] = f"{hours}h"
+                elif minutes > 0:
+                    if seconds > 0:
+                        session_data['duration_str'] = f"{minutes}m {seconds}s"
+                    else:
+                        session_data['duration_str'] = f"{minutes}m"
+                else:
+                    session_data['duration_str'] = f"{seconds}s"
+            
+            sessions_with_duration.append(session_data)
+        
+        context['sessions_with_duration'] = sessions_with_duration
+        context["operation_name"] = self.kwargs.get("operation_name")
+        return context
+    
+
+
+# a page that lists all detection sessions for a specific operation
+class DetectionSessionListView(LoginRequiredMixin, generic.ListView):
+    model = DetectionSession
+    template_name = "aiders/detection_sessions.html"
+    context_object_name = "detection_sessions"
+    success_url = reverse_lazy("home")
+
+    def get_queryset(self):
+        operation = Operation.objects.get(operation_name=self.kwargs.get("operation_name"))
+        
+        if not self.request.user.has_perm(f"aiders.view_operation_{operation.id}"):
+            raise PermissionDenied("You do not have permission to view the operation.")
+        
+        # Get all drones for this operation, then get all their live stream sessions
+        drones = operation.drone_set.all()
+        return DetectionSession.objects.filter(drone__in=drones).order_by('-start_time')
+
+    def get_context_data(self, **kwargs):
+        operation = Operation.objects.get(operation_name=self.kwargs.get("operation_name"))
+        
+        # User has to join the operation in order to view the operation's live stream sessions
+        User.objects.filter(pk=self.request.user.id).update(joined_operation=operation)
+
+        context = super(DetectionSessionListView, self).get_context_data(**kwargs)
+        
+        # Add duration calculation for each session
+        sessions_with_duration = []
+        for session in context['detection_sessions']:
+            session_data = {
+                'session': session,
+                'duration_str': None
+            }
+            
+            if session.end_time:
+                duration = session.end_time - session.start_time
+                total_seconds = int(duration.total_seconds())
+                
+                # Calculate hours, minutes, seconds
+                hours, remainder = divmod(total_seconds, 3600)
+                minutes, seconds = divmod(remainder, 60)
+                
+                # Format duration string
+                if hours > 0:
+                    if minutes > 0:
+                        session_data['duration_str'] = f"{hours}h {minutes}m"
+                    else:
+                        session_data['duration_str'] = f"{hours}h"
+                elif minutes > 0:
+                    if seconds > 0:
+                        session_data['duration_str'] = f"{minutes}m {seconds}s"
+                    else:
+                        session_data['duration_str'] = f"{minutes}m"
+                else:
+                    session_data['duration_str'] = f"{seconds}s"
+            
+            sessions_with_duration.append(session_data)
+        
+        context['sessions_with_duration'] = sessions_with_duration
+        context["operation_name"] = self.kwargs.get("operation_name")
+        return context
+
+
+class DeviceSessionListView(LoginRequiredMixin, generic.ListView):
+    model = DeviceSession
+    template_name = "aiders/device_sessions.html"
+    context_object_name = "device_sessions"
+    success_url = reverse_lazy("home")
+
+    def get_queryset(self):
+        operation = Operation.objects.get(operation_name=self.kwargs.get("operation_name"))
+
+        if not self.request.user.has_perm(f"aiders.view_operation_{operation.id}"):
+            raise PermissionDenied("You do not have permission to view the operation.")
+
+        devices = Device.objects.filter(operation_id=operation.id)
+        sessions = DeviceSession.objects.filter(device__in=devices).order_by('-start_time')
+        # Only include sessions that have at least one image
+        return [s for s in sessions if DeviceImage.objects.filter(session_id=s.id).exists()]
+
+    def get_context_data(self, **kwargs):
+        operation = Operation.objects.get(operation_name=self.kwargs.get("operation_name"))
+
+        User.objects.filter(pk=self.request.user.id).update(joined_operation=operation)
+
+        context = super(DeviceSessionListView, self).get_context_data(**kwargs)
+
+        sessions_with_details = []
+        for session in context['device_sessions']:
+            frame_count = DeviceImage.objects.filter(session_id=session.id).count()
+            duration_str = None
+            if session.end_time:
+                delta = session.end_time - session.start_time
+                total_seconds = int(delta.total_seconds())
+                hours, remainder = divmod(total_seconds, 3600)
+                minutes, seconds = divmod(remainder, 60)
+                if hours > 0:
+                    duration_str = f"{hours}h {minutes}m" if minutes > 0 else f"{hours}h"
+                elif minutes > 0:
+                    duration_str = f"{minutes}m {seconds}s" if seconds > 0 else f"{minutes}m"
+                else:
+                    duration_str = f"{seconds}s"
+            sessions_with_details.append({
+                'session': session,
+                'duration_str': duration_str,
+                'frame_count': frame_count,
+            })
+
+        context['sessions_with_details'] = sessions_with_details
+        context["operation_name"] = self.kwargs.get("operation_name")
+        return context
+
+
 ##############################################################
 ######################### MAVLINK ############################
 ##############################################################
@@ -2276,9 +3053,12 @@ def safeDronesStop(request):
 class MavlinkForm(forms.Form):
     name = forms.CharField(max_length=255, help_text="A unique identifier for the UAV", widget=forms.TextInput(attrs={'size': '14', 'class': 'form-control'}))
     model = forms.CharField(max_length=255, widget=forms.TextInput(attrs={'size': '14', 'class': 'form-control'}))
+    configuration = forms.ChoiceField(choices=[("MULTICOPTER", "MULTICOPTER"), ("VTOL", "VTOL"), ("FIXED-WING", "FIXED-WING")], widget=forms.Select(attrs={'class': 'form-control native-select'}))
     ip = forms.CharField(max_length=255, required=False, label="IP Address", widget=forms.TextInput(attrs={'size': '11', 'class': 'form-control'}))
     port = forms.CharField(max_length=255, help_text="Default MAVLink port is 14550", widget=forms.TextInput(attrs={'size': '5', 'class': 'form-control'}))
     live_stream_url = forms.CharField(max_length=255, help_text="RTMP or RTSP", widget=forms.TextInput(attrs={'size': '30', 'class': 'form-control'}))
+    # dropdown list for connection type
+    connection_type = forms.ChoiceField(choices=[("MAVPROXY", "MAVPROXY"), ("WEBSOCKETS", "WEBSOCKETS (custom onboard server)")], widget=forms.Select(attrs={'class': 'form-control native-select'}))
     # operation = forms.CharField(widget=forms.Textarea)
 
 
@@ -2290,10 +3070,18 @@ def mavlinkAddFormView(request):
             name = form.cleaned_data['name']
             model = form.cleaned_data['model']
             type = "MAVLINK"
+            connection_type = form.cleaned_data['connection_type']
+            configuration = form.cleaned_data['configuration']
             ip = form.cleaned_data['ip']
             port = form.cleaned_data['port']
             live_stream_url = form.cleaned_data['live_stream_url']
-            drone = Drone(drone_name=name, model=model, type=type, ip=ip, port=port, live_stream_url=live_stream_url, camera_model="no_cam", is_connected_with_platform=False, time=datetime.datetime.now())
+            drone = Drone(drone_name=name, model=model, type=type, connection_type=connection_type, configuration=configuration, ip=ip, port=port, live_stream_url=live_stream_url, camera_model="no_cam", is_connected_with_platform=False, time=datetime.datetime.now())
+            drone.save()
+
+            # retrieve the latest active operation and add the drone to it
+            operation = Operation.objects.filter(active=True).last() 
+            operation.drones_to_operate.add(drone)
+            drone.operation = operation
             drone.save()
 
             return redirect('drones_list')  
@@ -2313,15 +3101,28 @@ def mavlinkEditFormView(request, pk):
             drone.model = form.cleaned_data['model']
             drone.ip = form.cleaned_data['ip']
             drone.port = form.cleaned_data['port']
+            drone.connection_type = form.cleaned_data['connection_type']
+            drone.configuration = form.cleaned_data['configuration']
             drone.live_stream_url = form.cleaned_data['live_stream_url']
             drone.save()
 
             return redirect('drones_list')
     else:
         # populate the form with the existing data
-        form = MavlinkForm(initial={'name': drone.drone_name, 'model': drone.model, 'ip': drone.ip, 'port': drone.port, 'live_stream_url': drone.live_stream_url})
+        form = MavlinkForm(
+            initial={
+                'name': drone.drone_name,
+                'model': drone.model,
+                'ip': drone.ip,
+                'port': drone.port,
+                'live_stream_url': drone.live_stream_url,
+                'connection_type': drone.connection_type,
+                'configuration': drone.configuration,
+            })
 
-    return render(request, 'aiders/mavlink-edit.html', {'form': form, 'drone': drone})
+    return render(request,
+    'aiders/mavlink-edit.html',
+    {'form': form, 'drone': drone})
 
 
 def mavlinkManageView(request, pk):
@@ -2358,6 +3159,7 @@ def mavlinkConnect(request):
     if request.method == 'POST':
         data = json.loads(request.body)
         payload = {
+            "id": data.get('id'),
             "name": data.get('name'),
             "ip": data.get('ip'),
             "port": data.get('port'),
@@ -2366,6 +3168,8 @@ def mavlinkConnect(request):
             "protocol": data.get('protocol'),
             "library": data.get('library'),
         }
+        # print("Connecting to UAV using", data.get('library'), flush=True)
+
         result=postRequestForMavlink("connectToUav", payload)
         return HttpResponse(result)
     
@@ -2469,12 +3273,11 @@ def mavlinkKill(request):
 ##################################
 
 
+
 def operation_coverage_points(request, operation_name):
-    # from scipy.spatial import ConvexHull
-    from alpha_shapes import Alpha_Shaper
-    from shapely.geometry import mapping    
     operation = Operation.objects.filter(operation_name=operation_name).last()
 
+    print(request.body, flush=True)
     requestData = json.loads(request.body)
 
     # get from and to datetimes
@@ -2497,49 +3300,308 @@ def operation_coverage_points(request, operation_name):
     if(requestData['getDrones'] == True):
         if(requestData['getPoints'] == True):
             droneAllTelemetryPoints = list(Telemetry.objects.filter(operation_id=operation.id, time__gte=fromDatetimeObj, time__lt=toDatetimeObj)[0:100000].values('lat', 'lon'))
+        
         drones = Drone.objects.all()
         for drone in drones:
+                
             try:
-                droneTelemetry = list(Telemetry.objects.filter(drone_id=drone.id, operation_id=operation.id, time__gte=fromDatetimeObj, time__lt=toDatetimeObj)[0:100000].values('lat', 'lon', 'secondsOn', 'time'))
+                # Get telemetry with FOV coordinates
+                droneTelemetry = list(Telemetry.objects.filter(
+                    drone_id=drone.id, 
+                    # operation_id=operation.id, # TODO: uncomment when correct operation_id is added to Telemetry
+                    time__gte=fromDatetimeObj, 
+                    time__lt=toDatetimeObj,
+                    fov_coordinates__isnull=False
+                )[0:100000].values('lat', 'lon', 'secondsOn', 'time', 'fov_coordinates'))
+                
+                print(f"Drone {drone.drone_name}: Found {len(droneTelemetry)} telemetry records with FOV data", flush=True)
+                
                 previousSecondsOn = 0
                 currentSecondsOn = 0
                 # break down drone's telemetry into sessions based on the secondsOn field
                 droneTelemetrySessions = []
-                sessionPoints = []
+                sessionTelemetry = []
                 for t in droneTelemetry:
-                    if(t['lat'] != 0 and t['lon'] != 0):
+                    if(t['lat'] != 0 and t['lon'] != 0 and t['fov_coordinates']):
                         currentSecondsOn = t['secondsOn']
                         if abs(currentSecondsOn - previousSecondsOn) > 29:
-                            if(len(sessionPoints)) > 0:
-                                droneTelemetrySessions.append(sessionPoints)
-                            sessionPoints = []
-                        sessionPoints.append([t['lat'], t['lon'], t['time']])
+                            if(len(sessionTelemetry)) > 0:
+                                droneTelemetrySessions.append(sessionTelemetry)
+                            sessionTelemetry = []
+                        sessionTelemetry.append(t)
                         previousSecondsOn = currentSecondsOn
 
-                if(len(sessionPoints)) > 0:
-                    droneTelemetrySessions.append(sessionPoints) # append the last session
+                if(len(sessionTelemetry)) > 0:
+                    droneTelemetrySessions.append(sessionTelemetry) # append the last session
 
-                # # loop telemetry sessions and create polygons
-                # for s in droneTelemetrySessions:
-                #     droneTelemetryTuple = [(d[0], d[1]) for d in s]
-                #     hull = ConvexHull(droneTelemetryTuple)
-                #     dronePolygon = json.dumps([hull.points[i].tolist() for i in hull.vertices])
-                #     dronePolygons.append(dronePolygon)
-                #     droneData.append([drone.drone_name, s[0][2]]) # drone name and start time of session
-
-                # loop telemetry sessions and create polygons
-                for s in droneTelemetrySessions:
-                    droneTelemetryTuple = [(d[0], d[1]) for d in s]
+                # Create coverage polygons directly from telemetry flight paths with FOV-based width
+                all_telemetry_with_fov = []
+                
+                for session in droneTelemetrySessions:
+                    if len(session) == 0:
+                        continue
+                    
+                    # Get telemetry points with FOV data
+                    session_telemetry = []
+                    for telemetry in session:
+                        try:
+                            # Parse FOV coordinates to calculate coverage width
+                            fov_coords = json.loads(telemetry['fov_coordinates'])
+                            if fov_coords and len(fov_coords) >= 3:
+                                # Calculate FOV width (distance between furthest points)
+                                fov_points = [[coord[1], coord[0]] for coord in fov_coords if len(coord) >= 2]  # [lon, lat]
+                                
+                                if len(fov_points) >= 2:
+                                    # Calculate maximum distance between FOV points as coverage width
+                                    max_dist = 0
+                                    for i in range(len(fov_points)):
+                                        for j in range(i + 1, len(fov_points)):
+                                            dist = ((fov_points[i][0] - fov_points[j][0])**2 + (fov_points[i][1] - fov_points[j][1])**2)**0.5
+                                            max_dist = max(max_dist, dist)
+                                    
+                                    # Store telemetry point with calculated width
+                                    session_telemetry.append({
+                                        'lon': telemetry['lon'],
+                                        'lat': telemetry['lat'],
+                                        'fov_width': max_dist / 2,  # Half width for each side
+                                        'time': telemetry['time']
+                                    })
+                        except (json.JSONDecodeError, TypeError, IndexError, KeyError) as e:
+                            print(f"Error processing telemetry for drone {drone.drone_name}: {e}", flush=True)
+                    
+                    if len(session_telemetry) > 1:
+                        all_telemetry_with_fov.extend(session_telemetry)
+                
+                # Create flight path corridors from telemetry
+                if len(all_telemetry_with_fov) >= 2:
                     try:
-                        shaper = Alpha_Shaper(droneTelemetryTuple)
-                        alpha_shape = shaper.get_shape(alpha=2)
-                        shapeMapping = mapping(alpha_shape)
-                        for i in range(len(shapeMapping['coordinates'])):
-                            dronePolygon = json.dumps(shapeMapping['coordinates'][i])
-                            dronePolygons.append(dronePolygon)
-                            droneData.append([drone.drone_name, s[0][2]])
+                        def create_flight_path_corridor(telemetry_points, sample_distance=0.0001):
+                            """Create a corridor polygon following the flight path with FOV-based width"""
+                            if len(telemetry_points) < 2:
+                                return []
+                            
+                            # Sample telemetry points to avoid too dense coverage
+                            sampled_points = []
+                            last_point = None
+                            
+                            for point in telemetry_points:
+                                if last_point is None:
+                                    sampled_points.append(point)
+                                    last_point = point
+                                else:
+                                    # Calculate distance from last sampled point
+                                    dist = ((point['lon'] - last_point['lon'])**2 + (point['lat'] - last_point['lat'])**2)**0.5
+                                    if dist >= sample_distance:  # Sample every ~11 meters
+                                        sampled_points.append(point)
+                                        last_point = point
+                            
+                            # Ensure we have the last point
+                            if sampled_points[-1] != telemetry_points[-1]:
+                                sampled_points.append(telemetry_points[-1])
+                            
+                            if len(sampled_points) < 2:
+                                return []
+                            
+                            print(f"Creating corridor from {len(sampled_points)} telemetry points", flush=True)
+                            
+                            # Create left and right boundaries of the corridor
+                            left_boundary = []
+                            right_boundary = []
+                            
+                            for i, point in enumerate(sampled_points):
+                                # Calculate direction vector for this segment
+                                if i == 0:
+                                    # First point: use direction to next point
+                                    next_point = sampled_points[i + 1]
+                                    direction = [next_point['lon'] - point['lon'], next_point['lat'] - point['lat']]
+                                elif i == len(sampled_points) - 1:
+                                    # Last point: use direction from previous point
+                                    prev_point = sampled_points[i - 1]
+                                    direction = [point['lon'] - prev_point['lon'], point['lat'] - prev_point['lat']]
+                                else:
+                                    # Middle point: average direction from previous and to next
+                                    prev_point = sampled_points[i - 1]
+                                    next_point = sampled_points[i + 1]
+                                    dir1 = [point['lon'] - prev_point['lon'], point['lat'] - prev_point['lat']]
+                                    dir2 = [next_point['lon'] - point['lon'], next_point['lat'] - point['lat']]
+                                    direction = [(dir1[0] + dir2[0]) / 2, (dir1[1] + dir2[1]) / 2]
+                                
+                                # Normalize direction vector
+                                length = (direction[0]**2 + direction[1]**2)**0.5
+                                if length > 0:
+                                    direction = [direction[0] / length, direction[1] / length]
+                                else:
+                                    direction = [1, 0]  # Default direction
+                                
+                                # Calculate perpendicular vector (for corridor width)
+                                perp_vector = [-direction[1], direction[0]]
+                                
+                                # Use FOV width for corridor width
+                                width = point['fov_width']
+                                
+                                # Create left and right points
+                                left_point = [
+                                    point['lon'] + perp_vector[0] * width,
+                                    point['lat'] + perp_vector[1] * width
+                                ]
+                                right_point = [
+                                    point['lon'] - perp_vector[0] * width,
+                                    point['lat'] - perp_vector[1] * width
+                                ]
+                                
+                                left_boundary.append(left_point)
+                                right_boundary.append(right_point)
+                            
+                            # Create corridor polygon: left boundary + reversed right boundary
+                            corridor_points = left_boundary + right_boundary[::-1]
+                            
+                            # Close the polygon
+                            if len(corridor_points) > 0 and corridor_points[0] != corridor_points[-1]:
+                                corridor_points.append(corridor_points[0])
+                            
+                            return corridor_points
+                        
+                        # Group telemetry points by session/proximity for separate corridors
+                        def group_telemetry_by_proximity(telemetry_points, max_gap=0.002):
+                            """Group telemetry points into continuous flight segments"""
+                            if not telemetry_points:
+                                return []
+                            
+                            groups = []
+                            current_group = [telemetry_points[0]]
+                            
+                            for i in range(1, len(telemetry_points)):
+                                current_point = telemetry_points[i]
+                                last_point = current_group[-1]
+                                
+                                # Calculate distance from last point in current group
+                                dist = ((current_point['lon'] - last_point['lon'])**2 + (current_point['lat'] - last_point['lat'])**2)**0.5
+                                
+                                if dist <= max_gap:  # Within ~222 meters
+                                    current_group.append(current_point)
+                                else:
+                                    # Start new group
+                                    if len(current_group) >= 2:
+                                        groups.append(current_group)
+                                    current_group = [current_point]
+                            
+                            # Add the last group
+                            if len(current_group) >= 2:
+                                groups.append(current_group)
+                            
+                            return groups
+                        
+                        # Sort telemetry by time to maintain flight order
+                        all_telemetry_with_fov.sort(key=lambda x: x['time'])
+                        
+                        # Group into flight segments
+                        telemetry_groups = group_telemetry_by_proximity(all_telemetry_with_fov, max_gap=0.002)
+                        
+                        print(f"Created {len(telemetry_groups)} flight path segments for {drone.drone_name}", flush=True)
+                        
+                        # Create corridor polygon for each flight segment
+                        for group_idx, telemetry_group in enumerate(telemetry_groups):
+                            if len(telemetry_group) >= 2:
+                                corridor_coords = create_flight_path_corridor(telemetry_group)
+                                
+                                if len(corridor_coords) >= 4:  # Valid polygon
+                                    coverage_polygon = json.dumps(corridor_coords)
+                                    dronePolygons.append(coverage_polygon)
+                                    segment_name = f"{drone.drone_name} Path {group_idx + 1}" if len(telemetry_groups) > 1 else f"{drone.drone_name} Coverage"
+                                    droneData.append([segment_name, telemetry_group[0]['time']])
+                                    
+                                    avg_width = sum(p['fov_width'] for p in telemetry_group) / len(telemetry_group)
+                                    print(f"Created flight corridor {group_idx + 1} for {drone.drone_name}: {len(telemetry_group)} points, avg width {avg_width:.6f}°", flush=True)
+                        
+                        if len(coverage_polygons) > 0:
+                            for poly_idx, polygon_coords in enumerate(coverage_polygons):
+                                coverage_polygon = json.dumps(polygon_coords)
+                                dronePolygons.append(coverage_polygon)
+                                area_name = f"{drone.drone_name} Coverage {poly_idx + 1}" if len(coverage_polygons) > 1 else f"{drone.drone_name} Coverage"
+                                droneData.append([area_name, droneTelemetrySessions[0][0]['time']])
+                                
+                                # Calculate rough area for logging
+                                polygon_area = 0
+                                if len(polygon_coords) >= 4:
+                                    # Simple area calculation for debugging
+                                    for i in range(len(polygon_coords) - 1):
+                                        polygon_area += (polygon_coords[i][0] * polygon_coords[i+1][1] - polygon_coords[i+1][0] * polygon_coords[i][1])
+                                    polygon_area = abs(polygon_area) / 2
+                                
+                                print(f"Created accurate coverage area {poly_idx + 1} for {drone.drone_name}: {len(polygon_coords)} points, ~{polygon_area:.8f} deg² area", flush=True)
+                        else:
+                            # Fallback to union of all FOV polygons
+                            print(f"Grid-based coverage failed for {drone.drone_name}, using FOV union approach", flush=True)
+                            
+                            # Simple approach: create convex hull of all FOV polygon points
+                            all_fov_points = []
+                            for fov_polygon in all_fov_polygons:
+                                all_fov_points.extend(fov_polygon[:-1])  # Exclude closing point
+                            
+                            if len(all_fov_points) >= 3:
+                                def convex_hull(points):
+                                    def cross_product(o, a, b):
+                                        return (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0])
+                                    
+                                    points = sorted(set(tuple(p) for p in points))
+                                    if len(points) <= 1:
+                                        return points
+                                    
+                                    # Build lower hull
+                                    lower = []
+                                    for p in points:
+                                        while len(lower) >= 2 and cross_product(lower[-2], lower[-1], p) <= 0:
+                                            lower.pop()
+                                        lower.append(p)
+                                    
+                                    # Build upper hull
+                                    upper = []
+                                    for p in reversed(points):
+                                        while len(upper) >= 2 and cross_product(upper[-2], upper[-1], p) <= 0:
+                                            upper.pop()
+                                        upper.append(p)
+                                    
+                                    return lower[:-1] + upper[:-1]
+                                
+                                hull_points = convex_hull(all_fov_points)
+                                hull_coords = [[p[0], p[1]] for p in hull_points]
+                                
+                                if len(hull_coords) > 0 and hull_coords[0] != hull_coords[-1]:
+                                    hull_coords.append(hull_coords[0])
+                                
+                                if len(hull_coords) >= 4:
+                                    coverage_polygon = json.dumps(hull_coords)
+                                    dronePolygons.append(coverage_polygon)
+                                    droneData.append([f"{drone.drone_name} Coverage", droneTelemetrySessions[0][0]['time']])
+                                    print(f"Created fallback coverage area for {drone.drone_name} with {len(hull_coords)} points", flush=True)
+                    
                     except Exception as e:
-                        print(e, flush=True)                
+                        # Final fallback: create a simple bounding box
+                        print(f"Error creating grid-based coverage for {drone.drone_name}, using bounding box: {e}", flush=True)
+                        
+                        # Find bounding box of all FOV points
+                        all_fov_points = [point for polygon in all_fov_polygons for point in polygon[:-1]]
+                        if all_fov_points:
+                            min_lon = min(point[0] for point in all_fov_points)
+                            max_lon = max(point[0] for point in all_fov_points)
+                            min_lat = min(point[1] for point in all_fov_points)
+                            max_lat = max(point[1] for point in all_fov_points)
+                            
+                            # Create bounding box polygon
+                            bbox_polygon = [
+                                [min_lon, min_lat],
+                                [max_lon, min_lat],
+                                [max_lon, max_lat],
+                                [min_lon, max_lat],
+                                [min_lon, min_lat]  # Close the polygon
+                            ]
+                            
+                            coverage_polygon = json.dumps(bbox_polygon)
+                            dronePolygons.append(coverage_polygon)
+                            droneData.append([f"{drone.drone_name} Coverage Area", droneTelemetrySessions[0][0]['time']])
+                            print(f"Created bounding box coverage for {drone.drone_name}", flush=True)
+                        droneData.append([f"{drone.drone_name} Coverage Area", droneTelemetrySessions[0][0]['time']])
+                        print(f"Created bounding box coverage for {drone.drone_name}", flush=True)
 
             except Exception as e:
                 print(e)
@@ -2649,8 +3711,6 @@ def operation_coverage_points(request, operation_name):
             except Exception as e:
                 print(e)
 
-    
-
     response_data = {
         'dronePolygons': dronePolygons,
         'droneData': droneData,
@@ -2734,7 +3794,10 @@ def drone_session_replay(request, stream_type, session_id):
 
     telemetry = list(Telemetry.objects.filter(drone_id=drone_id, time__gte=sessionStart, time__lt=sessionEnd).values('time', 'lat', 'lon', 'heading', 'alt', 'velocity', 'battery_percentage', 'gimbal_angle', 'drone_state'))
     monitoring_data = list(ControlDevice.objects.filter(drone_id=drone_id, time__gte=sessionStart, time__lt=sessionEnd).values('time', 'cpu_usage', 'cpu_temp'))
-    has_monitoring_data = len(monitoring_data) > 0
+
+    has_monitoring_data = 0
+    if len(monitoring_data) > 0:
+        has_monitoring_data=1
 
     # retrieve build map images
     build_map_session = list(BuildMapSession.objects.filter(drone_id=drone_id, start_time__gte=sessionStart, end_time__lt=sessionEnd).order_by('-start_time').values())
@@ -2806,9 +3869,347 @@ def drone_session_replay(request, stream_type, session_id):
     return render(request, 'aiders/drone_session_replay.html', {'frames_with_telemetry': frames_with_telemetry, 'session_data': session_data})
 
 
+def drone_video_session_replay(request, session_id):
+    """
+    Video-based session replay using MP4 recordings instead of individual frames
+    """
+    if not request.user.is_authenticated:
+        return render(request, "aiders/login.html", {"auth_form": AuthenticationForm, "next": "/home"})
+
+    try:
+        session = LiveStreamSession.objects.get(id=session_id)
+    except LiveStreamSession.DoesNotExist:
+        return Http404("Session not found")
+
+    # Check if session has a recording URL
+    if not session.recording_url:
+        return render(request, 'aiders/error.html', {
+            'error_message': 'No video recording available for this session'
+        })
+
+    drone = session.drone
+    session_start = session.start_time
+    session_end = session.end_time or timezone.now()
+
+    # Get telemetry data for the session duration
+    telemetry = list(Telemetry.objects.filter(
+        drone=drone, 
+        time__gte=session_start, 
+        time__lte=session_end
+    ).values('time', 'lat', 'lon', 'heading', 'alt', 'velocity', 'battery_percentage', 'gimbal_angle', 'drone_state'))
+
+    # Get monitoring data if available
+    monitoring_data = list(ControlDevice.objects.filter(
+        drone=drone, 
+        time__gte=session_start, 
+        time__lte=session_end
+    ).values('time', 'cpu_usage', 'cpu_temp'))
+
+    has_monitoring_data = len(monitoring_data) > 0
+
+    # Get build map images for the session
+    build_map_session = list(BuildMapSession.objects.filter(
+        drone=drone, 
+        start_time__gte=session_start, 
+        end_time__lte=session_end
+    ).order_by('-start_time').values())
+
+    build_map_images = []
+    if build_map_session:
+        build_map_images = list(BuildMapImage.objects.filter(
+            session_id=build_map_session[0]["id"]
+        ).order_by('time').values("path", "top_left", "top_right", "bottom_left", "bottom_right", "centre", "time"))
+        
+        for image in build_map_images:
+            image["time"] = str(image["time"].astimezone(pytz.timezone(settings.TIME_ZONE)).strftime("%H:%M:%S"))
+            image["top_left"] = [float(image["top_left"].coords[0]), float(image["top_left"].coords[1])]
+            image["top_right"] = [float(image["top_right"].coords[0]), float(image["top_right"].coords[1])]
+            image["bottom_left"] = [float(image["bottom_left"].coords[0]), float(image["bottom_left"].coords[1])]
+            image["bottom_right"] = [float(image["bottom_right"].coords[0]), float(image["bottom_right"].coords[1])]
+            image["centre"] = [float(image["centre"].coords[0]), float(image["centre"].coords[1])]
+
+    # Convert telemetry timestamps to seconds from session start for video sync
+    telemetry_for_video = []
+    try:
+        for telem in telemetry:
+            time_offset = (telem['time'] - session_start).total_seconds()
+            telem_data = {
+                'video_time': float(time_offset),
+                'time_str': telem['time'].strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
+                'lat': float(telem['lat']) if telem['lat'] is not None else 0.0,
+                'lon': float(telem['lon']) if telem['lon'] is not None else 0.0,
+                'heading': float(telem['heading']) if telem['heading'] is not None else 0.0,
+                'alt': float(telem['alt']) if telem['alt'] is not None else 0.0,
+                'velocity': float(telem['velocity']) if telem['velocity'] is not None else 0.0,
+                'battery_percentage': float(telem['battery_percentage']) if telem['battery_percentage'] is not None else 0.0,
+                'gimbal_angle': float(telem['gimbal_angle']) if telem['gimbal_angle'] is not None else 0.0,
+                'drone_state': str(telem['drone_state']) if telem['drone_state'] is not None else '',
+            }
+            telemetry_for_video.append(telem_data)
+    except Exception as e:
+        print(f"Error processing telemetry data: {e}")
+        telemetry_for_video = []
+
+    # Convert monitoring data timestamps for video sync
+    monitoring_for_video = []
+    try:
+        if has_monitoring_data:
+            for monitor in monitoring_data:
+                time_offset = (monitor['time'] - session_start).total_seconds()
+                monitor_data = {
+                    'video_time': float(time_offset),
+                    'time_str': monitor['time'].strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
+                    'cpu_usage': float(monitor['cpu_usage']) if monitor['cpu_usage'] is not None else 0.0,
+                    'cpu_temp': float(monitor['cpu_temp']) if monitor['cpu_temp'] is not None else 0.0,
+                }
+                monitoring_for_video.append(monitor_data)
+    except Exception as e:
+        print(f"Error processing monitoring data: {e}")
+        monitoring_for_video = []
+
+    # Calculate session statistics
+    distance = max_altitude = max_velocity = battery_used = 0
+    try:
+        if telemetry and len(telemetry) > 0:
+            distance = round(get_total_path_distance(telemetry, 'lat', 'lon'), 2)
+            max_altitude = round(max(telemetry, key=lambda x: x.get('alt', 0) or 0)['alt'] or 0, 2)
+            max_velocity = round(max(telemetry, key=lambda x: x.get('velocity', 0) or 0)['velocity'] or 0, 2)
+            first_battery = telemetry[0].get('battery_percentage', 0) or 0
+            last_battery = telemetry[-1].get('battery_percentage', 0) or 0
+            battery_used = round(first_battery - last_battery, 2)
+    except Exception as e:
+        print(f"Error calculating telemetry statistics: {e}")
+
+    max_cpu_usage = max_cpu_temp = 0
+    try:
+        if has_monitoring_data and monitoring_data and len(monitoring_data) > 0:
+            max_cpu_usage = round(max(monitoring_data, key=lambda x: x.get('cpu_usage', 0) or 0)['cpu_usage'] or 0, 2)
+            max_cpu_temp = round(max(monitoring_data, key=lambda x: x.get('cpu_temp', 0) or 0)['cpu_temp'] or 0, 2)
+    except Exception as e:
+        print(f"Error calculating monitoring statistics: {e}")
+
+    # Calculate session duration
+    time_difference = session_end - session_start
+    time_difference_seconds = int(time_difference.total_seconds())
+    hours, remainder = divmod(time_difference_seconds, 3600)
+    minutes, seconds = divmod(remainder, 60)
+    duration = "{:02}:{:02}:{:02}".format(hours, minutes, seconds)
+
+    # Calculate battery usage per minute
+    battery_used_per_minute = round(battery_used / max(time_difference_seconds / 60, 1), 2)
+
+    # Create a single JSON object with all data for JavaScript
+    session_data_for_js = {
+        'session_data': {
+            'session_id': session_id,
+            'video_url': session.recording_url or '',
+            'distance': float(distance) if distance else 0.0,
+            'duration': str(duration),
+            'max_altitude': float(max_altitude) if max_altitude else 0.0,
+            'max_velocity': float(max_velocity) if max_velocity else 0.0,
+            'battery_used': float(battery_used) if battery_used else 0.0,
+            'battery_used_per_minute': float(battery_used_per_minute) if battery_used_per_minute else 0.0,
+            'has_monitoring_data': bool(has_monitoring_data),
+            'max_cpu_usage': float(max_cpu_usage) if max_cpu_usage else 0.0,
+            'max_cpu_temp': float(max_cpu_temp) if max_cpu_temp else 0.0,
+            'session_start': session_start.strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
+            'session_duration_seconds': int(time_difference_seconds),
+        },
+        'telemetry_data': telemetry_for_video,
+        'monitoring_data': monitoring_for_video,
+        'build_map_images': build_map_images or []
+    }
+    
+    # Debug: print the JSON to make sure it's valid
+    try:
+        json_string = json.dumps(session_data_for_js)
+        print(f"JSON data length: {len(json_string)}")
+        print(f"Sample JSON: {json_string[:200]}...")
+    except Exception as e:
+        print(f"Error serializing JSON: {e}")
+        # Fallback to empty data
+        session_data_for_js = {
+            'session_data': {},
+            'telemetry_data': [],
+            'monitoring_data': [],
+            'build_map_images': []
+        }
+
+    # Data for template (includes Django objects)
+    session_data = {
+        'drone': drone,
+        'session': session,
+        'session_id': session_id,
+        'video_url': session.recording_url or '',
+        'distance': distance or 0,
+        'duration': duration,
+        'max_altitude': max_altitude or 0,
+        'max_velocity': max_velocity or 0,
+        'battery_used': battery_used or 0,
+        'battery_used_per_minute': battery_used_per_minute or 0,
+        'has_monitoring_data': has_monitoring_data,
+        'max_cpu_usage': max_cpu_usage or 0,
+        'max_cpu_temp': max_cpu_temp or 0,
+        'build_map_images': json.dumps(build_map_images) if build_map_images else '[]',
+        'session_start': session_start.strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
+        'session_duration_seconds': time_difference_seconds,
+        # Add JSON strings for JavaScript
+        'telemetry_data_json': json.dumps(telemetry_for_video) if telemetry_for_video else '[]',
+        'monitoring_data_json': json.dumps(monitoring_for_video) if monitoring_for_video else '[]',
+    }
+
+    return render(request, 'aiders/drone_video_session_replay.html', {
+        'session_data': session_data,
+        'session_data_json': json.dumps(session_data_for_js)
+    })
+
+
+############################
+#### KMZ SAVE DATA VIEW ####
+############################
+
+
+def save_kmz_results(request, operation_name):
+
+    operation = Operation.objects.filter(operation_name=operation_name).last()
+
+    requestData = json.loads(request.body)
+    
+    print(requestData.get('geoJson'), flush=True)
+    algorithmObj = {
+        "algorithm_name":Algorithm.KMZ_DATA_ALGORITHM,
+        "output": json.loads(requestData.get('geoJson')),
+        "title": requestData.get('title'),
+        "input":{'test_data':'test_value'},
+        'user': get_user_model().objects.all().first().id,
+        'operation':operation.id,
+        'canBeLoadedOnMap':True
+    }
+    AlgorithmRetrieveView.save_algorithm_to_db(algorithmObj)
+
+    return JsonResponse({'message': 'KMZ data saved successfully'}, status=200)
+
+
+
+
+# user defined area
+def save_user_defined_area(request):
+    if request.method == "POST":
+        try:
+            body = json.loads(request.body)
+            user = request.user 
+            operation_id = body.get("operation_id")
+            input_data = body.get("input", {}) 
+            output_data = body.get("output", {}) 
+            algorithm_name = body.get("algorithm_name", "USER_DEFINED_AREA")
+
+            alg = Algorithm.objects.create(
+                algorithm_name=algorithm_name,
+                title=body.get("title"),
+                input=input_data,
+                output=output_data,
+                canBeLoadedOnMap=True,
+                operation_id=operation_id,
+                user=user,
+                time=timezone.now()
+            )
+
+            return JsonResponse({"status": "success", "pk": alg.pk}, status=200)
+        except Exception as e:
+            return JsonResponse({"status": "error", "message": str(e)}, status=400)
+
+    return JsonResponse({"status": "error", "message": "Only POST allowed"}, status=405)
+
+# send pilot notifications
+def sendPilotNotification(request, *args, **kwargs):
+    if request.method == 'POST':
+        from .httpRequests import postRequestForPilotNotification
+        data = json.loads(request.body)
+        print(data, flush=True)
+
+        selected_drones = data.get("selectedDrones")
+
+        # loop selected drones and send POST request to wsi for each drone
+        for drone_name in selected_drones:
+            sent = postRequestForPilotNotification(
+                _droneName=drone_name,
+                _message=data.get("message"),
+                _sender=data.get("sender")
+            )
+
+            if sent:
+                # create PilotNotification object in the database
+                notification = PilotNotification.objects.create(
+                    sender=request.user.username,
+                    receiver=drone_name,
+                    message=data.get('message'),
+                    incoming=False,
+                    operation_id=request.user.joined_operation_id,
+                )
+
+        return JsonResponse({'message': 'Notification sent successfully'}, status=200)
+
+
+# get pilot notifications
+def getPilotNotifications(request, operation_id, last_notification_id=0):
+    if int(last_notification_id) == 0:
+        notifications = PilotNotification.objects.filter(operation_id=operation_id).order_by('-id')[:20]
+    else:
+        notifications = PilotNotification.objects.filter(id__gt=last_notification_id, operation_id=operation_id)
+
+    notifications_list = list(notifications.values('id', 'message', 'sender', 'receiver', 'incoming', 'timestamp'))
+    if int(last_notification_id) == 0:
+        notifications_list.reverse()
+    return JsonResponse(notifications_list, safe=False)
+
+
 
 
 # DEVICES
+
+
+# send device notifications
+def sendDeviceNotification(request, *args, **kwargs):
+    if request.method == 'POST':
+        from .httpRequests import postRequestForDeviceNotification
+        data = json.loads(request.body)
+        print(data, flush=True)
+
+        selected_devices = data.get("selectedDevices")
+
+        # loop selected devices and send POST request to wsi for each device
+        for device_name in selected_devices:
+            sent = postRequestForDeviceNotification(
+                _deviceName=device_name,
+                _message=data.get("message"),
+                _sender=data.get("sender")
+            )
+
+            if sent:
+                # create DeviceNotification object in the database
+                notification = DeviceNotification.objects.create(
+                    sender=request.user.username,
+                    receiver=device_name,
+                    message=data.get('message'),
+                    incoming=False,
+                    operation_id=request.user.joined_operation_id,
+                )
+
+        return JsonResponse({'message': 'Notification sent successfully'}, status=200)
+
+
+# get device notifications
+def getDeviceNotifications(request, operation_id, last_notification_id=0):
+    if int(last_notification_id) == 0:
+        notifications = DeviceNotification.objects.filter(operation_id=operation_id).order_by('-id')[:20]
+    else:
+        notifications = DeviceNotification.objects.filter(id__gt=last_notification_id, operation_id=operation_id)
+
+    notifications_list = list(notifications.values('id', 'message', 'sender', 'receiver', 'incoming', 'timestamp'))
+    if int(last_notification_id) == 0:
+        notifications_list.reverse()
+    return JsonResponse(notifications_list, safe=False)
+
 
 def getAvailableDeviceSessions(request, *args, **kwargs):
     if request.method == 'GET':
@@ -2927,56 +4328,20 @@ def safeDronesResults(request):
     return JsonResponse(data, safe=False)
 
 
-@method_decorator(csrf_exempt, name='dispatch')
-class DetectedObjectDescriptionSetPIView(LoginRequiredMixin, View):
 
-    def post(self, request, *args, **kwargs):
-
-        operation_name = self.kwargs.get("operation_name")
-
-        operation = Operation.objects.get(operation_name=self.kwargs.get("operation_name"))
-        
-        track_id = self.kwargs.get("track_id")
-
-        #DetectedObject = DetectedObject.objects.get(operation_name=operation_name,)
-        
+def postUpdateDetectionObjectDescriptionById(request, *args, **kwargs):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        trackId = data.get("track_id")
+        sessionId = data.get("detection_session_id")
+        isSuspicious = data.get("is_suspicious")
+        shouldFollow = data.get("should_follow", False)
+        description = data.get("description")
         user = request.user
-
-        # TODO: check if user has permission in this operation and if is allowed to change set the detected object description 
-
-        jdata = json.loads(request.body)
-
-        #logger.info( jdata )
-
-        # check if the detected object already has a description
-        # Detected_Object_Description = DetectedObjectDescription.objects.filter(track_id=track_id).first()
-        
-        # if Detected_Object_Description :
-        #     serializer = DetectedObjectDescriptionSerializer( Detected_Object_Description, data=jdata)
-        # else: 
-        
-        # a new object will be created
-        serializer = DetectedObjectDescriptionSerializer( data=jdata)
-
-        if serializer.is_valid() : 
-
-            Result_Detected_Object_Description = serializer.save( updated_by = request.user )
-
-            #logger.info(Result_Detected_Object_Description)
-
-            DetectedObjectDescription_data = DetectedObjectDescriptionSerializer(Result_Detected_Object_Description).data
-
-            #TODO:do the following in the serializer
-            DetectedObjectDescription_data['updated_by_username'] = request.user.username 
-
-            return HttpResponse(    json.dumps({ "DetectedObjectDescription" :  DetectedObjectDescription_data }) , 
-                                    content_type='application/json',
-                                    status=status.HTTP_201_CREATED)
-
-        return HttpResponse(    json.dumps( serializer.errors ), 
-                                content_type='application/json', 
-                                status=status.HTTP_400_BAD_REQUEST ) 
-
+        DetectedObjectDescription.updateDescriptionByTrackIdAndSessionId(sessionId, trackId, description, isSuspicious, shouldFollow, user)
+        return JsonResponse({'data':{'message':'Updated'}}, status=200)
+    else:
+        return JsonResponse({'message': 'Invalid request method. Only POST requests are accepted.'}, status=400)
 
 
 
@@ -3202,3 +4567,474 @@ class ManuallySetObjectUpdateAPIView(LoginRequiredMixin, View):
                                 content_type='application/json' , 
                                 status=status.HTTP_200_OK )
 
+
+
+# Crisis Classification
+
+def crisisClassificationUpdate(request, id):
+    if request.user.is_authenticated:
+        if request.method == 'POST':
+            data = json.loads(request.body)
+            description = data.get("description")
+            resolved = data.get("resolved")
+            false_alarm = data.get("false_alarm")
+            user = request.user
+
+            print("Updating crisis classification with ID:", id, flush=True)
+            crisis_classification = CrisisClassification.objects.get(id=id)
+            if crisis_classification:
+                crisis_classification.description = description
+                crisis_classification.resolved = resolved
+                crisis_classification.false_alarm = false_alarm
+                crisis_classification.updated_by = user
+                crisis_classification.save()
+                return JsonResponse({'message': 'Crisis classification updated successfully'}, status=200)
+            else:
+                return JsonResponse({'message': 'Crisis classification not found'}, status=404)
+        else:
+            return JsonResponse({'message': 'Invalid request method. Only POST requests are accepted.'}, status=400)
+        
+
+
+# Live Stream Capture
+
+def liveStreamCaptureStart(request, pk):
+    drone = Drone.objects.get(id=pk)
+    if request.method == 'GET':
+        droneName = drone.drone_name
+        droneId = pk
+        apiResponse = startDroneLiveStreamCapture(droneId, droneName)
+        return redirect("drones_list")
+
+
+# MTX Live Stream Events (hook callbacks)
+
+@method_decorator(csrf_exempt, name='dispatch')
+def mtx_stream_started(request, drone_name):
+    if request.method == 'POST':
+        # find the recording file on the hard drive
+        import time
+        import requests
+
+        # timestampDifference is the difference between the last recording start time and the request time
+        # if the recording has not started yet, the timestampDifference will be negative
+        # if the recording has started, the timestampDifference will be positive
+        # while the timestampDifference is negative, wait for the recording to start
+        requestUnixTimestamp = int(time.time()) # now
+        recordingUnixTimestamp = 0
+        timestampDifference = -1
+        retries = 0
+        recordingStarted = False
+        while not recordingStarted and retries < 10:
+            retries += 1
+            resp = requests.get(f"http://{os.environ.get('NET_IP')}:9997/v3/recordings/get/live/{drone_name}")
+            resp.raise_for_status()
+            data = resp.json()
+            print(data, flush=True)
+
+            segments = data.get("segments", [])
+            lastRecording = segments[-1] if segments else None
+            # convert datetime to unix timestamp
+            if lastRecording:
+                start_time = lastRecording.get("start")
+                if start_time:
+                    dt_start_time = datetime.datetime.strptime(start_time, "%Y-%m-%dT%H:%M:%SZ")
+                    recordingUnixTimestamp = int(dt_start_time.timestamp())
+                    print(f"Start time found in the last recording: {start_time} (Unix timestamp: {recordingUnixTimestamp})", flush=True)
+                    # calculate the difference
+                    timestampDifference = recordingUnixTimestamp - requestUnixTimestamp
+                    print(f" ------------- Timestamp difference: {timestampDifference} seconds", flush=True)
+                else:
+                    print("No start time found in the last recording", flush=True)
+            else:
+                print("No segments found in the response", flush=True)
+            time.sleep(3)  # wait before checking again
+
+        print(f"Final timestamp difference: {timestampDifference} seconds", flush=True)
+        if timestampDifference >= -4:
+            recordingStarted = True
+            print(f"Recording started for drone: {drone_name} at {recordingUnixTimestamp}", flush=True)
+            recordingFile = f"/media/live/{drone_name}-{recordingUnixTimestamp}.mp4"
+            print(f"Recording filename: {recordingFile}", flush=True)
+
+            # deactivate any live stream sessions
+            try:
+                live_stream_sessions = LiveStreamSession.objects.filter(drone__drone_name=drone_name, is_active=True)
+                for session in live_stream_sessions:
+                    session.end_time = datetime.datetime.now(pytz.timezone(settings.TIME_ZONE))
+                    session.is_active = False
+                    session.save()
+                    print(f"Deactivated live stream session for drone {drone_name}.", flush=True)
+            except LiveStreamSession.DoesNotExist:
+                print(f"No active live stream session found for drone {drone_name}.", flush=True)
+
+            # create a new live stream session
+            sessionStartTime = datetime.datetime.fromtimestamp(recordingUnixTimestamp, pytz.UTC)
+            print(f"session for drone {drone_name} starting at {sessionStartTime}.", flush=True)
+            new_session = LiveStreamSession.objects.create(
+                drone=Drone.objects.get(drone_name=drone_name),
+                start_time=sessionStartTime,
+                is_active=True,
+                recording_url=recordingFile
+            )
+            print(f"Created new live stream session for drone {drone_name} with recording file {recordingFile}.", flush=True)
+        else:
+            print(f"Giving up! Recording has not started yet for drone: {drone_name}. Timestamp difference is still negative: {timestampDifference}", flush=True)
+            return JsonResponse({'message': 'Recording has not started yet'}, status=400)
+
+        return JsonResponse({'message': 'Stream started event received'}, status=200)
+    else:
+        return JsonResponse({'message': 'Invalid request method. Only POST requests are accepted.'}, status=400)
+
+
+@method_decorator(csrf_exempt, name='dispatch') 
+def mtx_stream_ended(request, drone_name):
+    if request.method == 'POST':
+        # deactivate any live stream sessions
+        try:
+            live_stream_sessions = LiveStreamSession.objects.filter(drone__drone_name=drone_name, is_active=True)
+            for session in live_stream_sessions:
+                session.end_time = datetime.datetime.now(pytz.timezone(settings.TIME_ZONE))
+                session.is_active = False
+                session.save()
+                print(f"Deactivated live stream session for drone {drone_name}.", flush=True)
+        except LiveStreamSession.DoesNotExist:
+            print(f"No active live stream session found for drone {drone_name}.", flush=True)
+        print(f"Recording completed for drone: {drone_name}", flush=True)
+
+        return JsonResponse({'message': 'Recording completed event received'}, status=200)
+    else:
+        return JsonResponse({'message': 'Invalid request method. Only POST requests are accepted.'}, status=400)
+
+
+@method_decorator(csrf_exempt, name='dispatch') 
+def platform_is_here(request):
+    """
+    Endpoint to check if the platform is reachable.
+    This can be used for health checks or to verify connectivity.
+    """
+    if request.method == 'GET':
+        return JsonResponse({'message': 'Platform is here!'}, status=200)
+    else:
+        return JsonResponse({'message': 'Invalid request method. Only GET requests are accepted.'}, status=400)
+
+
+#################################################################
+######################### CHAT VIEWS ############################
+#################################################################
+
+class ChatRoomDetailView(LoginRequiredMixin, generic.DetailView):
+    """Display chat room with message history"""
+    model = ChatRoom
+    template_name = "aiders/chat_room.html"
+    context_object_name = "room"
+    
+    def get_object(self):
+        room = super().get_object()
+        user = self.request.user
+        
+        # Check if user can access this room
+        if room.operation and user.joined_operation != room.operation:
+            if not user.has_perm(f'aiders.view_operation_{room.operation.id}'):
+                raise PermissionDenied("You do not have permission to access this chat room.")
+        
+        # Create or update user's membership
+        membership, created = ChatRoomMember.objects.get_or_create(
+            room=room,
+            user=user,
+            defaults={'is_active': True}
+        )
+        if not created:
+            membership.update_last_seen()
+            membership.is_active = True
+            membership.save()
+            
+        return room
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        room = self.object
+        
+        # Get recent messages
+        context['messages'] = room.messages.select_related('user').order_by('timestamp')[:50]
+        
+        # Get room members
+        context['members'] = ChatRoomMember.objects.filter(
+            room=room, 
+            is_active=True
+        ).select_related('user').order_by('user__username')
+        
+        # Add WebSocket URL
+        context['room_id'] = room.id
+        
+        return context
+
+
+@login_required
+def chat_room_messages_api(request, room_id):
+    """API endpoint to get chat messages for a room"""
+    if request.method == 'GET':
+        try:
+            room = ChatRoom.objects.get(id=room_id)
+            user = request.user
+            
+            # Check access permission
+            if room.operation and user.joined_operation != room.operation:
+                if not user.has_perm(f'aiders.view_operation_{room.operation.id}'):
+                    return JsonResponse({'error': 'Permission denied'}, status=403)
+            
+            # Get pagination parameters
+            page = int(request.GET.get('page', 1))
+            per_page = int(request.GET.get('per_page', 50))
+            
+            # Get messages
+            messages = room.messages.select_related('user').order_by('-timestamp')
+            
+            # Paginate
+            start = (page - 1) * per_page
+            end = start + per_page
+            messages_page = messages[start:end]
+            
+            # Serialize messages
+            messages_data = []
+            for msg in messages_page:
+                messages_data.append({
+                    'id': msg.id,
+                    'user': msg.user.username,
+                    'user_id': msg.user.id,
+                    'content': msg.content,
+                    'timestamp': msg.timestamp.isoformat(),
+                    'is_edited': msg.is_edited,
+                    'edited_at': msg.edited_at.isoformat() if msg.edited_at else None
+                })
+            
+            return JsonResponse({
+                'messages': messages_data,
+                'has_more': len(messages) > end
+            })
+            
+        except ChatRoom.DoesNotExist:
+            return JsonResponse({'error': 'Room not found'}, status=404)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+    
+    return JsonResponse({'error': 'Method not allowed'}, status=405)
+
+
+@login_required
+def get_operation_chat_room(request, operation_id):
+    """Get or create chat room for an operation"""
+    try:
+        operation = Operation.objects.get(id=operation_id)
+        # Check if user has permission to view this operation
+        if not request.user.has_perm(f"aiders.view_operation_{operation.id}"):
+            return JsonResponse({'error': 'Permission denied'}, status=403)
+        
+        # Get or create chat room for this operation
+        room, created = ChatRoom.get_or_create_for_operation(operation)
+        
+        # Add user as member if not already
+        member, member_created = ChatRoomMember.objects.get_or_create(
+            room=room,
+            user=request.user,
+            defaults={'is_active': True}
+        )
+        if not member_created and not member.is_active:
+            member.is_active = True
+            member.save()
+        
+        return JsonResponse({
+            'room_id': room.id,
+            'room_name': room.name,
+            'created': created
+        })
+    except Operation.DoesNotExist:
+        return JsonResponse({'error': 'Operation not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+# Weather API Views
+import requests
+
+@login_required
+def weather_config_view(request):
+    """View for configuring weather API settings"""
+    # from .forms.weather import WeatherConfigForm
+    
+    try:
+        config = WeatherConfig.objects.first()
+    except WeatherConfig.DoesNotExist:
+        config = None
+    
+    if request.method == 'POST':
+        form = WeatherConfigForm(request.POST, instance=config)
+        if form.is_valid():
+            config = form.save()
+            messages.success(request, 'Weather configuration saved successfully!')
+            return redirect('weather_config')
+        else:
+            messages.error(request, 'Please correct the errors below.')
+    else:
+        form = WeatherConfigForm(instance=config)
+    
+    # Get recent weather data
+    recent_weather = WeatherAPI.objects.all()[:10]
+    
+    return render(request, 'aiders/weather_config.html', {
+        'form': form,
+        'config': config,
+        'recent_weather': recent_weather
+    })
+
+
+@login_required
+def weather_data_view(request):
+    """View for displaying weather data"""
+    weather_data = WeatherAPI.objects.all()[:50]  # Show last 50 entries
+    
+    return render(request, 'aiders/weather_data.html', {
+        'weather_data': weather_data
+    })
+
+
+def fetch_weather_data():
+    """Function to fetch weather data from WeatherAPI.com"""
+    try:
+        config = WeatherConfig.objects.filter(is_active=True).first()
+        if not config:
+            print("No active weather configuration found")
+            return
+        
+        cities = config.get_cities_list()
+        api_key = config.api_key
+        
+        for city in cities:
+            try:
+                # WeatherAPI.com current weather endpoint
+                url = f"http://api.weatherapi.com/v1/current.json"
+                params = {
+                    'key': api_key,
+                    'q': city,
+                    'aqi': 'no'  # Don't include air quality data
+                }
+                
+                response = requests.get(url, params=params, timeout=10)
+                response.raise_for_status()
+                data = response.json()
+                
+                # Parse weather data from WeatherAPI.com response
+                location = data['location']
+                current = data['current']
+                
+                weather_entry = WeatherAPI(
+                    city=location['name'],
+                    country=location['country'],
+                    region=location['region'],
+                    latitude=location['lat'],
+                    longitude=location['lon'],
+                    temperature=current['temp_c'],
+                    feels_like=current['feelslike_c'],
+                    humidity=current['humidity'],
+                    pressure=current['pressure_mb'],
+                    wind_speed=current['wind_kph'],
+                    wind_direction=current['wind_degree'],
+                    wind_dir_text=current['wind_dir'],
+                    weather_condition=current['condition']['text'],
+                    weather_icon=current['condition']['icon'],
+                    visibility=current['vis_km'],
+                    uv_index=current['uv'],
+                    cloud_cover=current['cloud'],
+                    gust_kph=current.get('gust_kph'),
+                    api_timestamp=timezone.make_aware(
+                        timezone.datetime.fromisoformat(current['last_updated'].replace(' ', 'T')),
+                        timezone.get_current_timezone()
+                    )
+                )
+                weather_entry.save()
+                print(f"Weather data saved for {city}")
+                
+            except requests.exceptions.RequestException as e:
+                print(f"Error fetching weather for {city}: {e}")
+            except Exception as e:
+                print(f"Error processing weather data for {city}: {e}")
+                
+    except Exception as e:
+        print(f"Error in fetch_weather_data: {e}")
+
+
+@login_required  
+def manual_weather_update(request):
+    """Manual trigger for weather data update"""
+    if request.method == 'POST':
+        try:
+            fetch_weather_data()
+            messages.success(request, 'Weather data updated successfully!')
+        except Exception as e:
+            messages.error(request, f'Error updating weather data: {str(e)}')
+    
+    return redirect('weather_config')
+
+
+@login_required
+def weather_map_data(request):
+    """API endpoint to serve weather data for map display"""
+    try:
+        # Get the latest weather data for each city (most recent entry per city)
+        from django.db.models import Max
+        from django.utils import timezone
+        from datetime import timedelta
+        
+        # Calculate the cutoff time (1 hour ago)
+        one_hour_ago = timezone.now() - timedelta(hours=1)
+        
+        # Get the latest timestamp for each city, but only for data within the last hour
+        latest_entries = WeatherAPI.objects.filter(
+            timestamp__gte=one_hour_ago
+        ).values('city', 'country').annotate(
+            latest_time=Max('timestamp')
+        )
+        
+        # Get the actual weather records for those latest timestamps
+        weather_data = []
+        for entry in latest_entries:
+            latest_weather = WeatherAPI.objects.filter(
+                city=entry['city'],
+                country=entry['country'],
+                timestamp=entry['latest_time'],
+                timestamp__gte=one_hour_ago  # Double-check the timestamp is within 1 hour
+            ).first()
+            
+            if latest_weather:
+                weather_data.append({
+                    'city': latest_weather.city,
+                    'country': latest_weather.country,
+                    'region': latest_weather.region,
+                    'latitude': latest_weather.latitude,
+                    'longitude': latest_weather.longitude,
+                    'temperature': latest_weather.temperature,
+                    'feels_like': latest_weather.feels_like,
+                    'humidity': latest_weather.humidity,
+                    'pressure': latest_weather.pressure,
+                    'wind_speed': latest_weather.wind_speed,
+                    'wind_direction': latest_weather.wind_direction,
+                    'wind_dir_text': latest_weather.wind_dir_text,
+                    'weather_condition': latest_weather.weather_condition,
+                    'weather_icon': latest_weather.weather_icon,
+                    'visibility': latest_weather.visibility,
+                    'uv_index': latest_weather.uv_index,
+                    'cloud_cover': latest_weather.cloud_cover,
+                    'timestamp': latest_weather.timestamp.isoformat(),
+                })
+        
+        return JsonResponse({
+            'status': 'success',
+            'weather_data': weather_data,
+            'count': len(weather_data)
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'status': 'error',
+            'message': str(e)
+        }, status=500)

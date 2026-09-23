@@ -1,0 +1,7 @@
+bleak
+mysql-connector-python
+requests
+flask
+pytz
+kafka-python==2.0.0
+python-dotenv==0.19.2

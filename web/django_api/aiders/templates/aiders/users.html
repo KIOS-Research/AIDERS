@@ -7,14 +7,14 @@
 <div class="justify-content-center ms-5 me-5 footer-margin header-margin">
     <div class="row pt-5">
         <h3 class="col float-start">Users</h3>
-        <div class="col">
-            <a
-                class="btn btn-primary float-end mx-1 {% if not perms.aiders.edit_permissions %}disabled{% endif %}"
-                href="{% url 'manage_permissions' %}">
-                <i class="far fa-plus-square"></i>
-                Edit Permissions
-            </a>
-        </div>
+        {% if perms.aiders.manage_users %}
+            <div class="col">
+                <a class="btn btn-primary float-end mx-1" href="{% url 'users_permissions_view' %}">
+                    <i class="fa-solid fa-key "></i>
+                    User Permissions
+                </a>
+            </div>
+        {% endif %}
     </div>
     <div class="row mb-5">
         <div class="col-sm" style="color: black">
@@ -23,26 +23,50 @@
             <table id="Table" class="table table-striped">
                 <thead>
                     <tr>
-                        <th>ID</th>
+                        <th class="text-center">ID</th>
                         <th>Username</th>
                         <th>First Name</th>
 
                         <th>Last Name</th>
-                        <th>Email address</th>
-                        <th>Joined operation</th>
-                        <th>Last login</th>
+                        <th>Email Address</th>
+                        <th>Joined Operation</th>
+                        <th>Created At</th>
+                        <th>Last Login</th>
+                        {% comment %} <th class="text-center">Is Active</th> {% endcomment %}
+                        <th class="text-center">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% if users %} {% for user in users %}
-                    <tr>
-                        <td class="align-middle">{{user.id}}</td>
+                    <tr {% if not user.is_active %} style="background-color: #fcc;"{% endif %}>
+                        <td class="align-middle text-center">{{user.id}}</td>
                         <td class="align-middle">{{user.username}}</td>
                         <td class="align-middle">{{user.first_name}}</td>
                         <td class="align-middle">{{user.last_name}}</td>
                         <td class="align-middle">{{user.email}}</td>
                         <td class="align-middle">{{user.joined_operation}}</td>
                         <td class="align-middle">{{user.date_joined}}</td>
+                        <td class="align-middle">{{user.last_login}}</td>
+                        {% comment %} <td class="align-middle text-center">
+                            {% if user.is_active %}
+                                <i class="fas fa-check-circle" style="color: green;"></i>
+                            {% else %}
+                                <i class="fas fa-times-circle" style="color: red;"></i>
+                            {% endif %}
+                        </td> {% endcomment %}
+                        <td class="align-middle text-center">
+                            <div>
+                                {% if user.is_active %}
+                                    <form class='m-1' method="get" action="{% url 'deactivate_user_account' user_id=user.id %}" onsubmit="return confirm('Deactivate account of user \'{{user.username}}\'?');">
+                                        <button type="submit" title="Deactivate Account" class="btn btn-danger"><i class="fa-solid fa-ban"></i></button>
+                                    </form>
+                                {% else %}
+                                    <form class='m-1' method="get" action="{% url 'activate_user_account' user_id=user.id %}" onsubmit="return confirm('Activate account of user \'{{user.username}}\'?');">
+                                        <button type="submit" title="Activate Account" class="btn btn-success"><i class="fa-solid fa-check"></i></button>
+                                    </form>
+                                {% endif %}
+                            </div>
+                        </td>
                     </tr>
                     {% endfor %} {% endif %}
                 </tbody>

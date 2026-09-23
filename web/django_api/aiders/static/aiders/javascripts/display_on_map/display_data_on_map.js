@@ -4,10 +4,68 @@
  * */
 {
     map.on('load', function () {
+        // load custom marker image for KMZ placemarks
+        map.loadImage('https://docs.mapbox.com/mapbox-gl-js/assets/custom_marker.png', (error, image) => {
+            if (error) throw error;
+            map.addImage('custom-marker', image);
+        });
+
         displayFireSpreadDetection();
         display3DObjectResults();
         displaySearchAndRescueMissionPaths();
+        displayKmzData();
+
+        displayUserDefinedAreas();
     });
+
+
+    function displayKmzData() {
+        setTimeout(function () {
+            $(`.${WARNING_ALERT}`).hide();
+        }, 2000);
+
+        // let selected_kmz_data_objects = [];
+        JSON.parse(sessionStorage.getItem(SessionProfileKeys.SELECTED_ALGORITHMS)).forEach(function (algorithm) {
+            if (algorithm['fields']['algorithm_name'] === 'KMZ_DATA_ALGORITHM') {
+                addGeoJSONToMap(algorithm['fields']['output']);
+            }
+        });
+    }
+
+
+    function displayUserDefinedAreas() {
+        setTimeout(() => $(`.${WARNING_ALERT}`).hide(), 2000);
+
+        // Get the selected algorithms from session storage
+        const selectedAlgorithms = JSON.parse(sessionStorage.getItem(SessionProfileKeys.SELECTED_ALGORITHMS)) || [];
+
+        // Filter only the algorithms that are of type 'USER_DEFINED_AREA'
+        const userDefinedAreas = selectedAlgorithms.filter(algorithm =>
+            algorithm.fields.algorithm_name === 'USER_DEFINED_AREA'
+        );
+
+        // If there are no user-defined areas, exit the function
+        if (userDefinedAreas.length === 0) return;
+
+        const allCoords = []; // Will store all coordinates from all polygons
+
+        // Load each user-defined area and collect their coordinates
+        userDefinedAreas.forEach(area => {
+            const coords = loadUserDefinedAreas(area); // Load the area and get its coordinates
+            if (coords) {
+                allCoords.push(...coords); // Add the coordinates to the list
+            }
+        });
+
+        // If we have any coordinates, calculate the bounding box and fit the map view to it
+        if (allCoords.length > 0) {
+            const bounds = allCoords.reduce(
+                (b, coord) => b.extend(coord),
+                new maplibregl.LngLatBounds(allCoords[0], allCoords[0]) // Initialize bounds with the first coordinate
+            );
+            map.fitBounds(bounds, { padding: 40 }); // Fit the map to the combined bounds with some padding
+        }
+    }
 
     function displayFireSpreadDetection() {
         setTimeout(function () {

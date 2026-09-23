@@ -19,12 +19,18 @@ RUN CGO_ENABLED=0 GOOS=linux go build -o /application/app ./src
 # Use a minimal base image to reduce the container size
 FROM alpine:latest
 
+# Needed for telnet support
+RUN apk add --no-cache busybox-extras curl
+
 # Set the working directory inside the container
 WORKDIR /application
 
 # Copy the built Go application from the builder stage to the final image
 COPY --from=builder /application/app .
 COPY --from=builder /application/entrypoint.ws.sh .
+
+# HealthCheck
+HEALTHCHECK --interval=30s CMD curl -i -N -H "Connection: Upgrade" -H "Upgrade: websocket" -H "Host: localhost:${WS_PORT}" -H "Origin: http://localhost" http://localhost:${WS_PORT} || exit 1
 
 ENTRYPOINT ["/bin/sh", "./entrypoint.ws.sh"]
 

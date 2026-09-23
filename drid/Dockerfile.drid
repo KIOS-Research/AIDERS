@@ -1,0 +1,35 @@
+FROM python:3.9
+
+# Install required dependencies including BLE support
+RUN apt-get update && apt-get install -y \
+    netcat-traditional \
+    bluez \
+    bluetooth \
+    libbluetooth-dev \
+    libdbus-1-dev \
+    libglib2.0-dev \
+    dbus && \
+    rm -rf /var/lib/apt/lists/*
+
+# Create D-Bus run directory
+RUN mkdir -p /run/dbus
+
+# Copy the python dependencies
+COPY drid/requirements.txt /app/requirements.txt
+# Install Python dependencies
+RUN pip install -r /app/requirements.txt
+
+# copy the entrypoint bash script
+COPY drid/entrypoint.drid.sh .
+
+# Copy the python application
+COPY drid/app /app
+
+# Expose the port for the webserver (if needed in future)
+EXPOSE 8759
+
+# HealthCheck
+# HEALTHCHECK --interval=30s CMD curl --fail http://localhost:${DRID_API_PORT}/drid/healthCheck || exit 1
+
+# run the entrypoint bash script
+ENTRYPOINT ["/bin/bash", "./entrypoint.drid.sh"]

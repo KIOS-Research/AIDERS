@@ -1,0 +1,10 @@
+FROM haproxy:3.0
+
+USER root
+
+RUN apt-get update
+RUN apt-get install -y libcap2-bin gettext
+
+RUN setcap 'cap_net_bind_service=+ep' /usr/local/sbin/haproxy
+
+COPY haproxy/haproxy.cfg /usr/local/etc/haproxy/haproxy.cfg

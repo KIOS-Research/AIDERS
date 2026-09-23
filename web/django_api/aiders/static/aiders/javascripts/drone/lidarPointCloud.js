@@ -1,15 +1,17 @@
 {
 	const LIDAR_POINT_TIMER = 1000;
 	const LIDAR_POINTS_PER_REQUEST = 50000;
-	const LIDAR_WEB_SOCKET_ADDRESS = "ws://" + window.location.hostname + ":" + WS_PORT + "/getLidarPointsBySessionId";
+	const LIDAR_WEB_SOCKET_ADDRESS = "ws://" + window.location.hostname + ":" + NGINX_PORT + "/ws/getLidarPointsBySessionId";
 	const LIDAR_POINTS_LAYER = "lidar_points_session_";
 
 	let LIDAR_WEB_SOCKET;
 	let lidarRequestingSessions = {};
 	let loadedLidarPointSession = [];
+	let stopLidarProcessing = false;
+
 
 	function initWebsocketForLidar(_address) {
-		console.log(_address);
+		console.log(`_address======== ${_address}`);
 		let ws = new WebSocket(_address + '?token=' + encodeURIComponent(TOKEN));
 		ws.addEventListener("open", function (event) {
 			console.log("Lidar WebSocket connection established.");
@@ -23,6 +25,7 @@
 		return ws;
 	}
 
+
 	function closeWebsocketForLidar(_websocket) {
 		_websocket.close();
 		console.log("Lidar WebSocket connection closed.");
@@ -33,8 +36,23 @@
 	// Lidar Points //
 	//////////////////
 
+	// Storing session IDs
+	let lidarSessionIds = [];
+
 	function handleIncomingLidarWebsocketMessage(_wsMessage) {
+
 		let lidarSessionId = _wsMessage.lidar_session_id;
+
+		// Add the session ID to the array if it doesn't already exist
+		if (!lidarSessionIds.includes(lidarSessionId)) {
+			lidarSessionIds.push(lidarSessionId);
+			console.log("Added Session ID:", lidarSessionId);
+		} else {
+			console.log("Session ID already exists:", lidarSessionId);
+		}
+
+		console.log("Current Session IDs:", lidarSessionIds);
+
 		let lidarPoints = _wsMessage.lidar_points;
 		let lidarLocation = _wsMessage.lidar_origin_coordinates;
 		if (lidarPoints === null) {
@@ -86,6 +104,10 @@
 				clearInterval(this.intervalTime);
 				this.intervalTime = null;
 				this.loadedLidarPointSessionObject.endTime = getCurrentFormattedTime();
+
+				if(stopLidarProcessing){
+					stopLidarProcessing = false
+				}
 				updateLidarPointSessionOnLoadedLidarPointSessionList(this.loadedLidarPointSessionObject);
 				LIDAR_WEB_SOCKET = closeWebsocketForLidar(LIDAR_WEB_SOCKET);
 			}
@@ -163,6 +185,14 @@
 		});
 	}
 	function loadLidarPointOnMap(_lidarPoints, _lidarSessionId, _coordinates) {
+
+		if (stopLidarProcessing) {
+			console.log("Lidar point visualizing stopped.");
+			return;
+		} else {
+			console.log("Lidar point visualizing started.");
+		}
+
 		var maxZ = _lidarPoints[0].z;
 		var minZ = _lidarPoints[0].z;
 
@@ -276,6 +306,15 @@
 					true
 				);
 				lidarRequestingSessions[responseData.lidar_session_id].start();
+
+				// PP Add 'active' class to Start button
+				const startButton = document.getElementById(`startLidarPointColection${_droneName}`);
+				console.log(`startButton============== ${startButton.id}`);
+				startButton.classList.add("active");
+
+				// PP Check the toggler
+				//const toggler = document.getElementById(`lidar-toggle-${_droneName}`);
+				//$("#" + toggler.id).bootstrapToggle("on");
 			})
 			.catch((error) => {
 				console.error("Fetch error:", error);
@@ -311,6 +350,14 @@
 				}
 				lidarRequestingSessions[responseData.lidar_session_id].stop();
 				delete lidarRequestingSessions[responseData.lidar_session_id];
+
+				// PP Remove 'active' class to Start button
+				const startButton = document.getElementById(`startLidarPointColection${_droneName}`);
+				startButton.classList.remove("active");
+
+				// PP Uncheck the toggler
+				//const toggler = document.getElementById(`lidar-toggle-${_droneName}`);
+				//$("#" + toggler.id).bootstrapToggle("off");
 			})
 			.catch((error) => {
 				console.error("Fetch error:", error);
@@ -318,6 +365,10 @@
 	}
 
 	function loadLidarPoints() {
+
+		if(stopLidarProcessing){
+			stopLidarProcessing = false;
+		}
 		postElementId("Load Lidar Points", "Click");
 		let settings = {
 			url: "/api/operations/" + CURRENT_OP + "/getLidarSessionOfPoints",
@@ -353,6 +404,24 @@
 		);
 	}
 
+	function clearAllLidarPoints() {
+		console.log("Clearing all Lidar Point Cloud Sessions...");
+
+		// Iterate through all session IDs and remove corresponding layers
+		lidarSessionIds.forEach((sessionId) => {
+			console.log("Removing Layer for Session ID:", sessionId);
+			removeLidarPointLayerOnTheMapByUsingSessionId(sessionId);
+		});
+
+		// Clear the session ID list
+		lidarSessionIds = [];
+		console.log("All sessions cleared.");
+
+
+	}
+
+
+
 	//////////////////////////////////////
 	/// Lidar Process Points to a Mesh ///
 	//////////////////////////////////////
@@ -387,5 +456,50 @@
 		$.ajax(settings).done(function (_response) {
 			create_popup_for_a_little(SUCCESS_ALERT, _response.message, 3000);
 		});
+	}
+
+	// PP lidarRealTimeDisplay function
+	function lidarRealTimeDisplay(toggleID, _sessionId) {
+		const isChecked = $("#" + toggleID).is(":checked");
+		const sessionId = _sessionId;
+		const startLidarButton = document.getElementById(`startLidarPointColection${_sessionId}`);
+		const failureBox = document.getElementById('failureBox');
+
+
+		if (isChecked) {
+			if (stopLidarProcessing) {
+				stopLidarProcessing = false
+			}
+
+			//console.log(`Starting real-time display for sessionId: ${sessionId}`);		
+			if (startLidarButton.classList.contains('active')) {
+				console.log(`${_sessionId} button is already active.`);
+				// Fetch LiDAR points from the session and display on the map
+				if (lidarRequestingSessions[sessionId]) {
+					console.log(`Displaying LiDAR points for session ID: ${sessionId}.`);
+					// Use the existing session to fetch points
+					const lidarSession = lidarRequestingSessions[sessionId];
+					lidarSession.update(); // Send a request for the latest points
+				} else {
+					// If the session does not exist, display an error
+					//console.error(`LiDAR session with ID ${sessionId} is not initialized.`);
+				}
+
+			} else {
+				// Show the warning message
+				failureBox.innerHTML = `Lidar Point Collection button for ${_sessionId} is not active.`;
+				failureBox.style.display = 'block';
+				// Hide the warning message after 3 seconds
+				setTimeout(() => {
+					failureBox.style.display = 'none';
+				}, 3000);
+			}
+		} else {
+			console.log(`Stopping display of LiDAR sessionId: ${_sessionId}`);
+			// Stop displaying LiDAR points by removing the map layer
+			//removeLidarPointLayerOnTheMapByUsingSessionId(_sessionId);
+			stopLidarProcessing = true
+			clearAllLidarPoints();
+		}
 	}
 }

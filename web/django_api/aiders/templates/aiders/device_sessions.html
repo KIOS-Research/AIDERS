@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block title %}
+Aiders - Device Sessions
+{% endblock %}
+
+{% block head_block %}
+    <link href="{% static 'libs/jquery.dataTables/http_cdn.datatables.net_1.10.2_css_jquery.dataTables.css' %}" rel="stylesheet">
+    <script src="{% static 'libs/jquery.dataTables/http_cdn.datatables.net_1.10.2_js_jquery.dataTables.js' %}"></script>
+{% endblock %}
+
+{% block body_block %}
+<div class="justify-content-center ms-5 me-5 footer-margin header-margin">
+    <div class="row pt-5">
+        <h3 class="col float-start">{{operation_name}} - Device Sessions</h3>
+    </div>
+    <div class="row mb-5">
+        <div class="col-sm" style="color: black">
+            <div><br/></div>
+
+            <table id="Table" class="table table-striped">
+                <thead>
+                <tr>
+                    <th>Session ID</th>
+                    <th>Device Name</th>
+                    <th>Start Time</th>
+                    <th>End Time</th>
+                    <th>Duration</th>
+                    <th>Frames</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% if sessions_with_details %}
+                    {% for item in sessions_with_details %}
+                    <tr>
+                        <td class="align-middle">{{item.session.id}}</td>
+                        <td class="align-middle">{{item.session.device.name}}</td>
+                        <td class="align-middle">{{item.session.start_time|date:"Y-m-d H:i:s"}}</td>
+                        <td class="align-middle">
+                            {% if item.session.end_time %}
+                                {{item.session.end_time|date:"Y-m-d H:i:s"}}
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td class="align-middle">
+                            {% if item.duration_str %}
+                                <span class="text-success">{{item.duration_str}}</span>
+                            {% else %}
+                                <span class="text-info">Ongoing</span>
+                            {% endif %}
+                        </td>
+                        <td class="align-middle">{{item.frame_count}}</td>
+                        <td class="align-middle">
+                            {% if item.session.is_active %}
+                                <span class="badge bg-success">Active</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Inactive</span>
+                            {% endif %}
+                        </td>
+                        <td class="align-middle">
+                            <a href="/device_session_replay/{{item.session.id}}" target="_blank" class="btn btn-sm btn-primary">
+                                <i class="fas fa-redo"></i> Session Replay
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% endif %}
+                </tbody>
+            </table>
+
+            <br />
+
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block script_block %}
+    $(document).ready(function(){
+        $('#Table').dataTable({
+            "order": [[ 2, "desc" ]],
+            "pageLength": 25
+        });
+    });
+{% endblock %}

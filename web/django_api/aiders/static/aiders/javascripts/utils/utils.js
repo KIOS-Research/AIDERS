@@ -12,7 +12,7 @@ function getNumberOfOverlayPanels() {
     		numberOfVisibleElements++;
     	}
 	}
-    console.log(numberOfVisibleElements);
+    // console.log(numberOfVisibleElements);
     return numberOfVisibleElements;
 }
 
@@ -30,12 +30,19 @@ function zoomToClient(_type, _name) {
     else if (_type === "balora") {
         location = getBaloraAttributeValue(_name, "baloraInfo");
     }
-    
-    var lat = location.currentCoordinate[1];
-    var lng = location.currentCoordinate[0];
-    
-    if(lat === 0 || lng === 0) {
-        return;
+    else if (_type === "staticCamera") {
+        location = getStaticCameraCoordinates(_name);
+    }
+
+    var lat = 0;
+    var lng = 0;
+
+    try {
+        lat = location.currentCoordinate[1];
+        lng = location.currentCoordinate[0];
+    } catch (e) {
+        lat = location[1];
+        lng = location[0];
     }
 
     map.flyTo({ center: [lng, lat], zoom: 18 });

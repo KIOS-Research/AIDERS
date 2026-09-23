@@ -41,4 +41,5 @@ add_nvidia_to_docker_compose() {
 
 # add_nvidia_to_docker_compose $docker_compose_file "container_name: web"
 add_nvidia_to_docker_compose $docker_compose_file "container_name: cv"
+add_nvidia_to_docker_compose $docker_compose_file "container_name: cvn"
 add_nvidia_to_docker_compose $sim_docker_compose_file "container_name: sim"

@@ -1,0 +1,97 @@
+<div id="crisisLogsWrapper" 
+    style="display: none; position: absolute; right: 5px; bottom: 20px; padding:5px; width: 450px; max-height: 155px; background-color: #333; color: orange; opacity: 0.95; z-index: 9999;">
+    <div style="font-weight: bold; font-size: 14px; border-bottom: 1px solid orange; margin-bottom: 5px;"><i class="fa fa-exclamation-triangle" style="color: orange;"></i> Crisis Alerts</div>
+    <a id="closeCrisisLogsBtn" style="border: 1px solid orange; font-size: 8px; font-weight: bold; position: absolute; right: 0px; top: 0px; margin: 4px 6px; padding: 2px 6px;" action="#" class="btn">X</a>
+    <div id="crisisLogs" 
+        style="max-height: 120px; overflow-y: auto; font-size: 13px;">
+    </div>        
+</div>
+
+<a id="openCrisisLogsBtn" style="background-color: #333; color: orange; border: 1px solid orange; font-size: 12px; font-weight: bold; position: absolute; right: 5px; bottom: 20px; margin: 5px 5px; padding: 2px 6px;" action="#" class="btn">
+    <i class="fa fa-exclamation-triangle" style="color: orange;"></i> Crisis Alerts
+</a>
+
+
+
+
+<script>
+
+    function updateCrisisLogs(logs) {
+
+        function camelCaseToWords(str) {
+            if (!str) return "";
+            // Insert space before capital letters and capitalize the first letter
+            return str.replace(/([A-Z])/g, ' $1').replace(/^./, s => s.toUpperCase()).trim();
+        }
+    
+        let logDiv = $('#crisisLogs');
+        logs.forEach(function(log) {
+            // console.log(log);
+
+            var className = '';
+            if (log.severity_level === 'High') {
+                className = 'text-danger';
+            } else if (log.severity_level === 'Medium') {
+                className = 'text-warning';
+            } else if (log.severity_level === 'Low') {
+                className = 'text-success';
+            }
+
+            var updatedTime = '';
+            if (log.updated_at) {
+                var formattedUpdatedTime = log.updated_at.substring(11, 19);
+                updatedTime = ' - <span class="text-muted">(Updated: ' + formattedUpdatedTime + ')</span>';
+            }
+
+            var formattedType = camelCaseToWords(log.incident_type);
+            var formattedTime = log.sent_utc.substring(11, 19);
+            const existingAlertDiv = document.getElementById("crisis-alert-" + log.incident_id);
+            if (existingAlertDiv) {
+                existingAlertDiv.remove();
+            }            
+            logDiv.append('<div id="crisis-alert-'+log.incident_id+'"><a href="#" onclick="flyToIncident(' + log.latitude + ', ' + log.longitude + ')"><div class="'+className+'""><b>' + formattedTime + ' - ' + log.incident_id + ' - ' + formattedType + '</b>' + updatedTime + '</div></a></div>');
+        });
+        if(logs.length > 0) {
+            showCrisisLogsDiv();
+            let audioPath = document.querySelector('#notifCrisis').dataset.path;
+            let audio = new Audio(audioPath); // Create a new Audio object
+            audio.play(); // Play the audio                  
+
+            logDiv[0].scrollTop = logDiv[0].scrollHeight;  // scroll to bottom
+        }
+
+    }
+
+    function flyToIncident(lat, lon) {
+        let map = window.map;
+        if (map) {
+            map.flyTo({
+                center: [lon, lat],
+                zoom: 18,
+                speed: 5,
+                curve: 1,
+                easing(t) {
+                    return t;
+                }
+            });
+        }
+    }
+
+
+    function showCrisisLogsDiv() {
+        $('#crisisLogsWrapper').show();
+        $('#openCrisisLogsBtn').hide();
+    }
+
+    function hideCrisisLogsDiv() {
+        $('#crisisLogsWrapper').hide();
+        $('#openCrisisLogsBtn').show();
+    }
+    
+    $('#closeCrisisLogsBtn').click(function() {
+        hideCrisisLogsDiv();
+    });
+    $('#openCrisisLogsBtn').click(function() {
+        showCrisisLogsDiv();
+    });
+</script>

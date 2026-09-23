@@ -18,12 +18,6 @@ Aiders - Algorithms
 <div class="justify-content-center ms-5 me-5 footer-margin header-margin">
     <div class="row pt-5">
         <h3 class="col float-start">{{operation_name}} Algorithms</h3>
-        <div class="col">
-            <a class="btn btn-primary float-end mx-1 {% if not perms.aiders.edit_permissions %}disabled{% endif %}" href="{% url 'manage_permissions' %}">
-                <i class="far fa-plus-square "></i>
-                Edit Permissions
-            </a>
-        </div>
     </div>
     <div class="row mb-5">
         <div class="col-sm" style="color: black">
@@ -36,6 +30,7 @@ Aiders - Algorithms
                 <tr>
                     <th>ID</th>
                     <th>Algorithm Name</th>
+                    <th>Title</th>
                     <th>Executed At</th>
                     <th>Operation Name</th>
                     <th>View Input</th>
@@ -52,6 +47,7 @@ Aiders - Algorithms
 
                     <td> {{algo.id}}</td>
                     <td> {{algo.algorithm_name|removeUnderScore|title}}</td>
+                    <td> {{algo.title}}</td>
                     <td> {{algo.time}}</td>
                     <td> {{algo.operation.operation_name}}</td>
                     <td>

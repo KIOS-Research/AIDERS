@@ -1,0 +1,129 @@
+<div id="pilotNotificationsWrapper" 
+    style="display: none; position: absolute; left: 305px; bottom: 60px; padding:5px; width: 520px; max-height: 155px; background-color: #333; color: orange; opacity: 0.99; z-index: 1000;">
+    <div style="font-weight: bold; font-size: 14px; border-bottom: 1px solid orange; margin-bottom: 5px;"><i class="fa fa-exclamation-triangle" style="color: orange;"></i> Notifications</div>
+    <a id="closePilotNotificationsBtn" style="border: 1px solid orange; font-size: 8px; font-weight: bold; position: absolute; right: 0px; top: 0px; margin: 4px 6px; padding: 2px 6px;" action="#" class="btn">X</a>
+    <div id="pilotNotifications" 
+        style="max-height: 120px; overflow-y: auto; font-size: 12px;">
+    </div>        
+</div>
+
+<a id="openPilotNotificationsBtn" style="display: block; background-color: #333; color: orange; border: 1px solid orange; font-size: 12px; font-weight: bold; position: absolute; left: 300px; bottom: 0px; margin: 5px 5px; padding: 2px 6px;" action="#" class="btn">
+    <i class="fa fa-exclamation-triangle" style="color: orange;"></i> Notifications
+</a>
+
+
+
+
+<script>
+window.addEventListener('load', function () {
+
+    let lastPilotNotificationId = 0;
+    let lastDeviceNotificationId = 0;
+
+    function updatePilotNotifications(_onPageLoad) {
+        // console.notification(allDroneInfo);
+        
+        $.ajax({
+            url: '/getPilotNotifications/' + OPERATION_ID + '/' + lastPilotNotificationId,
+            method: 'GET',
+            success: function(notifications) {
+                let notificationDiv = $('#pilotNotifications');
+                notifications.forEach(function(notification) {
+                    var date = new Date(notification.timestamp);
+                    var formattedTime = date.toLocaleString();
+                    notificationDiv.append('<div>' + formattedTime + ' - <b>' + notification.sender + ' <i class="fa fa-arrow-right"></i> ' + notification.receiver + '</b>: ' + notification.message + '</div>');
+                    if (notification.id > lastPilotNotificationId) {
+                        lastPilotNotificationId = notification.id;  // update lastPilotNotificationId
+                    }
+                });
+                if(notifications.length > 0) {
+                    if(_onPageLoad) {
+                        hidePilotNotificationsDiv();
+                    }
+                    else {
+                        showPilotNotificationsDiv();
+                        let audioPath = document.querySelector('#audioPathDing').dataset.path;
+                        let audio = new Audio(audioPath); // Create a new Audio object
+                        audio.play(); // Play the audio                  
+                    }
+                    notificationDiv[0].scrollTop = notificationDiv[0].scrollHeight;  // scroll to bottom
+                }
+            }
+        });
+
+        $.ajax({
+            url: '/getDeviceNotifications/' + OPERATION_ID + '/' + lastDeviceNotificationId,
+            method: 'GET',
+            success: function(notifications) {
+                let notificationDiv = $('#pilotNotifications');
+                notifications.forEach(function(notification) {
+                    var date = new Date(notification.timestamp);
+                    var formattedTime = date.toLocaleString();
+                    notificationDiv.append('<div>' + formattedTime + ' - <b>' + notification.sender + ' <i class="fa fa-arrow-right"></i> ' + notification.receiver + '</b>: ' + notification.message + '</div>');
+                    if (notification.id > lastDeviceNotificationId) {
+                        lastDeviceNotificationId = notification.id;  // update lastDeviceNotificationId
+                    }
+                });
+                if(notifications.length > 0) {
+                    if(_onPageLoad) {
+                        hidePilotNotificationsDiv();
+                    }
+                    else {
+                        showPilotNotificationsDiv();
+
+                        // if notification message is "ALERT", play alert sound
+                        if(notifications[0].message === "ALERT") {
+                            console.log("ALERT RECEIVED!");
+                            let audioPath = document.querySelector('#audioPathAlert').dataset.path;
+                            let audio = new Audio(audioPath); // Create a new Audio object
+                            audio.play(); // Play the audio
+
+                            // zoom in on the map to the device location
+                            let deviceName = notifications[0].sender;
+                            let deviceEntry = get_all_device_info_array().find(function(d) { return d.deviceID === deviceName; });
+                            if(deviceEntry && deviceEntry.deviceInfo.currentCoordinate && deviceEntry.deviceInfo.currentCoordinate.length > 0) {
+                                map.flyTo({ center: deviceEntry.deviceInfo.currentCoordinate, zoom: 20 });
+                            }
+                        }
+                        else {
+                            let audioPath = document.querySelector('#audioPathDing').dataset.path;
+                            let audio = new Audio(audioPath); // Create a new Audio object
+                            audio.play(); // Play the audio                                
+                        }
+              
+                    }
+                    notificationDiv[0].scrollTop = notificationDiv[0].scrollHeight;  // scroll to bottom
+                }
+            }
+        });        
+    }
+
+    updatePilotNotifications(true);  // call once to get all notifications
+    setInterval(function() {
+        updatePilotNotifications(false);
+        // console.log("Checking for new pilot notifications...");
+        
+    }, 3000);    // start polling
+
+    function showPilotNotificationsDiv() {
+        $('#pilotNotificationsWrapper').show();
+        // $('#openPilotNotificationsBtn').hide();
+    }
+
+    function togglePilotNotificationsDiv() {
+        $('#pilotNotificationsWrapper').toggle();
+    }
+
+    function hidePilotNotificationsDiv() {
+        $('#pilotNotificationsWrapper').hide();
+        $('#openPilotNotificationsBtn').show();
+    }
+    
+    $('#closePilotNotificationsBtn').click(function() {
+        hidePilotNotificationsDiv();
+    });
+    $('#openPilotNotificationsBtn').click(function() {
+        togglePilotNotificationsDiv();
+    });
+});
+</script>

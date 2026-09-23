@@ -1,17 +1,32 @@
 import asyncio
+import os
 from aiohttp import web
 
 
 # custom libs
 import requestHandler
 
+ALLOWED_IPS=[
+    os.environ.get("WEB_IP"),
+    "127.0.0.1"
+]
 
-app = web.Application()
+# Middleware to check IP address
+@web.middleware
+async def ip_filter_middleware(request, handler):
+    peername = request.transport.get_extra_info('peername')
+    if peername is not None:
+        ip = peername[0]
+        if ip not in ALLOWED_IPS:
+            return web.Response(status=403, text="Forbidden")
+    return await handler(request)
+
+
+app = web.Application(middlewares=[ip_filter_middleware])
 
 # start the http server, called on launch
 def start(_port):
     web.run_app(app, port=int(_port))
-
 
 async def handleConnectToUav(request):
     data = await request.json()
@@ -209,23 +224,29 @@ async def handleShutdown(request):
 #         response_data = {"status": "error", "message": str(e)}
 #     return web.json_response(response_data)
 
+async def handleHealthCheckRequest(request):
+    response_data = {
+        "status": "OK",
+        "message": "Health check successful"
+    }
+    return web.json_response(response_data)
 
 ##########
 # ROUTES #
 ##########
 
-app.router.add_post('/connectToUav', handleConnectToUav)
-app.router.add_post('/disconnectFromUav', handleDisconnectFromUav)
-app.router.add_post('/takeoff', handleTakeoff)
-app.router.add_post('/land', handleLand)
-app.router.add_post('/transition', handleTransition)
-app.router.add_post('/setSpeed', handleSetSpeed)
-app.router.add_post('/returnHome', handleReturnHome)
-app.router.add_post('/kill', handleKill)
-app.router.add_post('/mission', handleMission)
+app.router.add_post('/mav/connectToUav', handleConnectToUav)
+app.router.add_post('/mav/disconnectFromUav', handleDisconnectFromUav)
+app.router.add_post('/mav/takeoff', handleTakeoff)
+app.router.add_post('/mav/land', handleLand)
+app.router.add_post('/mav/transition', handleTransition)
+app.router.add_post('/mav/setSpeed', handleSetSpeed)
+app.router.add_post('/mav/returnHome', handleReturnHome)
+app.router.add_post('/mav/kill', handleKill)
+app.router.add_post('/mav/mission', handleMission)
 
-app.router.add_post('/reboot', handleReboot)
-app.router.add_post('/shutdown', handleShutdown)
+app.router.add_post('/mav/reboot', handleReboot)
+app.router.add_post('/mav/shutdown', handleShutdown)
 
 # app.router.add_post('/pauseMission', handlePauseMission)
 # app.router.add_post('/resumeMission', handleResumeMission)
@@ -233,3 +254,4 @@ app.router.add_post('/shutdown', handleShutdown)
 
 # app.router.add_post('/startTelemetry', handleTelemetryStart)
 # app.router.add_post('/goTo', handleGoTo)
+app.router.add_get("/mav/healthCheck", handleHealthCheckRequest)

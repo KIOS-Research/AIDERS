@@ -1,13 +1,13 @@
 <div id="mavlinkLogsWrapper" 
-    style="display: none; position: absolute; left: 305px; bottom: 5px; padding:5px; width: 420px; max-height: 155px; background-color: #333; color: orange; opacity: 0.9;">
-    <div style="font-weight: bold; font-size: 14px; border-bottom: 1px solid orange; margin-bottom: 5px;">MAVLink Logs</div>
+    style="display: none; position: absolute; left: 305px; bottom: 60px; padding:5px; width: 420px; max-height: 155px; background-color: #333; color: orange; opacity: 0.99; z-index: 1000;">
+    <div style="font-weight: bold; font-size: 14px; border-bottom: 1px solid orange; margin-bottom: 5px;"><i class="fa fa-exclamation-triangle" style="color: orange;"></i> MAVLink Logs</div>
     <a id="closeMavlinkLogsBtn" style="border: 1px solid orange; font-size: 8px; font-weight: bold; position: absolute; right: 0px; top: 0px; margin: 4px 6px; padding: 2px 6px;" action="#" class="btn">X</a>
     <div id="mavlinkLogs" 
         style="max-height: 120px; overflow-y: auto; font-size: 12px;">
     </div>        
 </div>
 
-<a id="openMavlinkLogsBtn" style="display: none; background-color: #333; color: orange; border: 1px solid orange; font-size: 12px; font-weight: bold; position: absolute; left: 300px; bottom: 0px; margin: 5px 5px; padding: 2px 6px;" action="#" class="btn">
+<a id="openMavlinkLogsBtn" style="display: none; background-color: #333; color: orange; border: 1px solid orange; font-size: 12px; font-weight: bold; position: absolute; left: 300px; bottom: 26px; margin: 5px 5px; padding: 2px 6px;" action="#" class="btn">
     <i class="fa fa-exclamation-triangle" style="color: orange;"></i> MAVLink Logs
 </a>
 
@@ -15,9 +15,36 @@
 
 
 <script>
+window.addEventListener('load', function () {
+    
     let lastMavlinkLogId = 0;
+    let numberOfChecksWithNoMavlinkConnected = 0;
 
-    function updateLogs(_onPageLoad) {
+    function updateMavlinkLogs(_onPageLoad) {
+        // console.log(allDroneInfo);
+
+        // Check if a mavlink drone is connected
+        var mavlinkConnected = false;
+        const mavlinkDrones = Array.isArray(allDroneInfo)
+            ? allDroneInfo.filter(obj => obj.droneType === "MAVLINK")
+            : [];
+
+        // console.log("MAVLink drones:", mavlinkDrones);
+        for (let i = 0; i < mavlinkDrones.length; i++) {
+            if(mavlinkDrones[i].isConnected ) {
+                // console.log("Connected MAVLink drone found: " + mavlinkDrones[i].droneID);
+                mavlinkConnected = true;
+                numberOfChecksWithNoMavlinkConnected = 0;  // reset disconnect checks if a connected drone is found
+                break;  // exit loop if at least one connected drone is found
+            }
+        }
+        if (!mavlinkConnected && numberOfChecksWithNoMavlinkConnected > 3) {
+            // console.log("No Connected MAVLink drones found.");
+            return;
+        }
+        // console.log("Updating MAVLink logs... Last log ID: " + lastMavlinkLogId);
+        numberOfChecksWithNoMavlinkConnected++;
+        
         $.ajax({
             url: '/mavlinkGetLogs/' + OPERATION_ID + '/' + lastMavlinkLogId,
             method: 'GET',
@@ -47,14 +74,20 @@
         });
     }
 
-    updateLogs(true);  // call once to get all logs
+    updateMavlinkLogs(true);  // call once to get all logs
     setInterval(function() {
-        updateLogs(false);
+        updateMavlinkLogs(false);
+        // console.log("Checking for new MAVLink logs...");
+        
     }, 3000);    // start polling
 
     function showMavlinkLogsDiv() {
         $('#mavlinkLogsWrapper').show();
-        $('#openMavlinkLogsBtn').hide();
+        // $('#openMavlinkLogsBtn').hide();
+    }
+
+    function toggleMavlinkLogsDiv() {
+        $('#mavlinkLogsWrapper').toggle();
     }
 
     function hideMavlinkLogsDiv() {
@@ -66,6 +99,7 @@
         hideMavlinkLogsDiv();
     });
     $('#openMavlinkLogsBtn').click(function() {
-        showMavlinkLogsDiv();
+        toggleMavlinkLogsDiv();
     });
+});
 </script>

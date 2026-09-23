@@ -1,0 +1,37 @@
+FROM python:3.9
+
+# Install required dependencies including dump1090
+RUN apt-get update && apt-get install -y \
+    netcat-traditional \
+    net-tools \
+    git \
+    build-essential \
+    librtlsdr-dev \
+    libusb-1.0-0-dev \
+    pkg-config \
+    && rm -rf /var/lib/apt/lists/*
+
+# Clone and build dump1090
+RUN git clone https://github.com/antirez/dump1090.git /opt/dump1090 && \
+    cd /opt/dump1090 && \
+    make
+
+# Copy the python dependencies
+COPY adsb/requirements.txt /app/requirements.txt
+# Install Python dependencies
+RUN pip install -r /app/requirements.txt
+
+# copy the entrypoint bash script
+COPY adsb/entrypoint.adsb.sh .
+
+# Copy the python application
+COPY adsb/app /app
+
+# Expose the port for the webserver (if needed in future)
+EXPOSE 8760
+
+# HealthCheck
+# HEALTHCHECK --interval=30s CMD curl --fail http://localhost:${ADSB_API_PORT}/adsb/healthCheck || exit 1
+
+# run the entrypoint bash script
+ENTRYPOINT ["/bin/bash", "./entrypoint.adsb.sh"]

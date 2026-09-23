@@ -39,12 +39,8 @@ Aiders - Drones
     <div class="row pt-5">
         <h3 class="col float-start">Drones</h3>
         <div class="col">
-            <a class="btn btn-primary float-end mx-1 {% if not perms.aiders.edit_permissions %}disabled{% endif %}" href="{% url 'manage_permissions' %}">
-                <i class="fa fa-key "></i>
-                Edit Permissions
-            </a>
-            <a class="btn btn-success float-end mx-1 {% if not perms.aiders.edit_permissions %}disabled{% endif %}" href="{% url 'mavlinkAdd' %}">
-                <i class="far fa-plus "></i>
+            <a class="btn btn-success float-end mx-1 {% if not perms.aiders.manage_operations %}disabled{% endif %}" href="{% url 'mavlinkAdd' %}">
+                <i class="fa-solid fa-plus "></i>
                 Add MAVLink UAV
             </a>                
         </div>
@@ -56,36 +52,40 @@ Aiders - Drones
                 <table id="Table" class="table table-striped">
                 <thead>
                 <tr>
-                    <th> ID</th>
+                    <th class="text-center"> ID</th>
                     <th> Drone Name</th>
                     <th> Model</th>
-                    <th> Comm. Type</th>
+                    <th> Type</th>
+                    <th> Configuration</th>
+                    <th> Conn. Type</th>
                     <th> Camera Model</th>
                     <th> Operation</th>
-                    <th> Connected</th>
-                    <th style="width: 14%"> Actions</th>
+                    <th class="text-center"> Connected</th>
+                    <th style="width: 18%"> Actions</th>
 
                 </tr>
                 </thead>
                 <tbody>
                     {% if drones %}
                         {% for drone in drones %}
-                            <tr>
+                            <tr {% if not drone.is_connected_with_platform == True %} style="background-color: #ffe5e5;"{%else%} style="background-color: #e3fde3;"{% endif %}>
                                 
-                                <td class='align-middle'> {{drone.id}}</td>
+                                <td class='align-middle text-center'> {{drone.id}}</td>
                                 <td class='align-middle'> {{drone.drone_name}}</td>
                                 <td class='align-middle'> {{drone.model}}</td>
                                 <td class='align-middle'> {{drone.type}}</td>
+                                <td class='align-middle'> {{drone.configuration}}</td>
+                                <td class='align-middle'> {{drone.connection_type}}</td>
                                 <td class='align-middle'> {{drone.camera_model}}</td>
                                 <td class='align-middle'> {{drone.operation}}</td>
-                                <td class='align-middle'> {% if drone.is_connected_with_platform == True %}<i class="fa-solid fa-check"></i>{% else %}<i class="fa-solid fa-xmark"></i>{% endif %}</td>
+                                <td class='align-middle text-center'> {% if drone.is_connected_with_platform == True %}<i class="fa-solid fa-check"></i>{% else %}<i class="fa-solid fa-xmark"></i>{% endif %}</td>
                                 <td>
                                     <div>
                                         <form class='m-1' style='float: left;'>
                                             <button type="Button" title="Assign this drone to an operation"  onclick="Edit_drone_operation('{{drone.drone_name}}')" class="btn btn-warning"><i style="color:white;" class="fa-solid fa-gear"></i></button>
                                         </form>
                                     </div>
-                                    <div>
+                                    {% comment %} <div>
                                         <form class='m-1' style='float: left;' method="post" action="{% url 'join_operation' operation_name=drone.operation %}">
                                             {% csrf_token %}
                                             {% get_obj_perms request.user for drone.operation as "permission_list" %}
@@ -95,15 +95,24 @@ Aiders - Drones
                                                     {% endif %}>
                                                 <i class="fa-solid fa-map-location-dot"></i></button>
                                         </form>
-                                    </div>
-
+                                    </div> {% endcomment %}
+                                    {% if perms.aiders.manage_operations and drone.is_connected_with_platform %} 
+                                        <a title="Start live stream capture" 
+                                            style='margin-left: 4px; margin-top: 4px' 
+                                            class="btn btn-danger 
+                                            {% if not perms.aiders.manage_operations %} disabled {% endif %}
+                                            {% if drone.is_live_stream_connected %} disabled {% endif %}"
+                                            href="{% url 'live_stream_capture_start' pk=drone.id %}">
+                                                <i class="fa fa-video "></i>
+                                        </a>
+                                    {% endif %}
                                     {% if drone.type == "MAVLINK" %}
 
                                         {% if drone.is_connected_with_platform == False %}
                                             <a title="Connect to MAVLink UAV" 
                                                 style='margin-left: 4px; margin-top: 4px' 
                                                 class="btn btn-success 
-                                                {% if not perms.aiders.edit_permissions %} disabled {% endif %}
+                                                {% if not perms.aiders.manage_operations %} disabled {% endif %}
                                                 {% if not drone.operation.active or drone.operation == None %} disabled {% endif %}"
                                                 href="{% url 'mavlinkManage' pk=drone.id %}">
                                                     <i class="fa fa-link "></i>
@@ -112,7 +121,7 @@ Aiders - Drones
                                             <a title="Disconnect from MAVLink UAV" 
                                                 style='margin-left: 4px; margin-top: 4px' 
                                                 class="btn btn-danger 
-                                                {% if not perms.aiders.edit_permissions %} disabled {% endif %}"
+                                                {% if not perms.aiders.manage_operations %} disabled {% endif %}"
                                                 href="{% url 'mavlinkManage' pk=drone.id %}">
                                                     <i class="fa fa-link-slash "></i>
                                             </a>
@@ -121,7 +130,7 @@ Aiders - Drones
                                         <a title="Edit MAVLink UAV"
                                             style='margin-left: 4px; margin-top: 4px'
                                             class="btn btn-primary 
-                                            {% if not perms.aiders.edit_permissions %}disabled{% endif %}
+                                            {% if not perms.aiders.manage_operations %}disabled{% endif %}
                                             {% if drone.is_connected_with_platform == True %} disabled {% endif %}"
                                             href="{% url 'mavlinkEdit' pk=drone.id %}">
                                                 <i class="far fa-edit "></i>
@@ -146,14 +155,14 @@ Aiders - Drones
     {% csrf_token %}
 </div>
 
-
+<br />
 
 {% endblock %}
 
 {% block script_block %}
 
     $(document).ready(function(){
-    $('#Table').dataTable();
+    $('#Table').dataTable({"pageLength": 25});
     });
 
 {% endblock %}

@@ -16,7 +16,7 @@ BACKUP_DIR="./backup_${TIMESTAMP}"
 mkdir $BACKUP_DIR
 
 # Backup the database
-docker exec db /usr/bin/mysqldump -u root --password=${SQL_PASSWORD} ${SQL_DATABASE} > $BACKUP_DIR/backup_${TIMESTAMP}.sql
+docker exec db /usr/bin/mysqldump -u root --password=${DB_PASSWORD} ${DB_DATABASE} > $BACKUP_DIR/backup_${TIMESTAMP}.sql
 
 # Copy the media folder
 cp -r web/django_api/aiders/media $BACKUP_DIR/media

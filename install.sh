@@ -14,7 +14,7 @@ current_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # read the version number from the config.ini file
 ini_file="${current_dir}/config.ini"
-version=$(grep 'VERSION' "$ini_file" | awk -F ' = ' '{print $2}')
+version=$(grep 'VERSION' "$ini_file" | awk -F '=' '{print $2}')
 
 
 # declare the colours
@@ -132,6 +132,10 @@ else
     sudo apt-get install -y python3-pil.imagetk
 fi
 
+sudo apt install python3-venv
+sudo apt install python3.12-dev build-essential
+# sudo apt-get install python3-netifaces
+sudo apt-get install python3-dotenv
 
 
 ##########
@@ -149,7 +153,7 @@ if lsmod | grep -qi nvidia; then
     else
         echo "✖ nvidia-container-runtime is not installed."
         # install nvidia-container-runtime
-        ${current_dir}/_scripts/nvidia_container_install.sh
+        ${current_dir}/_scripts/nvidia_container_install_new.sh
         echo "nvidia-container-runtime was installed"
         # enable nvidia runtime in docker-compose
         ${current_dir}/_scripts/nvidia_container_enable.sh
@@ -161,6 +165,7 @@ else
     ${current_dir}/_scripts/nvidia_container_disable.sh
 fi
 
+
 ##############
 # UDEV RULES #
 ##############
@@ -168,6 +173,16 @@ fi
 
 echo "Adding UDEV rules."
 sudo ${current_dir}/_scripts/udev_rules_setup.sh
+
+
+##################
+# FIREWALL RULES #
+##################
+
+
+echo "Adding Firewall rules."
+sudo "${current_dir}"/_scripts/allow_firewall_docker_network.sh
+
 
 #########
 # BUILD #
@@ -181,22 +196,18 @@ if [ -f "$env_file" ]; then
     echo -e "${RED}\nAn envirnment file already exists.\nBy proceeding all the previous data will be erased!${NC}\n"
     read -p "Do you want to proceed? (y/n): " answer
     if [[ "$answer" =~ [Yy] ]]; then
+        rm "$env_file"
+        rm "$current_dir/keycloak/.env"
         echo -e "\nProceeding...\n"
     else
         echo -e "\nInstallation aborted!"
         exit 0
     fi
-else
-    # create dummy .env file
-    touch "$env_file"
-    echo "SQL_DATABASE=temp" >> "$env_file"
-    echo "SQL_USER=installer" >> "$env_file"
-    echo "SQL_PASSWORD=1234" >> "$env_file"
-    echo "NET_IP=127.0.0.1" >> "$env_file"
-    echo "WEB_URL=http://127.0.0.1" >> "$env_file"
-    echo "NGINX_PORT=1111" >> "$env_file"
-    echo "Created a new .env file."
 fi
+
+# create .env files
+python3 "${current_dir}/_scripts/create_env_files.py"
+
 
 # setup offline map
 if [ -z "$(ls -A "$current_dir/geo/osm-data")" ]; then
@@ -207,7 +218,8 @@ else
 fi
 
 # build docker images
-cd $current_dir && docker compose build
+cd $current_dir && docker compose -f docker-compose.yml build
+# TODO: build keycloak
 
 #docker clean-up
 docker image prune -f
@@ -216,9 +228,6 @@ docker image prune -f
 docker rm -f db 2> /dev/null
 current_dir_name=$(basename "$(dirname "${BASH_SOURCE[0]}")")
 docker volume rm ${current_dir_name}_mysql-data 2> /dev/null
-
-# delete dummy .env file
-rm "$env_file"
 
 
 ###########
@@ -231,6 +240,7 @@ ${current_dir}/_scripts/extract_tar_and_merge.sh web/django_api/aiders/static/ai
 ${current_dir}/_scripts/extract_tar_and_merge.sh web/django_api/aiders/static/aiders/cyprus_geolocation/platform_geojson_files_roadnetwork_original.geojson
 # ${current_dir}/_scripts/extract_tar_and_merge.sh cv/app/crowd_loc/weights/model_best.pth
 # ${current_dir}/_scripts/extract_tar_and_merge.sh cv/app/crowd_loc/weights/model_best_half_kernels_05.pth
+${current_dir}/_scripts/extract_tar_and_merge.sh cvn/app/waldo/yolov7-W25_rect_1280_736_newDefaults-bs96-best-topk-200.onnx
 
 
 ############
@@ -249,6 +259,7 @@ Encoding=UTF-8
 Terminal=false
 Type=Application
 Categories=Application;Network;
+StartupWMClass=AidersLauncher
 Icon=$current_dir/_launcher/logo-white.png"
 
 # Write the content to the aiders.desktop file

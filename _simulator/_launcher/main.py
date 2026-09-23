@@ -94,7 +94,9 @@ def getParentDirectory():
 def start_simulator():
     try:
         ros_ip = ip_var.get()
-        num_drones = int(drones_var.get())
+        wsi_port = env_values.get("WSI_PORT", "8773")
+        num_drones_ros = int(drones_ros_var.get())
+        num_drones_ws = int(drones_ws_var.get())
         drone_freq = float(drone_freq_var.get())
         num_devices = int(devices_var.get())
         device_freq = float(device_freq_var.get())
@@ -108,13 +110,15 @@ def start_simulator():
             live_stream = 0
 
 
-        if not (0 <= num_drones <= 50) or not (0.1 <= drone_freq <= 10) or \
+        if not (num_drones_ros <= 50) or not (0.1 <= drone_freq <= 10) or \
            not (0 <= num_devices <= 50) or not (0.1 <= device_freq <= 10):
             raise ValueError("Invalid input range")
 
         with open(f"{getParentDirectory()}/.env", 'w') as env_file:
-            env_file.write(f"ROS_IP={ros_ip}\n")
-            env_file.write(f"NUM_DRONES={num_drones}\n")
+            env_file.write(f"PLATFORM_IP={ros_ip}\n")
+            env_file.write(f"WSI_PORT={wsi_port}\n")
+            env_file.write(f"NUM_DRONES_ROS={num_drones_ros}\n")
+            env_file.write(f"NUM_DRONES_WS={num_drones_ws}\n")
             env_file.write(f"DRONE_FREQ={drone_freq}\n")
             env_file.write(f"DRONE_LIVE_STREAM={live_stream}\n")
             env_file.write(f"NUM_DEVICES={num_devices}\n")
@@ -179,6 +183,8 @@ def clear_log_file():
 env_values = read_env_values()
 freq_values_list = ["0.1", "0.2", "0.3", "0.5", "1", "2", "3", "5", "8", "10"]
 
+sim_api_url = "http://127.0.0.1:8991"
+
 colours = {
     'green': '#99DD99',
     'red': '#FF9999',
@@ -193,6 +199,8 @@ app.iconphoto(False, icon)
 
 iconStart = tk.PhotoImage(file=f"{getCurrentDirectory()}/icon-start.png")
 iconStop = tk.PhotoImage(file=f"{getCurrentDirectory()}/icon-stop.png")
+iconSend = tk.PhotoImage(file=f"{getCurrentDirectory()}/icon-send.png")
+iconCrisis = tk.PhotoImage(file=f"{getCurrentDirectory()}/icon-crisis.png")
 
 # header image
 top_frame = ttk.Frame(app)
@@ -208,7 +216,7 @@ network_frame.grid(row=1, column=0, padx=10, pady=5, sticky="ew")
 local_ips = get_local_ips()
 ip_label = tk.Label(network_frame, text="Net IP Address:")
 ip_label.grid(row=0, column=0, sticky="ew")
-ip_var = tk.StringVar(value=env_values.get("ROS_IP", "127.0.0.1"))
+ip_var = tk.StringVar(value=env_values.get("PLATFORM_IP", "127.0.0.1"))
 ip_entry = ttk.Combobox(network_frame, textvariable=ip_var, values=local_ips)
 ip_entry.grid(row=0, column=1, padx=5, pady=5)
 
@@ -216,24 +224,30 @@ ip_entry.grid(row=0, column=1, padx=5, pady=5)
 drones_frame = ttk.LabelFrame(app, text="Drones")
 drones_frame.grid(row=2, column=0, padx=10, pady=5, sticky="ew")
 
-drones_label = tk.Label(drones_frame, text="Number of Drones:")
-drones_label.grid(row=0, column=0, sticky="w")
-drones_var = tk.StringVar(value=env_values.get("NUM_DRONES", "0"))
-drones_entry = ttk.Combobox(drones_frame, textvariable=drones_var, values=list(map(str, range(51))))
+drones_ros_label = tk.Label(drones_frame, text="ROS Drones:")
+drones_ros_label.grid(row=0, column=0, sticky="w")
+drones_ros_var = tk.StringVar(value=env_values.get("NUM_DRONES_ROS", "0"))
+drones_entry = ttk.Combobox(drones_frame, textvariable=drones_ros_var, values=list(map(str, range(51))))
 drones_entry.grid(row=0, column=1, padx=5, pady=2)
-drones_entry.bind("<<ComboboxSelected>>", lambda event: update_field_visibility(drones_var, drone_freq_label, drone_freq_entry))
+# drones_entry.bind("<<ComboboxSelected>>", lambda event: update_field_visibility(drones_ros_var, drone_freq_label, drone_freq_entry))
+
+drones_ws_label = tk.Label(drones_frame, text="Websocket Drones:")
+drones_ws_label.grid(row=1, column=0, sticky="w")
+drones_ws_var = tk.StringVar(value=env_values.get("NUM_DRONES_WS", "0"))
+drones_entry = ttk.Combobox(drones_frame, textvariable=drones_ws_var, values=list(map(str, range(51))))
+drones_entry.grid(row=1, column=1, padx=5, pady=2)
 
 drone_freq_label = tk.Label(drones_frame, text="Transmit Freq (Hz):")
-drone_freq_label.grid(row=1, column=0, sticky="w")
+drone_freq_label.grid(row=2, column=0, sticky="w")
 drone_freq_var = tk.StringVar(value=env_values.get("DRONE_FREQ", "0.1"))
 drone_freq_entry = ttk.Combobox(drones_frame, textvariable=drone_freq_var, values=freq_values_list)
-drone_freq_entry.grid(row=1, column=1, padx=5, pady=2)
-update_field_visibility(drones_var, drone_freq_label, drone_freq_entry)
+drone_freq_entry.grid(row=2, column=1, padx=5, pady=2)
+# update_field_visibility(drones_ros_var, drone_freq_label, drone_freq_entry)
 
 liveStreamVar = tk.BooleanVar()
 liveStreamVar.set(True)
 liveStreamCheckbox = tk.Checkbutton(drones_frame, text="Live Stream", variable=liveStreamVar)
-liveStreamCheckbox.grid(row=2, column=1, padx=0, pady=2, stick='w')
+liveStreamCheckbox.grid(row=3, column=1, padx=0, pady=2, stick='w')
 
 # Devices Fieldset
 devices_frame = ttk.LabelFrame(app, text="Devices")
@@ -278,10 +292,127 @@ lora_freq_entry = ttk.Combobox(lora_frame, textvariable=lora_freq_var, values=fr
 lora_freq_entry.grid(row=2, column=1, padx=5, pady=2)
 update_field_visibility(lora_masters_var, lora_freq_label, lora_freq_entry)
 
+
+def send_param_change_request():
+    droneLabel = param_change_drone_var.get()
+    droneIndex = DRONE_MAP.get(droneLabel, "")    
+    parameter = param_change_parameter_var.get()
+    value = int(param_change_value_var.get())
+    url = f"{sim_api_url}/setDroneParameter"
+    data = {
+        "droneIndex": droneIndex,
+        "parameter": parameter,
+        "value": value
+    }
+    headers = {'Content-Type': 'application/json'}
+
+    try:
+        response = requests.post(url, data=json.dumps(data), headers=headers)
+        if response.status_code == 200:
+            write_to_infobox("\nParam Change request successful.")
+        else:
+            write_to_infobox(f"\nParam Change failed: {response.status_code}\n")
+    except Exception as e:
+        write_to_infobox(f"\nParam Change error: {e}\n")
+
+DRONE_MAP = {
+    "SIM_Alpha": 1,
+    "SIM_Bravo": 2,
+    "SIM_Charlie": 3,
+    "SIM_Delta": 4
+}
+
+# Param Change request section
+param_change_frame = ttk.LabelFrame(app, text="Change Drone Parameter")
+param_change_frame.grid(row=5, column=0, padx=10, pady=5, sticky="ew")
+
+param_change_drone_var = tk.StringVar()
+param_change_drone_entry = ttk.Combobox(param_change_frame, textvariable=param_change_drone_var, values=list(DRONE_MAP.keys()), width=9)
+param_change_drone_entry.grid(row=0, column=0, padx=2, pady=2)
+param_change_drone_entry.current(0)
+
+param_change_parameter_var = tk.StringVar()
+param_change_parameter_entry = ttk.Combobox(param_change_frame, textvariable=param_change_parameter_var, values=["altitude", "heading", "gimbalAngle", "batteryPercentage", "demoAltitude", "demoHeading", "demoGimbalAngle"], width=16)
+param_change_parameter_entry.grid(row=0, column=1, padx=2, pady=2)
+param_change_parameter_entry.current(0)
+
+param_change_value_var = tk.StringVar()
+param_change_value_entry = tk.Entry(param_change_frame, textvariable=param_change_value_var, width=4)
+param_change_value_entry.grid(row=0, column=3, padx=2, pady=2)
+
+param_change_button = tk.Button(param_change_frame, image=iconSend, bg="lightgreen", command=send_param_change_request)
+param_change_button.grid(row=0, column=4, padx=2, pady=5)
+
+
+def send_crisis_generation_request():
+    incident_id = crisis_incident_id_var.get()
+    incident_type_label = crisis_incident_type_var.get()
+    incident_type = CRISIS_TYPE_MAP.get(incident_type_label, "")
+    severity_level_label = crisis_incident_severity_var.get()
+    severity_level = CRISIS_SEVERITY_MAP.get(severity_level_label, "")
+
+    url = f"{sim_api_url}/generateCrisisIncident"
+    data = {
+        "id": incident_id,
+        "type": incident_type,
+        "severity": severity_level
+    }
+
+    headers = {'Content-Type': 'application/json'}
+    try:
+        response = requests.post(url, data=json.dumps(data), headers=headers)
+        if response.status_code == 200:
+            write_to_infobox("\nCrisis Generation request successful.")
+        else:
+            write_to_infobox(f"\nCrisis Generation failed: {response.status_code}\n")
+    except Exception as e:
+        write_to_infobox(f"\nCrisis Generation error: {e}\n")
+
+    # Increment the crisis_incident_id_var value
+    try:
+        current_id = int(crisis_incident_id_var.get())
+        crisis_incident_id_var.set(str(current_id + 1))
+    except ValueError:
+        pass  # Ignore if not an integer
+    
+
+CRISIS_TYPE_MAP = {
+    "Suspicious Activity": "SuspiciousActivity",
+    "Human Trafficking": "Human_Trafficking",
+    "Smuggling": "Smuggling",
+    "Natural Disaster": "Natural_Disaster",
+    "Terrorist Attack": "Terrorist_Attack"
+}
+
+CRISIS_SEVERITY_MAP = {
+    "High": "High",
+    "Medium": "Medium",
+    "Low": "Low"
+}
+
+# Crisis Generation request section
+crisis_generation_frame = ttk.LabelFrame(app, text="Generate Crisis Incident")
+crisis_generation_frame.grid(row=6, column=0, padx=10, pady=5, sticky="ew")
+crisis_incident_id_var = tk.StringVar(value="123")
+crisis_incident_id_entry = tk.Entry(crisis_generation_frame, textvariable=crisis_incident_id_var, width=6)
+crisis_incident_id_entry.grid(row=0, column=0, padx=2, pady=2)
+crisis_incident_type_var = tk.StringVar(value=list(CRISIS_TYPE_MAP.keys())[0])
+crisis_incident_type_entry = ttk.Combobox(crisis_generation_frame, textvariable=crisis_incident_type_var, values=list(CRISIS_TYPE_MAP.keys()), width=16)
+crisis_incident_type_entry.grid(row=0, column=1, padx=2, pady=2)
+# crisis_incident_action_var = tk.StringVar(value="Create")
+# crisis_incident_action_entry = ttk.Combobox(crisis_generation_frame, textvariable=crisis_incident_action_var, values=["Create", "Update", "Alert", "Resolve"], width=7)
+# crisis_incident_action_entry.grid(row=0, column=2, padx=2, pady=2)
+crisis_incident_severity_var = tk.StringVar(value=list(CRISIS_SEVERITY_MAP.keys())[0])
+crisis_incident_severity_entry = ttk.Combobox(crisis_generation_frame, textvariable=crisis_incident_severity_var, values=list(CRISIS_SEVERITY_MAP.keys()), width=7)
+crisis_incident_severity_entry.grid(row=0, column=2, padx=2, pady=2)
+crisis_generation_button = tk.Button(crisis_generation_frame, image=iconCrisis, bg="lightgreen", command=send_crisis_generation_request)
+crisis_generation_button.grid(row=0, column=3, padx=3, pady=5)
+
+
 # infobox
 infobox = tk.Text(app, wrap=tk.WORD, width=54, height=9)
 infobox.configure(font=("Monospace", 8), fg="orange", bg="black")
-infobox.grid(row=5, column=0, pady=2)
+infobox.grid(row=7, column=0, pady=2)
 clear_log_file()
 update_infobox_thread = threading.Thread(target=update_infobox, args=())
 update_infobox_thread.daemon = True  # The thread will be terminated when the program exits
@@ -289,7 +420,7 @@ update_infobox_thread.start()
 
 # buttons
 buttons_frame = ttk.Frame(app)
-buttons_frame.grid(row=6, column=0, pady=5)
+buttons_frame.grid(row=8, column=0, pady=5)
 
 stop_button = tk.Button(buttons_frame, image=iconStop, command=stop_simulator)
 stop_button.grid(row=0, column=0, padx=4)

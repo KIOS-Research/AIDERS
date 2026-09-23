@@ -10,7 +10,7 @@
             if (canProceed) {
                 let params = `scrollbars=no,resizable=no,status=no,location=no,toolbar=no,menubar=no,
                                 width=1000,height=700,left=100,top=100`;
-                let win = open('http://' + document.location.hostname + ':4000', 'test', params);
+                let win = open('http://' + document.location.hostname + ':'+ NGINX_PORT + "/odm/", 'test', params);
                 // var timer = setInterval(function() {
                 //     if(win.closed) {
                 //         clearInterval(timer);

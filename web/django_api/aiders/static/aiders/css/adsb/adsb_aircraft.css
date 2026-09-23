@@ -1,0 +1,167 @@
+/* ADS-B Aircraft Tracking Styles */
+
+.aircraft-popup {
+    background: rgba(0, 0, 0, 0.9);
+    color: white;
+    padding: 15px;
+    border-radius: 8px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 12px;
+    max-width: 300px;
+    line-height: 1.4;
+}
+
+.aircraft-popup h3 {
+    margin: 0 0 10px 0;
+    color: #00BFFF;
+    font-size: 14px;
+    border-bottom: 1px solid #333;
+    padding-bottom: 5px;
+}
+
+.aircraft-popup div {
+    margin: 4px 0;
+    display: flex;
+    justify-content: space-between;
+}
+
+.aircraft-popup strong {
+    color: #00BFFF;
+    margin-right: 8px;
+    min-width: 100px;
+}
+
+/* ADS-B Control Panel Styles */
+.adsb-controls {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 4px;
+    padding: 8px 12px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.adsb-toggle-btn {
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 6px 12px;
+    cursor: pointer;
+    font-size: 11px;
+    transition: background-color 0.2s;
+}
+
+.adsb-toggle-btn:hover {
+    background: #0056b3;
+}
+
+.adsb-toggle-btn.active {
+    background: #28a745;
+}
+
+.adsb-toggle-btn.active:hover {
+    background: #1e7e34;
+}
+
+.adsb-status {
+    font-size: 11px;
+    color: #666;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.adsb-status.active {
+    color: #28a745;
+}
+
+.adsb-status .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #dc3545;
+    animation: pulse 2s infinite;
+}
+
+.adsb-status.active .status-dot {
+    background: #28a745;
+}
+
+@keyframes pulse {
+    0% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+.aircraft-count {
+    background: rgba(0, 123, 255, 0.1);
+    border: 1px solid #007bff;
+    border-radius: 12px;
+    padding: 2px 8px;
+    font-size: 10px;
+    color: #007bff;
+    font-weight: bold;
+}
+
+/* Map layer toggle styles */
+.map-layer-toggle .adsb-layer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    border-bottom: 1px solid #e0e0e0;
+    background: #f8f9fa;
+    transition: background-color 0.2s;
+}
+
+.map-layer-toggle .adsb-layer:hover {
+    background: #e9ecef;
+}
+
+.map-layer-toggle .adsb-layer label {
+    color: #495057;
+    font-size: 13px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.map-layer-toggle .adsb-layer input[type="checkbox"] {
+    transform: scale(1.1);
+}
+
+.adsb-icon {
+    width: 16px;
+    height: 16px;
+    fill: #007bff;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+    .aircraft-popup {
+        max-width: 250px;
+        font-size: 11px;
+        padding: 12px;
+    }
+    
+    .adsb-controls {
+        padding: 6px 8px;
+        font-size: 11px;
+        gap: 8px;
+    }
+    
+    .adsb-toggle-btn {
+        padding: 4px 8px;
+        font-size: 10px;
+    }
+}

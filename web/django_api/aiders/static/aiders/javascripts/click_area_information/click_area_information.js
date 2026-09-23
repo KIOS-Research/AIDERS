@@ -2,19 +2,19 @@
     let isTogglePressed = false;
 
     let clickMarker = new maplibregl.Marker({
-        color: '#314ccd',
+        color: "#314ccd",
     });
 
     let highestElMarker = new maplibregl.Marker({
-        color: '#f54242',
+        color: "#f54242",
     });
 
-    let circleLayerID = 'circleLayer';
-    let circleSourceID = 'circleSource';
-    let clickMarkerID = 'clickMarker';
-    let highestElMarkerID = 'highestElMarker';
-    map.on('click', function (e) {
-        let isLocked = $('#lockUnlockIcn').hasClass('fa-lock');
+    let circleLayerID = "circleLayer";
+    let circleSourceID = "circleSource";
+    let clickMarkerID = "clickMarker";
+    let highestElMarkerID = "highestElMarker";
+    map.on("click", function (e) {
+        let isLocked = $("#lockUnlockIcn").hasClass("fa-lock");
         if (isLocked) return; //User wants the yellow circle layer to stay "locked" on the map. Nothing else to do
 
         if (map.getLayer(circleLayerID)) {
@@ -31,8 +31,8 @@
             return;
         }
 
-        let bldsDisplay = document.getElementById('blds');
-        let rdsDisplay = document.getElementById('rds');
+        let bldsDisplay = document.getElementById("blds");
+        let rdsDisplay = document.getElementById("rds");
 
         let radiusInMeters = 1000;
 
@@ -92,21 +92,21 @@
      * Toggles the visibility of the information box and the yellow big circle that appears
      * */
     function toggleAreaInfoBoxAndLayer(toggleButtonID) {
-        let clickInfoBox = $('#clickInfoBox');
+        let clickInfoBox = $("#clickInfoBox");
 
         clickInfoBox.toggle();
-        isTogglePressed = $('#' + toggleButtonID).is(':checked');
-        postElementId('Area Info', isTogglePressed);
+        isTogglePressed = $("#" + toggleButtonID).is(":checked");
+        postElementId("Area Info", isTogglePressed);
         if (isTogglePressed) {
             clickInfoBox.draggable();
             highestElMarker._element.hidden = false;
             clickMarker._element.hidden = false;
             if (map.getLayer(circleLayerID)) {
-                map.setLayoutProperty(circleLayerID, 'visibility', 'visible');
+                map.setLayoutProperty(circleLayerID, "visibility", "visible");
             }
         } else if (!isClickInfoToggleButtonPressed) {
             if (map.getLayer(circleLayerID)) {
-                map.setLayoutProperty(circleLayerID, 'visibility', 'none');
+                map.setLayoutProperty(circleLayerID, "visibility", "none");
             }
             // highestElMarker.remove();
             // clickMarker.remove();
@@ -126,12 +126,12 @@
         // console.log("FIND I: ", $(this).find('i'))
         // $(this).find('i').addClass('fa-unlock');
         //         console.log("FIND I: ", $(this).find('i'))
-        let locked = iconElem.classList.contains('fa-lock');
-        let unlocked = iconElem.classList.contains('fa-unlock');
+        let locked = iconElem.classList.contains("fa-lock");
+        let unlocked = iconElem.classList.contains("fa-unlock");
         if (locked) {
-            $(iconElem).removeClass('fa-lock').addClass(' fa-unlock');
+            $(iconElem).removeClass("fa-lock").addClass(" fa-unlock");
         } else {
-            $(iconElem).removeClass('fa-unlock').addClass(' fa-lock');
+            $(iconElem).removeClass("fa-unlock").addClass(" fa-lock");
         }
         // $(".fa-lock").click(function(){
         //       // alert("Icon clicked");
@@ -146,7 +146,7 @@
         if (layerExists(layer_id) && isLayerVisible(layer_id)) {
             element.textContent = textContent;
         } else {
-            element.textContent = 'Load Layer First';
+            element.textContent = "Load Layer First";
         }
     }
     function getDistPerPixel() {
@@ -167,38 +167,29 @@
 
         const middleLeft = turf.midpoint(topLeft, bottomLeft);
         const middleRight = turf.midpoint(topRight, bottomRight);
-        const distance = turf.distance(middleLeft, middleRight, { units: 'kilometers' });
+        const distance = turf.distance(middleLeft, middleRight, {
+            units: "kilometers",
+        });
         return distance;
     }
     function presentAreaInformation(radius, lng, lat, highestElMarkerID) {
-        let eleDisplay = document.getElementById('ele');
-        let radDisplay = document.getElementById('rad');
-        let lngDisplay = document.getElementById('lng');
-        let latDisplay = document.getElementById('lat');
+        let eleDisplay = document.getElementById("ele");
+        let radDisplay = document.getElementById("rad");
+        let lngDisplay = document.getElementById("lng");
+        let latDisplay = document.getElementById("lat");
         1;
 
-        if (typeof mapboxgl === 'undefined') {
-            lngDisplay.textContent = lng.toFixed(6) + ' \u00B0';
-            latDisplay.textContent = lat.toFixed(6) + ' \u00B0';
-            eleDisplay.textContent = 'Not Available';
+        if (typeof mapboxgl === "undefined") {
+            lngDisplay.textContent = lng.toFixed(6) + " \u00B0";
+            latDisplay.textContent = lat.toFixed(6) + " \u00B0";
+            eleDisplay.textContent = "Not Available";
             radDisplay.textContent = ` ${radius} m`;
         } else {
             if (mapboxgl.accessToken !== null) {
                 // Make the API request
                 // add radius to the request
-                let query =
-                    'https://api.mapbox.com/v4/mapbox.mapbox-terrain-v2/tilequery/' +
-                    lng +
-                    ',' +
-                    lat +
-                    '.json?layers=contour&limit=50&radius=' +
-                    radius +
-                    '&access_token=' +
-                    mapboxgl.accessToken;
-                $.ajax({
-                    method: 'GET',
-                    url: query,
-                }).done(function (data) {
+                let url = `https://api.mapbox.com/v4/mapbox.mapbox-terrain-v2/tilequery/${lng},${lat}.json?layers=contour&limit=50&radius=${radius}&access_token=${mapboxgl.accessToken}`;
+                getMapboxInformationOnAreaByLongitudeAndLatitude(url).then(function (_response) {
                     // Get all the returned features in radius
                     let allFeatures = data.features;
                     //console.log(allFeatures);
@@ -214,38 +205,47 @@
                     let highestElevation = max;
                     // Display the largest elevation value
 
-                    let maxll = new maplibregl.LngLat(allFeatures[imax].geometry.coordinates[0], allFeatures[imax].geometry.coordinates[1]);
+                    let maxll = new maplibregl.LngLat(
+                        allFeatures[imax].geometry.coordinates[0],
+                        allFeatures[imax].geometry.coordinates[1],
+                    );
                     // markerHighest.setLngLat(maxll).addTo(map);
 
                     // Display the longitude and latitude values
-                    lngDisplay.textContent = lng.toFixed(6) + ' \u00B0';
-                    latDisplay.textContent = lat.toFixed(6) + ' \u00B0';
-                    eleDisplay.textContent = highestElevation + ' m';
+                    lngDisplay.textContent = lng.toFixed(6) + " \u00B0";
+                    latDisplay.textContent = lat.toFixed(6) + " \u00B0";
+                    eleDisplay.textContent = highestElevation + " m";
                     radDisplay.textContent = ` ${radius} m`;
 
-                    highestElMarker = create_marker(`${highestElevation}m`, maxll, '#f54242', highestElMarkerID, highestElMarker);
+                    highestElMarker = create_marker(
+                        `${highestElevation}m`,
+                        maxll,
+                        "#f54242",
+                        highestElMarkerID,
+                        highestElMarker,
+                    );
                 });
             }
         }
     }
 
     function create_marker(text, pos, col, marker_id) {
-        let el = document.createElement('div');
+        let el = document.createElement("div");
         el.id = marker_id;
-        el.className = 'marker';
-        let color = 'background-color:' + col + ';';
-        let test = '<span style=' + color + '><b>';
-        el.innerHTML = test + text + '</b></span>';
+        el.className = "marker";
+        let color = "background-color:" + col + ";";
+        let test = "<span style=" + color + "><b>";
+        el.innerHTML = test + text + "</b></span>";
         let tempMarker = new maplibregl.Marker(el).setLngLat(pos).addTo(map);
         // console.log(tempMarker)
 
         return tempMarker;
     }
+    // NOT USED
+    // function add_popup_on_marker(pos, htmlString, fontSizePX) {
+    //     const popup = new maplibregl.Popup().setLngLat(pos).setHTML(htmlString).addTo(map);
 
-    function add_popup_on_marker(pos, htmlString, fontSizePX) {
-        const popup = new maplibregl.Popup().setLngLat(pos).setHTML(htmlString).addTo(map);
-
-        const popupElem = popup.getElement();
-        popupElem.style.fontSize = fontSizePX + 'px';
-    }
+    //     const popupElem = popup.getElement();
+    //     popupElem.style.fontSize = fontSizePX + "px";
+    // }
 }

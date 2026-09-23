@@ -42,9 +42,10 @@ Aiders - Permissions
                 <tr>
                     <th> ID</th>
                     <th> User</th>
-                    <th> Edit Permittions</th>
+                    <th> Edit Permissions</th>
                     <th> Create Operations</th>
                     <th> Join Operations</th>
+                    <th> Execute Commands</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -58,8 +59,14 @@ Aiders - Permissions
                         <td class='align-middle'><input type="checkbox" name="permission_edit_permissions" {% if user.permission_edit_permissions %} checked {% endif %} value="{{user.id}}"></td>
                         <td class='align-middle'><input type="checkbox" name="permission_create_operations" {% if user.permission_create_operations %} checked {% endif %} value="{{user.id}}"></td>
                         <td>
-                            <button id='{{user.username}}' class="permissionBtn btn btn-warning" type="button" onclick='edit_user_operation(this.id,"{% for group in user.groups.all %}{% if 'operation join' in group.name %}{{group.name}}{% endif %}{% endfor %}")'><span><i style="color:white;" class="fas fa-edit"></i></span></button>
-                        </td> 
+                            <button id='{{user.username}}' class="permissionBtn btn btn-warning" type="button" onclick='edit_user_operation(this.id,"{% for group in user.groups.all %}{% if 'operation join' in group.name %}{{group.name}}{% endif %}{% endfor %}")'>
+                                <span><i style="color:white;" class="fas fa-edit"></i></span>
+                            </button>
+                        </td>
+                        <td class='align-middle'>
+                            <input type="checkbox" name="execute_commands" {% if user.execute_commands %} checked {% endif %} value="{{user.id}}">
+                            </input>
+                        </td>
                     </tr>
                     {% endfor %}
                     {% endif %}

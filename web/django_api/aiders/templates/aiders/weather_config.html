@@ -1,0 +1,209 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Weather Configuration - AIDERS{% endblock %}
+
+{% block head_block %}
+<link href="{% static 'aiders/css/ui_platform/ui_platform.css' %}" rel="stylesheet" type="text/css" />
+{% endblock %}
+
+{% block body_block %}
+<div class="container-fluid mt-5 pt-4">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="mb-4">
+                <i class="fas fa-cloud-sun me-2"></i>
+                Weather API Configuration
+            </h2>
+            
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">WeatherAPI.com API Settings</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.api_key.id_for_label }}" class="form-label">
+                                <i class="fas fa-key me-1"></i>
+                                API Key
+                            </label>
+                            {{ form.api_key }}
+                            {% if form.api_key.help_text %}
+                                <div class="form-text">{{ form.api_key.help_text }}</div>
+                            {% endif %}
+                            {% for error in form.api_key.errors %}
+                                <div class="text-danger">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.cities.id_for_label }}" class="form-label">
+                                <i class="fas fa-map-marker-alt me-1"></i>
+                                Cities
+                            </label>
+                            {{ form.cities }}
+                            {% if form.cities.help_text %}
+                                <div class="form-text">{{ form.cities.help_text }}</div>
+                            {% endif %}
+                            {% for error in form.cities.errors %}
+                                <div class="text-danger">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="{{ form.update_interval.id_for_label }}" class="form-label">
+                                        <i class="fas fa-clock me-1"></i>
+                                        Update Interval (minutes)
+                                    </label>
+                                    {{ form.update_interval }}
+                                    {% if form.update_interval.help_text %}
+                                        <div class="form-text">{{ form.update_interval.help_text }}</div>
+                                    {% endif %}
+                                    {% for error in form.update_interval.errors %}
+                                        <div class="text-danger">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <div class="form-check mt-4">
+                                        {{ form.is_active }}
+                                        <label for="{{ form.is_active.id_for_label }}" class="form-check-label">
+                                            Enable automatic updates
+                                        </label>
+                                    </div>
+                                    {% if form.is_active.help_text %}
+                                        <div class="form-text">{{ form.is_active.help_text }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-1"></i>
+                                Save Configuration
+                            </button>
+                            <a href="{% url 'weather_data' %}" class="btn btn-outline-primary">
+                                <i class="fas fa-chart-line me-1"></i>
+                                View Weather Data
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            {% if config %}
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Manual Update</h5>
+                </div>
+                <div class="card-body">
+                    <p>Click the button below to manually fetch weather data now.</p>
+                    <form method="post" action="{% url 'manual_weather_update' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-sync me-1"></i>
+                            Update Weather Data Now
+                        </button>
+                    </form>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Current Configuration</h5>
+                </div>
+                <div class="card-body">
+                    {% if config %}
+                        <div class="mb-2">
+                            <strong>Status:</strong>
+                            {% if config.is_active %}
+                                <span class="badge bg-success">Active</span>
+                            {% else %}
+                                <span class="badge bg-warning">Inactive</span>
+                            {% endif %}
+                        </div>
+                        <div class="mb-2">
+                            <strong>Cities:</strong> {{ config.get_cities_list|length }}
+                        </div>
+                        <div class="mb-2">
+                            <strong>Update Interval:</strong> {{ config.update_interval }} minutes
+                        </div>
+                        <div class="mb-2">
+                            <strong>Last Updated:</strong> {{ config.updated_at|date:"M d, Y H:i" }}
+                        </div>
+                        
+                        {% if config.get_cities_list %}
+                        <div class="mt-3">
+                            <strong>Monitored Cities:</strong>
+                            <ul class="list-unstyled mt-1">
+                                {% for city in config.get_cities_list %}
+                                    <li><i class="fas fa-map-pin me-1"></i>{{ city }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        {% endif %}
+                    {% else %}
+                        <p class="text-muted">No configuration set up yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            {% if recent_weather %}
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Recent Weather Data</h5>
+                </div>
+                <div class="card-body">
+                    {% for weather in recent_weather %}
+                        <div class="border-bottom pb-2 mb-2">
+                            <div class="d-flex justify-content-between">
+                                <strong>{{ weather.city }}</strong>
+                                <small class="text-muted">{{ weather.timestamp|date:"H:i" }}</small>
+                            </div>
+                            <div class="small">
+                                {{ weather.temperature }}°C - {{ weather.weather_condition }}
+                            </div>
+                        </div>
+                    {% endfor %}
+                    <div class="text-center mt-2">
+                        <a href="{% url 'weather_data' %}" class="btn btn-sm btn-outline-primary">
+                            View All Data
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">API Information</h5>
+                </div>
+                <div class="card-body">
+                    <p class="small">
+                        This integration uses the WeatherAPI.com API to fetch current weather conditions.
+                        You need a free API key from 
+                        <a href="https://www.weatherapi.com" target="_blank">weatherapi.com</a>.
+                    </p>
+                    <p class="small">
+                        Free accounts have a limit of 1 million calls per month.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

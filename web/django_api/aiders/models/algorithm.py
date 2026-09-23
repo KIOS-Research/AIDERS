@@ -12,12 +12,14 @@ class Algorithm(models.Model):
     CREATE_3D_OBJECT_ALGORITHM = "CREATE_3D_OBJECT_ALGORITHM"
     CREATE_ORTHOPHOTO_ALGORITHM = "CREATE_ORTHOPHOTO_ALGORITHM"
     CALCULATE_SEARCH_AND_RESCUE_MISSION_PATHS_ALGORITHM = "CALCULATE_SEARCH_AND_RESCUE_MISSION_PATHS_ALGORITHM"
+    KMZ_DATA_ALGORITHM = "KMZ_DATA_ALGORITHM"
 
     ALGORITHM_NAMES = [
         (FIRE_PROPAGATION_ALGORITHM, FIRE_PROPAGATION_ALGORITHM),
         (CREATE_3D_OBJECT_ALGORITHM, CREATE_3D_OBJECT_ALGORITHM),
         (CREATE_ORTHOPHOTO_ALGORITHM, CREATE_ORTHOPHOTO_ALGORITHM),
         (CALCULATE_SEARCH_AND_RESCUE_MISSION_PATHS_ALGORITHM, CALCULATE_SEARCH_AND_RESCUE_MISSION_PATHS_ALGORITHM),
+        (KMZ_DATA_ALGORITHM, KMZ_DATA_ALGORITHM),
     ]
 
     time = models.DateTimeField(auto_now_add=True)
@@ -27,6 +29,7 @@ class Algorithm(models.Model):
     output = models.JSONField(blank=True, null=True)
     canBeLoadedOnMap = models.BooleanField(default=False)
     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
+    title = models.CharField(max_length=80, blank=True, null=True)
 
     def getAllAlgorithmOfOperationBetweenTwoTimes(operationName, startTime, endTime):
         return Algorithm.objects.filter(

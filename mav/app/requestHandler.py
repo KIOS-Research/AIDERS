@@ -52,6 +52,9 @@ async def publishTakeoffCommand(_name, _alt):
 async def publishLandCommand(_name):
     uav = uavs[_name]
     await uav.land()
+    # await uav.wait_until_landed()
+    # await uav.disarm()
+    
 
 
 async def publishMissionCommand(_name, _missionPoints, _speed):
@@ -92,7 +95,9 @@ async def publishTransitionCommand(_name, _mode):
 async def publishReturnCommand(_name):
     uav = uavs[_name]
     await uav.returnHome()
-
+    # await uav.wait_until_landed()
+    # await uav.disarm()
+    
 
 async def publishArmCommand(_name):
     uav = uavs[_name]

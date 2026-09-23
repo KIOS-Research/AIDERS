@@ -10,12 +10,15 @@ type Drone struct {
 	DroneName                 string    `db:"drone_name" json:"drone_name"`
 	IP                        *string   `db:"ip" json:"ip"`
 	Type                      string    `db:"type" json:"type"`
+	Configuration             string    `db:"configuration" json:"configuration"`
+	ConnectionType            string    `db:"connection_type" json:"connection_type"`
 	Model                     string    `db:"model" json:"model"`
 	Port                      *string   `db:"port" json:"port"`
 	LiveStreamUrl             *string   `db:"live_stream_url" json:"live_stream_url"`
 	CameraModel               string    `db:"camera_model" json:"camera_model"`
 	OperationID               *int      `db:"operation_id" json:"operation_id"`
 	IsConnectedWithPlatform   bool      `db:"is_connected_with_platform" json:"is_connected_with_platform"`
+	IsLiveStreamConnected     *bool     `db:"is_live_stream_connected" json:"is_live_stream_conneted"`
 	MissionID                 *int      `db:"mission_id" json:"mission_id"`
 	BallisticAvailable        bool      `db:"ballistic_available" json:"ballistic_available"`
 	BuildMapActivated         bool      `db:"build_map_activated" json:"build_map_activated"`
@@ -28,8 +31,6 @@ type Drone struct {
 	RespondingToCollaboration *bool     `db:"responding_to_collaboration" json:"responding_to_collaboration"`
 	Time                      string    `db:"time" json:"time"`
 	Telemetry                 Telemetry `db:"" json:"telemetry"`
-	VideoFrameURL             *string   `db:"video_frame_url" json:"video_frame_url"`
-	DetectedFrameUrl          *string   `db:"detected_frame_url" json:"detected_frame_url"`
 	Detection                 Detection `db:"" json:"detection"`
 	DetectionSessionId        *int      `db:"detection_session_id" json:"detection_session_id"`
 	DetectionActive           *bool     `db:"detection_active" json:"detection_active"`
@@ -86,82 +87,68 @@ func GetDrones(_operationId int) []Drone {
 
 	// query to retrieve data for connected drones
 	query := `
-		SELECT
-			d.*,
+	SELECT
+		d.*,
+		tl.id AS telemetry_id,
+		tl.time_updated AS telemetry_time,
+		tl.drone_id,
+		tl.battery_percentage,
+		tl.gps_signal,
+		tl.satellites,
+		tl.heading,
+		tl.velocity,
+		tl.homeLat,
+		tl.homeLon,
+		tl.lat,
+		tl.lon,
+		tl.alt,
+		tl.drone_state,
+		tl.vtol_state,
+		tl.secondsOn,
+		tl.gimbal_angle,
+		tl.water_sampler_in_water,
+		tl.operation_id AS telemetry_operation_id,
+		tl.mission_log_id,
+		tl.fov_coordinates,
 
-			t.id AS telemetry_id,
-			t.time AS telemetry_time,
-			t.drone_id,
-			t.battery_percentage,
-			t.gps_signal,
-			t.satellites,
-			t.heading,
-			t.velocity,
-			t.homeLat,
-			t.homeLon,
-			t.lat,
-			t.lon,
-			t.alt,
-			t.drone_state,
-			t.vtol_state,
-			t.secondsOn,
-			t.gimbal_angle,
-			t.water_sampler_in_water,
-			t.operation_id AS telemetry_operation_id,
-			t.mission_log_id,
-			t.fov_coordinates,
+		ds.id AS detection_session_id,
+		ds.is_active AS detection_active,
 
-			ls.latest_frame_url AS video_frame_url,
+		det.detection_status,
+		det.detection_type_str,
+		det.detection_model,
 
-			ds.id AS detection_session_id,
-			ds.latest_frame_url AS detected_frame_url,
-			ds.is_active AS detection_active,
+		w.time as weather_time,
+		w.wind_speed,
+		w.wind_direction,
+		w.temperature,
+		w.pressure,
+		w.humidity,
+		w.heading as weather_heading,
 
-			det.detection_status,
-			det.detection_type_str,
-			det.detection_model,
-
-			w.time as weather_time,
-			w.wind_speed,
-			w.wind_direction,
-			w.temperature,
-			w.pressure,
-			w.humidity,
-			w.heading as weather_heading,
-
-			"" AS build_map_last_image
-		FROM
-			aiders_drone d
-		LEFT JOIN
-			aiders_telemetry t ON d.id = t.drone_id AND t.id = (
-				SELECT max(id)
-				FROM aiders_telemetry
-				WHERE drone_id = d.id
-			)			
-		LEFT JOIN
-			aiders_livestreamsession ls ON d.id = ls.drone_id AND ls.id = (
-				SELECT max(id)
-				FROM aiders_livestreamsession
-				WHERE drone_id = d.id
-			)
-		LEFT JOIN
-			aiders_detectionsession ds ON d.id = ds.drone_id AND ds.id = (
-				SELECT max(id)
-				FROM aiders_detectionsession
-				WHERE drone_id = d.id
-			)			
-		LEFT JOIN
-			aiders_detection det ON d.id = det.drone_id
-		LEFT JOIN
-			aiders_weatherstation w ON d.id = w.drone_id AND w.id = (
-				SELECT max(id)
-				FROM aiders_weatherstation
-				WHERE drone_id = d.id
-			)			
-		WHERE
-			d.is_connected_with_platform = 1 AND d.operation_id = :operation_id
-		ORDER BY
-			d.id ASC
+		"" AS build_map_last_image
+	FROM
+		aiders_drone d
+	LEFT JOIN
+		aiders_telemetrylatest tl ON d.id = tl.drone_id
+	LEFT JOIN
+		aiders_detectionsession ds ON d.id = ds.drone_id AND ds.id = (
+			SELECT max(id)
+			FROM aiders_detectionsession
+			WHERE drone_id = d.id
+		)			
+	LEFT JOIN
+		aiders_detection det ON d.id = det.drone_id
+	LEFT JOIN
+		aiders_weatherstation w ON d.id = w.drone_id AND w.id = (
+			SELECT max(id)
+			FROM aiders_weatherstation
+			WHERE drone_id = d.id
+		)			
+	WHERE
+		d.is_connected_with_platform = 1 AND d.operation_id = :operation_id
+	ORDER BY
+		d.id ASC
 	`
 
 	queryParams := DroneQueryParams{OperationID: _operationId}
@@ -181,67 +168,6 @@ func GetDrones(_operationId int) []Drone {
 			log.Println(err)
 		}
 		drones = append(drones, drone)
-	}
-
-	// check for errors from iterating over rows
-	if err := rows.Err(); err != nil {
-		log.Println(err)
-	}
-
-	return drones
-}
-
-type DroneVideoFrames struct {
-	DroneName        string  `db:"drone_name" json:"drone_name"`
-	VideoFrameURL    *string `db:"video_frame_url" json:"video_frame_url"`
-	DetectedFrameUrl *string `db:"detected_frame_url" json:"detected_frame_url"`
-}
-
-func GetDronesVideoFrames(_operationId int) []DroneVideoFrames {
-
-	// query to retrieve data for connected drones
-	query := `
-		SELECT
-			d.drone_name,
-			ls.latest_frame_url AS video_frame_url,
-			ds.latest_frame_url AS detected_frame_url
-		FROM
-			aiders_drone d		
-		LEFT JOIN
-			aiders_livestreamsession ls ON d.id = ls.drone_id AND ls.id = (
-				SELECT max(id)
-				FROM aiders_livestreamsession
-				WHERE drone_id = d.id
-			)
-		LEFT JOIN
-			aiders_detectionsession ds ON d.id = ds.drone_id AND ds.id = (
-				SELECT max(id)
-				FROM aiders_detectionsession
-				WHERE drone_id = d.id
-			)						
-		WHERE
-			d.is_connected_with_platform = 1 AND d.operation_id = :operation_id
-		ORDER BY
-			d.id ASC
-	`
-
-	queryParams := DroneQueryParams{OperationID: _operationId}
-
-	// Use NamedQuery to execute the query
-	rows, err := Conn.NamedQuery(query, queryParams)
-	if err != nil {
-		log.Println(err)
-	}
-	defer rows.Close()
-
-	// Iterate over the result set and scan into the 'drones' slice
-	var drones []DroneVideoFrames
-	for rows.Next() {
-		var droneVideoFrames DroneVideoFrames
-		if err := rows.StructScan(&droneVideoFrames); err != nil {
-			log.Println(err)
-		}
-		drones = append(drones, droneVideoFrames)
 	}
 
 	// check for errors from iterating over rows

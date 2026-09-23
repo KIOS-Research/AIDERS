@@ -1,10 +1,10 @@
 #!/usr/bin/env python
+import json
 import os
 import sys
+
 import requests
-import json
-from aiders import views
-from aiders import models
+from aiders import models, views
 
 # import rospy
 # from kios.msg import GpsInput, InputDJI, MissionCommandDJI, MissionDji
@@ -39,9 +39,34 @@ def publishMissionToRos(
 
 
     drone = models.Drone.objects.get(drone_name=drone_name)
+
     if(drone.type == "MAVLINK"):
+        # missionPath = [
+        #     [
+        #         23.771642126874877,
+        #         37.96927936774028,
+        #         100
+        #     ],
+        #     [
+        #         23.779130735706563,
+        #         37.96881901732853,
+        #         100
+        #     ],
+
+        #     [
+        #         23.768646657122062,
+        #         37.96946337441829,
+        #         100
+        #     ],
+        #     [
+        #         23.771642126874877,
+        #         37.96927936774028,
+        #         100
+        #     ]
+        # ]
         # send the mission to the MAV container through an http request
-        mavUrl = f"http://localhost:{os.environ['MAV_API_PORT']}/mission"
+        mavUrl = f"http://{os.environ['MAV_IP']}:{os.environ['MAV_API_PORT']}/mav/mission"
+        print(missionPath, flush=True)
         payload = {
             "name": drone_name,
             "missionPath": missionPath,
@@ -67,10 +92,49 @@ def publishMissionToRos(
             # TODO: handle error
             print("REQUEST TO MAV API FAILED")
 
+    elif(drone.connection_type == "WEBSOCKETS"):
+        print("SENDING MISSION TO WS DRONE", flush=True)
+
+        # send the mission to the WSI container through an http request
+        wsUrl = f"http://{os.environ['WSI_HOST']}:{os.environ['WSI_PORT']}/wsi/sendMessageToClient"
+        payload = {
+            "name": drone_name,
+            "type": "mission",
+            "msg": {
+                "action": action,
+                "grid": grid,
+                "missionSpeed": int(missionSpeed),
+                "missionGimbal": missionGimbal,
+                "missionRepeat": missionRepeat,
+                "captureAndStoreImages": captureAndStoreImages,
+                "missionPath": missionPath,
+            }
+        }
+        headers = {
+            'Content-Type': 'application/json'
+        }    
+        json_payload = json.dumps(payload)
+
+        response = requests.post(wsUrl, data=json_payload, headers=headers)
+        print("RESPONSE FROM WS API", response, flush=True)
+
+        if response.status_code == 200:
+            if(action == "START_MISSION"):
+                print("SAVING MISSION TO DB", flush=True)
+                # save the mission to the database
+                savedSuccessfully = _saveMissionToDatabase(
+                    operationPK, missionType, grid, captureAndStoreImages, missionPath, missionSpeed, missionGimbal, missionRepeat, action, userPK, dronePK
+                )
+            else:
+                mission_logger = models.MissionLog.objects.filter(user=userPK, operation=operationPK, action="START_MISSION").last()
+                views.MissionLoggerListCreateAPIView.mission_logger_save_to_db(action, mission_logger.mission, userPK, operationPK, dronePK)        
+        else:
+            # TODO: handle error
+            print("REQUEST TO WSI API FAILED")
     else:
 
         # send the mission to the ROS container through an http request
-        rosUrl = f"http://localhost:{os.environ['ROS_API_PORT']}/droneMission"
+        rosUrl = f"http://{os.environ['ROS_HOST']}:{os.environ['ROS_API_PORT']}/ros/droneMission"
         payload = {
             "droneId": dronePK,
             "droneName": drone_name,
@@ -100,74 +164,6 @@ def publishMissionToRos(
         else:
             # TODO: handle error
             print("REQUEST TO ROS API FAILED")
-
-
-
-    # publisher = rospy.Publisher("/" + drone_name + "/Mission", MissionDji, queue_size=10)
-
-    # t = MissionDji()
-    # t.name = drone_name
-    # # t.header.stamp = rospy.get_rostime()
-
-    # if not rospy.core.is_initialized():
-    #     print("WILL NOW INITIALIZE ROSPY")
-    #     rospy.init_node("dji_input", anonymous=True)
-
-    # t.header.frame_id = drone_name
-    # if action == models.MissionLog.START_MISSION:
-    #     s = MissionCommandDJI()
-    #     s.missionCommand = s.start
-    #     t.missionCommand = s
-    #     t.grid = grid
-    #     t.captureAndStoreImages = captureAndStoreImages
-    #     t.repeat = missionRepeat
-    #     tempSpeed = ""
-    #     tempGimbal = ""
-    #     for i in range(0, len(missionPath)):
-    #         if isinstance(missionSpeed, str):
-    #             tempSpeed = float(missionSpeed)
-    #         elif isinstance(missionSpeed, list):
-    #             tempSpeed = float(missionSpeed[i])
-    #         if isinstance(missionGimbal, str):
-    #             tempGimbal = missionGimbal
-    #         elif isinstance(missionGimbal, list):
-    #             tempGimbal = missionGimbal[i]
-    #         k = GpsInput()
-    #         k.latitude = missionPath[i][1]
-    #         k.longitude = missionPath[i][0]
-    #         k.altitude = float(missionPath[i][2])
-    #         k.speed = tempSpeed
-    #         k.gimbalAngle = tempGimbal
-    #         k.stayTime = 0
-    #         k.photo = False
-    #         t.gpsInput.append(k)
-    #     publisher.publish(t)
-    #     print("MISSION PUBLISHED TO ROS: ", t)
-    # elif action == models.MissionLog.PAUSE_MISSION:
-    #     s = MissionCommandDJI()
-    #     s.missionCommand = s.pause
-    #     t.missionCommand = s
-    #     publisher.publish(t)
-    #     mission_logger = models.MissionLog.objects.filter(user=userPK, operation=operationPK, action="START_MISSION").last()
-    #     views.MissionLoggerListCreateAPIView.mission_logger_save_to_db("PAUSE_MISSION", mission_logger.mission, userPK, operationPK, dronePK)
-    #     print("PAUSE_MISSION")
-    # elif action == models.MissionLog.RESUME_MISSION:
-    #     s = MissionCommandDJI()
-    #     s.missionCommand = s.resume
-    #     t.missionCommand = s
-    #     publisher.publish(t)
-    #     mission_logger = models.MissionLog.objects.filter(user=userPK, operation=operationPK, action="START_MISSION").last()
-    #     views.MissionLoggerListCreateAPIView.mission_logger_save_to_db("RESUME_MISSION", mission_logger.mission, userPK, operationPK, dronePK)
-    #     print("RESUME_MISSION")
-    # elif action == models.MissionLog.CANCEL_MISSION:
-    #     s = MissionCommandDJI()
-    #     s.missionCommand = s.stop
-    #     t.missionCommand = s
-    #     publisher.publish(t)
-    #     mission_logger = models.MissionLog.objects.filter(user=userPK, operation=operationPK, action="START_MISSION").last()
-    #     views.MissionLoggerListCreateAPIView.mission_logger_save_to_db("CANCEL_MISSION", mission_logger.mission, userPK, operationPK, dronePK)
-    #     print("CANCEL_MISSION")
-
 
 
 

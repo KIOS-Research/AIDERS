@@ -26,5 +26,8 @@ WORKDIR /application
 COPY --from=builder /application/app .
 COPY --from=builder /application/entrypoint.ccd.sh .
 
+# HealthCheck
+HEALTHCHECK --interval=30s CMD pgrep .app || exit 1
+
 ENTRYPOINT ["/bin/sh", "./entrypoint.ccd.sh"]
 

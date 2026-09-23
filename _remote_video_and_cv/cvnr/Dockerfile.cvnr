@@ -1,0 +1,33 @@
+FROM python:3.9
+
+# Install required dependencies
+RUN apt-get update && apt-get install -y \ 
+    netcat-traditional \
+    libgl1-mesa-glx && \
+    rm -rf /var/lib/apt/lists/*
+
+# Copy the python dependencies
+COPY cvnr/requirements.txt /app/requirements.txt
+# Install Python dependencies
+RUN if [ "$(uname)" = "Darwin" ] && [ "$(uname -m)" = "arm64" ]; then \
+    pip install onnxruntime-silicon==1.16.0; \
+    else \
+    pip install onnxruntime-gpu==1.15.1; \
+    fi
+
+RUN pip install -r /app/requirements.txt
+
+# copy the entrypoint bash script
+COPY cvnr/entrypoint.cvnr.sh .
+
+# Copy the python application
+COPY cvnr/app /app
+
+# Expose the port for the webserver
+EXPOSE 8760
+
+# HealthCheck
+HEALTHCHECK --interval=30s CMD curl --fail http://localhost:${CVNR_API_PORT}/cvn/healthCheck || exit 1
+
+# run the entrypoint bash script
+ENTRYPOINT ["/bin/bash", "./entrypoint.cvnr.sh"]

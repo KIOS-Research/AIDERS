@@ -1,26 +1,26 @@
 import os
 import threading
-from flask import Flask, request, jsonify
 
 # custom libs
 import requestHandler
+from flask import Flask, jsonify, request
 
 app = Flask(__name__)
 
 # start the http server, called on launch
 def start(_port):
-    app.run(port=_port)   
+    app.run(host='0.0.0.0', port=_port)   
     
 
 # returns the active threads in this app
-@app.route('/threads', methods=['GET'])
+@app.route('/cv/threads', methods=['GET'])
 def getThreads():
     threadList = [{'name': t.name} for t in threading.enumerate() if not t.name.startswith(('Thread-', 'Dummy-'))]
     return jsonify(threadList)
 
 
 # called when a user requests detection start
-@app.route('/startDetection', methods=['POST'])
+@app.route('/cv/startDetection', methods=['POST'])
 def handleStartDetectionRequest():
     data = request.get_json()
     print("Detection start requested.")
@@ -38,7 +38,7 @@ def handleStartDetectionRequest():
 
 
 # called when a user requests detection stop
-@app.route('/stopDetection', methods=['POST'])
+@app.route('/cv/stopDetection', methods=['POST'])
 def handleStopDetectionRequest():
     data = request.get_json()
     print("Detection stop requested.")
@@ -47,3 +47,6 @@ def handleStopDetectionRequest():
     return "200"
 
 
+@app.route('/cv/healthCheck', methods=['GET'])
+def handleHealthCheckRequest():
+    return "200"

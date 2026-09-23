@@ -22,16 +22,14 @@ Aiders - Operations
 <div class="justify-content-center ms-5 me-5 footer-margin header-margin">
     <div class="row pt-5">
         <h3 class="col float-start">Operations</h3>
-        <div class="col">
-            <a class="btn btn-primary float-end mx-1 {% if not perms.aiders.edit_permissions %}disabled{% endif %}" href="{% url 'manage_permissions' %}">
-                <i class="far fa-plus-square "></i>
-                Edit Permissions
-            </a>
-            <a class="btn btn-primary float-end mx-1 {% if not perms.aiders.create_operations %}disabled{% endif %}" href="{% url 'new_operation' %}">
-                <i class="far fa-plus-square "></i>
-                New Operation
-            </a>
-        </div>
+        {% if perms.aiders.manage_operations %}
+            <div class="col">
+                <a class="btn btn-success float-end mx-1" href="{% url 'new_operation' %}">
+                    <i class="fa-solid fa-plus "></i>
+                    New Operation
+                </a>
+            </div>
+        {% endif %}
     </div>
     <div class="row mb-5">
         <div class="col-sm" style="color: black">
@@ -40,29 +38,22 @@ Aiders - Operations
                 <table id="Table" class="table table-striped">
                 <thead>
                 <tr>
-                    <th> ID</th>
-                    <th> Created</th>
-                    <th> Ended at</th>
-
-                    <th> Operator</th>
+                    <th class="text-center"> ID</th>
+                    
                     <th> Operation Name</th>
                     <th> Joined Users</th>
-                    <th style="width: 21%"> Actions</th>
+                    <th> Created By</th>
+                    <th> Created At</th>
+                    <th> Ended At</th>
+                    <th style="width: 28%"> Actions</th>
                 </tr>
                 </thead>
                 <tbody>
                 {% if operations %}
                     {% for op in operations %}
-                        <tr>
-                            <td class='align-middle'> {{op.id}}</td>
-                            <td class='align-middle'> {{op.created_at}}</td>
-                            {% if op.active %}
-                                <td class='align-middle'> In progress </td>
-                            {% else %}
-                                <td class='align-middle'> {{op.ended_at}}</td>
-                            {%  endif %}
-
-                            <td class='align-middle'> {{op.operator}}</td>
+                        <tr style="height: 60px; {% if not op.active %}background-color:rgb(255, 198, 198);{% endif %}">
+                            <td class='align-middle text-center'> {{op.id}}</td>
+                            
                             <td class='align-middle'> {{op.operation_name}}</td>
                             <td class='align-middle'>    
                                 {% for user in users %}
@@ -71,46 +62,77 @@ Aiders - Operations
                                     {% endif %}
                                 {% endfor %}
                             </td>
+                            <td class='align-middle'> {{op.operator}}</td>
+                            <td class='align-middle'> {{op.created_at}}</td>
+                            {% if op.active %}
+                                <td class='align-middle'> In progress </td>
+                            {% else %}
+                                <td class='align-middle'> {{op.ended_at}} </td>
+                            {%  endif %}
 
-                            <td>
-                                <div>
-                                    <form class='m-1' style='float: left;' method="post" action="{% url 'join_operation' operation_name=op.operation_name %}">
-                                        {% csrf_token %}
-                                        {% get_obj_perms request.user for op as "permission_list" %}
-                                        <button type="submit" title="Join Operation" class="btn btn-success" {% if not "join_operation" in permission_list or not op.active %}disabled{% endif %}><i class="fa-solid fa-right-to-bracket"></i></button>
-                                    </form>
-                                </div>
-                                <div>
-                                    <form class='m-1' style='float: left;' method="get" action="{% url 'edit_operation' operation_name=op.operation_name %}">
-                                        {% get_obj_perms request.user for op as "permission_list" %}
-                                        <button type="submit" title="Edit Operation" class="btn btn-warning" {% if not "edit_operation" in permission_list or not op.active %}disabled{% endif %}><i style="color:white;" class="fas fa-edit"></i></button>
-                                    </form>
-                                </div>
-                                <div>
-                                    <form class='m-1' style='float: left;' method="get" action="{% url 'algorithms' operation_name=op.operation_name %}">
-                                        <button type="submit" title="View Algorithms" class="btn btn-primary" {% if not "join_operation" in permission_list %}disabled{% endif %}><i style="color:white;" class="fa-solid fa-flask"></i></button>
-                                    </form>
-                                </div>
-                                <div>
-                                    <form class='m-1' style='float: left;' method="get" action="{% url 'flying_report' operation_name=op.operation_name %}">
-                                        <button type="submit" title="View Flight Report" class="btn btn-primary" {% if not "join_operation" in permission_list %}disabled{% endif %}><i style="color:white;" class="fa-solid fa-highlighter"></i></button>
-                                    </form>
-                                </div>
-                                <div>
-                                    <form class='m-1' style='float: left;' method="get" action="{% url 'replay_mission' operation_name=op.operation_name %}">
-                                        <button type="submit" title="View Replayed Mission" class="btn btn-primary" {% if not "join_operation" in permission_list or not op.active %}disabled{% endif %}><i style="color:white;" class="fa-solid fa-map-location-dot"></i></button>
-                                    </form>
-                                </div>
-                                <div>
-                                    <form class='m-1' style='float: left;' method="get" action="{% url 'build_map_sessions' operation_name=op.operation_name %}">
-                                        <button type="submit" title="Share Build Map Sessions" class="btn btn-primary" {% if not "join_operation" in permission_list  %}disabled{% endif %}><i style="color:white;" class="fa-solid fa-share-nodes"></i></button>
-                                    </form>
-                                </div>
-                                <div>
-                                    <form class='m-1' style='float: left;' method="get" action="{% url 'stop_operation' operation_name=op.operation_name %}">
-                                        <button type="submit" title="Stop Operation" class="btn btn-danger" {% if not op.active %}disabled{% endif %}><i class="fa-solid fa-stop"></i></button>
-                                    </form>
-                                </div>
+                            <td class='align-middle'>
+                                {% if op.id in user_view_operation_ids %}
+                                    <div>
+                                        <form class='m-1' style='float: left;' method="post" action="{% url 'join_operation' operation_name=op.operation_name %}">
+                                            {% csrf_token %}
+                                            <button type="submit" title="View Operation" class="btn btn-sm btn-success" {% if not op.id in user_view_operation_ids %}disabled{% endif %}><i class="fa-solid fa-right-to-bracket"></i></button>
+                                        </form>
+                                    </div>
+                                    <div>
+                                        <form class='m-1' style='float: left;' method="get" action="{% url 'chat_room_detail' pk=op.chat_id %}">
+                                            <button type="submit" title="Live Chat" class="btn btn-sm btn-primary" {% if not op.id in user_view_operation_ids %}disabled{% endif %}><i style="color:white;" class="fa-solid fa-comments"></i></button>
+                                        </form>
+                                    </div>
+                                    <div>
+                                        <form class='m-1' style='float: left;' method="get" action="{% url 'live_stream_sessions' operation_name=op.operation_name %}">
+                                            <button type="submit" title="View Live Stream Sessions" class="btn btn-sm btn-primary" {% if not op.id in user_view_operation_ids %}disabled{% endif %}><i style="color:white;" class="fa-solid fa-video"></i></button>
+                                        </form>
+                                    </div>
+                                    <div>
+                                        <form class='m-1' style='float: left;' method="get" action="{% url 'detection_sessions' operation_name=op.operation_name %}">
+                                            <button type="submit" title="View Detection Sessions" class="btn btn-sm btn-primary" {% if not op.id in user_view_operation_ids %}disabled{% endif %}><i style="color:white;" class="fa-solid fa-eye"></i></button>
+                                        </form>
+                                    </div>
+                                    <div>
+                                        <form class='m-1' style='float: left;' method="get" action="{% url 'device_sessions' operation_name=op.operation_name %}">
+                                            <button type="submit" title="View Device Sessions" class="btn btn-sm btn-primary" {% if not op.id in user_view_operation_ids %}disabled{% endif %}><i style="color:white;" class="fa-solid fa-mobile-screen"></i></button>
+                                        </form>
+                                    </div>
+                                    <div>
+                                        <form class='m-1' style='float: left;' method="get" action="{% url 'algorithms' operation_name=op.operation_name %}">
+                                            <button type="submit" title="View Algorithms" class="btn btn-sm btn-primary" {% if not op.id in user_view_operation_ids %}disabled{% endif %}><i style="color:white;" class="fa-solid fa-flask"></i></button>
+                                        </form>
+                                    </div>
+                                    <div>
+                                        <form class='m-1' style='float: left;' method="get" action="{% url 'build_map_sessions' operation_name=op.operation_name %}">
+                                            <button type="submit" title="Build Map Sessions" class="btn btn-sm btn-primary" {% if not op.id in user_view_operation_ids %}disabled{% endif %}><i style="color:white;" class="fa-solid fa-map"></i></button>
+                                        </form>
+                                    </div>
+                                    <div>
+                                        <form class='m-1' style='float: left;' method="get" action="{% url 'flying_reports' operation_name=op.operation_name %}">
+                                            <button type="submit" title="View Flight Reports" class="btn btn-sm btn-primary" {% if not op.id in user_view_operation_ids %}disabled{% endif %}><i style="color:white;" class="fa-solid fa-plane-circle-exclamation"></i></button>
+                                        </form>
+                                    </div>
+                                    <div>
+                                        <form class='m-1' style='float: left;' method="get" action="{% url 'operation_report' operation_name=op.operation_name %}">
+                                            <button type="submit" title="Generate Operation Report" class="btn btn-sm btn-primary" {% if not op.id in user_view_operation_ids %}disabled{% endif %}><i style="color:white;" class="fa-solid fa-file-invoice"></i></button>
+                                        </form>
+                                    </div>
+                                    {% if op.id in user_manage_operation_ids and op.active %}
+                                        <div>
+                                            <form class='m-1' style='float: left;' method="get" action="{% url 'edit_operation' operation_name=op.operation_name %}">
+                                                <button type="submit" title="Edit Operation" class="btn btn-sm btn-warning" {% if not op.id in user_manage_operation_ids or not op.active %}disabled{% endif %}><i style="color:white;" class="fas fa-edit"></i></button>
+                                            </form>
+                                        </div>                                    
+                                        <div>
+                                            <form class='m-1' style='float: left;' method="get" action="{% url 'stop_operation' operation_name=op.operation_name %}" onsubmit="return confirm('Are you sure you want to stop the operation \'{{op.operation_name}}\'? This action is not reversible!');">
+                                                <button type="submit" title="Stop Operation" class="btn btn-sm btn-danger" {% if not op.id in user_manage_operation_ids %}disabled{% endif %}><i class="fa-solid fa-stop"></i></button>
+                                            </form>
+                                        </div>
+                                    {% endif %}
+                                {% else %}
+                                    <div>Access Restricted</div>
+                                {% endif %}
                             </td>
                         </tr>
                     {% endfor %}
